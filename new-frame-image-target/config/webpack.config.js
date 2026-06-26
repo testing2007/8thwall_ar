@@ -52,6 +52,11 @@ const config = {
           to: path.join(distPath, 'image-targets'),
           noErrorOnMissing: true,
         },
+        {
+          from: path.join(rootPath, 'node_modules/@8thwall/ecs/dist'),
+          to: path.join(distPath, 'external/runtime'),
+          noErrorOnMissing: true,
+        },
       ],
     }),
     createVirtualEntryPlugin({
