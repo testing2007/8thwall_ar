@@ -1,11 +1,11 @@
 {
   "type": "CYLINDER",
   "properties": {
-    "targetCircumferenceTop": 100,
+    "targetCircumferenceTop": 99.99999999999999,
     "cylinderSideLength": 132.59,
-    "cylinderCircumferenceTop": 230.76923076923077,
-    "cylinderCircumferenceBottom": 230.77,
-    "arcAngle": 156,
+    "cylinderCircumferenceTop": 272.7272727272727,
+    "cylinderCircumferenceBottom": 272.73,
+    "arcAngle": 132,
     "coniness": 0,
     "inputMode": "BASIC",
     "unit": "mm",
@@ -27,5 +27,5 @@
     "luminanceImage": "wine-label_luminance.jpg"
   },
   "created": 1782526958962,
-  "updated": 1782610813536
+  "updated": 1782624551476
 }

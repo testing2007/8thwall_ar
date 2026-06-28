@@ -39,7 +39,8 @@
       <a-asset-item id="bean-glb" src="assets/Models/beans.glb"></a-asset-item>
       <a-asset-item id="blades-glb" src="assets/Models/blades.glb"></a-asset-item>
       <a-asset-item id="words-glb" src="assets/Models/purrfect-brew-text.glb"></a-asset-item>
-      <img id="logo" src="assets/Media/coffee-cat.png">
+      <img id="logo" src="assets/Media/coffee-cat-transparent.png">
+
       <video id="wine-label-video" autoplay muted crossorigin="anonymous" loop="true"
         src="assets/Media/wine-label-video.mp4">
       </video>
@@ -64,7 +65,7 @@
 
     <!-- COFFEE SLEEVE (Conical): 3D models inside and outside container -->
     <xrextras-named-image-target name="coffee-cat">
-      <xrextras-curved-target-container color="#000"></xrextras-curved-target-container>
+      <!-- <xrextras-curved-target-container color="#000"></xrextras-curved-target-container> -->
       <xrextras-target-mesh width="0.8" material="src: #logo; transparent: true;"></xrextras-target-mesh>
       <a-entity gltf-model="#bean-glb" position="0 -0.5 0" scale="0.5 0.5 0.5" xrextras-spin></a-entity>
       <a-entity gltf-model="#blades-glb" position="0 -0.45 0" scale="0.13 0.13 0.13"

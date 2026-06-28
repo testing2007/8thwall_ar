@@ -1,23 +1,23 @@
 {
   "type": "CONICAL",
   "properties": {
-    "topRadius": 3985.172337441668,
-    "bottomRadius": 3315.91750384089,
-    "targetCircumferenceTop": 109.62805143704152,
-    "cylinderSideLength": 114.77,
-    "cylinderCircumferenceTop": 493.32623146668686,
-    "cylinderCircumferenceBottom": 410.48,
+    "topRadius": 4479,
+    "bottomRadius": 3803.7201204838466,
+    "targetCircumferenceTop": 108.51484979086642,
+    "cylinderSideLength": 114.62,
+    "cylinderCircumferenceTop": 488.31682405889893,
+    "cylinderCircumferenceBottom": 414.7,
     "arcAngle": 80,
-    "coniness": 0.2652339997175606,
-    "inputMode": "BASIC",
+    "coniness": 0.23578496559208778,
+    "inputMode": "ADVANCED",
     "unit": "mm",
     "top": 0,
-    "left": 95,
-    "width": 480,
-    "height": 640,
-    "isRotated": true,
-    "originalWidth": 670,
-    "originalHeight": 640
+    "left": 66,
+    "width": 507,
+    "height": 676,
+    "isRotated": false,
+    "originalWidth": 640,
+    "originalHeight": 676
   },
   "imagePath": "image-targets/coffee-cat_luminance.png",
   "metadata": null,
@@ -29,6 +29,6 @@
     "luminanceImage": "coffee-cat_luminance.png",
     "geometryImage": "coffee-cat_geometry.png"
   },
-  "created": 1782611229681,
-  "updated": 1782612276890
+  "created": 1782613745820,
+  "updated": 1782616034895
 }
