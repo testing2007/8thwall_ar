@@ -1,0 +1,31 @@
+{
+  "type": "CYLINDER",
+  "properties": {
+    "targetCircumferenceTop": 100,
+    "cylinderSideLength": 132.59,
+    "cylinderCircumferenceTop": 230.76923076923077,
+    "cylinderCircumferenceBottom": 230.77,
+    "arcAngle": 156,
+    "coniness": 0,
+    "inputMode": "BASIC",
+    "unit": "mm",
+    "top": 0,
+    "left": 3,
+    "width": 1074,
+    "height": 1432,
+    "isRotated": false,
+    "originalWidth": 1080,
+    "originalHeight": 1432
+  },
+  "imagePath": "image-targets/wine-label_luminance.jpg",
+  "metadata": null,
+  "name": "wine-label",
+  "resources": {
+    "originalImage": "wine-label_original.jpg",
+    "croppedImage": "wine-label_cropped.jpg",
+    "thumbnailImage": "wine-label_thumbnail.jpg",
+    "luminanceImage": "wine-label_luminance.jpg"
+  },
+  "created": 1782526958962,
+  "updated": 1782610813536
+}

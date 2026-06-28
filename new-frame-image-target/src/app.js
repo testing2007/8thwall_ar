@@ -3,6 +3,8 @@ const onxrloaded = () => {
     imageTargetData: [
       require('../image-targets/model-target.json'),
       require('../image-targets/video-target.json'),
+      require('../image-targets/wine-label.json'),
+      require('../image-targets/coffee-cat.json')
     ],
   })
 }

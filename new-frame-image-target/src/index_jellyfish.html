@@ -16,15 +16,9 @@
 
   <!-- 1. 先加载 8-Frame 和 XR 核心依赖 -->
   <script src="./external/scripts/8frame-1.5.0.min.js"></script>
+  <script src="./external/runtime/runtime.js"></script>
   <script src="./external/xrextras/xrextras.js"></script>
   <script src="./external/landing-page/landing-page.js"></script>
-  <script src="./external/runtime/runtime.js"></script>
-  <script>
-    // Restore window.THREE to A-Frame's THREE instance to avoid conflicts with multiple Three.js instances
-    if (window.AFRAME && window.AFRAME.THREE) {
-      window.THREE = window.AFRAME.THREE;
-    }
-  </script>
   <script async src="./external/xr/xr.js" data-preload-chunks="slam"></script>
 
 </head>
@@ -36,14 +30,7 @@
     xrextras-loading xrextras-runtime-error renderer="colorManagement:true;" xrweb="
     disableWorldTracking: true;">
     <a-assets>
-      <a-asset-item id="bean-glb" src="assets/Models/beans.glb"></a-asset-item>
-      <a-asset-item id="blades-glb" src="assets/Models/blades.glb"></a-asset-item>
-      <a-asset-item id="words-glb" src="assets/Models/purrfect-brew-text.glb"></a-asset-item>
-      <img id="logo" src="assets/Media/coffee-cat.png">
-      <video id="wine-label-video" autoplay muted crossorigin="anonymous" loop="true"
-        src="assets/Media/wine-label-video.mp4">
-      </video>
-
+      <!-- Credit to Poly by Google for the model: https://poly.google.com/view/dA5osnS0Rzj -->
       <a-asset-item id="jelly-glb" src="assets/jellyfish-model.glb"></a-asset-item>
       <img id="jelly-thumb" src="assets/video-target.jpg">
       <video id="jelly-video" autoplay muted crossorigin="anonymous" loop="true" src="assets/jellyfish-video.mp4">
@@ -57,22 +44,6 @@
 
     <a-light type="ambient" intensity="1"></a-light>
 
-    <!-- WINE LABEL (Cylindrical): video fades in on label -->
-    <xrextras-named-image-target name="wine-label">
-      <xrextras-target-video-fade video="#wine-label-video"></xrextras-target-video-fade>
-    </xrextras-named-image-target>
-
-    <!-- COFFEE SLEEVE (Conical): 3D models inside and outside container -->
-    <xrextras-named-image-target name="coffee-cat">
-      <xrextras-curved-target-container color="#000"></xrextras-curved-target-container>
-      <xrextras-target-mesh width="0.8" material="src: #logo; transparent: true;"></xrextras-target-mesh>
-      <a-entity gltf-model="#bean-glb" position="0 -0.5 0" scale="0.5 0.5 0.5" xrextras-spin></a-entity>
-      <a-entity gltf-model="#blades-glb" position="0 -0.45 0" scale="0.13 0.13 0.13"
-        xrextras-spin="speed: 1000"></a-entity>
-      <a-entity gltf-model="#words-glb" position="0 -0.25 0" scale="0.2 0.2 0.2"
-        xrextras-spin="speed: 5000; direction: reverse;"></a-entity>
-    </xrextras-named-image-target>
-
     <!-- Note: "name:" must be set to the name of the image target -->
     <xrextras-named-image-target name="video-target">
       <a-entity xrextras-play-video="video: #jelly-video; thumb: #jelly-thumb; canstop: true"
@@ -81,6 +52,7 @@
 
     <!-- Note: "name:" must be set to the name of the image target  -->
     <xrextras-named-image-target name="model-target">
+      <!-- Add a child entity that can be rotated independently of the image target. -->
       <a-entity xrextras-one-finger-rotate gltf-model="#jelly-glb"></a-entity>
     </xrextras-named-image-target>
 
