@@ -26,13 +26,20 @@
     }
   </script>
   <script async src="./external/xr/xr.js" data-preload-chunks="slam"></script>
+  <!-- <style>
+    /* 前置摄像头画面水平镜像翻转，让画面更自然 */
+    canvas.camerafeed {
+      transform: scaleX(-1);
+    }
+  </style> -->
 
 </head>
 
 <body>
   <script src="bundle.js"></script>
 
-  <a-scene xrconfig="cameraDirection: front; allowedDevices: any;" xrextras-gesture-detector landing-page
+  <!-- mirroredDisplay: true -->
+  <a-scene xrconfig="cameraDirection: front; allowedDevices: any; " xrextras-gesture-detector landing-page
     xrextras-loading xrextras-runtime-error renderer="colorManagement:true;" xrweb="
     disableWorldTracking: true;">
     <a-assets>
