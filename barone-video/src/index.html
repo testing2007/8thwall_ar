@@ -75,7 +75,8 @@
       })
     }
   </script>
-  <script async src="./external/xr/xr.js" data-preload-chunks="slam"></script>
+  <!-- xr.js: no data-preload-chunks, slam not needed (disableWorldTracking: true) -->
+  <script async src="./external/xr/xr.js"></script>
 </head>
 
 <body>
@@ -86,7 +87,7 @@
     xrextras-loading xrextras-runtime-error renderer="colorManagement:true;" xrweb="
     disableWorldTracking: true;">
     <a-assets timeout="5000">
-      <video id="wine-label-video" autoplay playsinline webkit-playsinline preload="auto" crossorigin="anonymous"
+      <video id="wine-label-video" muted playsinline webkit-playsinline preload="none" crossorigin="anonymous"
         loop="true" src="assets/Media/introduce.mp4?v=20260718-target-fix">
       </video>
     </a-assets>
