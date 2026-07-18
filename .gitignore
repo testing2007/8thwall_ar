@@ -1,2 +1,8 @@
 node_modules
 **/node_modules/
+**/dist/
+**/build_package/
+**/temp/
+*.zip
+/package/
+*.swp

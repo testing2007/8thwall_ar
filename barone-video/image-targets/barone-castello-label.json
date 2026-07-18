@@ -1,0 +1,31 @@
+{
+  "type": "CYLINDER",
+  "properties": {
+    "targetCircumferenceTop": 50,
+    "cylinderSideLength": 55.4016620498615,
+    "cylinderCircumferenceTop": 100,
+    "cylinderCircumferenceBottom": 100,
+    "arcAngle": 180,
+    "coniness": 0,
+    "inputMode": "ADVANCED",
+    "unit": "mm",
+    "top": 0,
+    "left": 61,
+    "width": 600,
+    "height": 800,
+    "isRotated": true,
+    "originalWidth": 722,
+    "originalHeight": 800
+  },
+  "imagePath": "image-targets/barone-castello-label_luminance.jpg",
+  "metadata": null,
+  "name": "barone-castello-label",
+  "resources": {
+    "originalImage": "barone-castello-label_original.jpg",
+    "croppedImage": "barone-castello-label_cropped.jpg",
+    "thumbnailImage": "barone-castello-label_thumbnail.jpg",
+    "luminanceImage": "barone-castello-label_luminance.jpg"
+  },
+  "created": 1784378148660,
+  "updated": 1784379493282
+}

@@ -1,0 +1,31 @@
+{
+  "type": "CYLINDER",
+  "properties": {
+    "targetCircumferenceTop": 90,
+    "cylinderSideLength": 90,
+    "cylinderCircumferenceTop": 250,
+    "cylinderCircumferenceBottom": 250,
+    "arcAngle": 180,
+    "coniness": 0,
+    "inputMode": "ADVANCED",
+    "unit": "mm",
+    "top": 0,
+    "left": 75,
+    "width": 480,
+    "height": 640,
+    "isRotated": false,
+    "originalWidth": 640,
+    "originalHeight": 640
+  },
+  "imagePath": "image-targets/barone-56-label_luminance.jpg",
+  "metadata": null,
+  "name": "barone-56-label",
+  "resources": {
+    "originalImage": "barone-56-label_original.jpg",
+    "croppedImage": "barone-56-label_cropped.jpg",
+    "thumbnailImage": "barone-56-label_thumbnail.jpg",
+    "luminanceImage": "barone-56-label_luminance.jpg"
+  },
+  "created": 1784370340866,
+  "updated": 1784379479591
+}
