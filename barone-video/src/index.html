@@ -5,17 +5,24 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <meta name="apple-mobile-web-app-capable" content="yes">
 
-  <title>A-Frame: Image Targets Example</title>
+  <title>Barone AR Experience</title>
 
+  <!-- A-Frame and xrextras must load before a-scene is created -->
   <script src="./external/scripts/8frame-1.5.0.min.js"></script>
   <script src="./external/xrextras/xrextras.js"></script>
   <script src="./external/landing-page/landing-page.js"></script>
-  <script src="./external/runtime/runtime.js"></script>
+
   <style>
-    #audio-start-button {
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: #101118;
+    }
+
+    #ar-start-button,
+    #sound-button {
       position: fixed;
       left: 50%;
-      bottom: 24px;
       z-index: 100000;
       transform: translateX(-50%);
       min-width: 150px;
@@ -25,92 +32,226 @@
       color: #fff;
       background: #111;
       font: 600 17px/1.2 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      cursor: pointer;
     }
 
-    #audio-start-button.hidden {
+    #ar-start-button {
+      top: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    #sound-button {
+      bottom: 24px;
+    }
+
+    #ar-start-button:disabled {
+      opacity: 0.72;
+    }
+
+    #ar-start-button.hidden,
+    #sound-button.hidden {
+      display: none;
+    }
+
+    #wine-label-video {
       display: none;
     }
   </style>
+
   <script>
     if (window.AFRAME && window.AFRAME.THREE) {
       window.THREE = window.AFRAME.THREE;
     }
 
-    function setupTargetVideoAudioUnlock() {
-      var video = document.getElementById('wine-label-video')
-      var button = document.getElementById('audio-start-button')
-      if (!video || !button || video.dataset.audioUnlockReady) {
-        return
-      }
+    // CDN fallback (append ?xr=cdn to URL to use CDN)
+    var XR_CDN_SRC = 'https://cdn.jsdelivr.net/npm/@8thwall/engine-binary@1/dist/xr.js'
+    function getXrRuntimeSrc() {
+      var params = new URLSearchParams(window.location.search)
+      return params.get('xr') === 'cdn' ? XR_CDN_SRC : './external/xr/xr.js'
+    }
 
-      video.dataset.audioUnlockReady = 'true'
-      video.muted = false
-      video.defaultMuted = false
+    // Prepare the video element for Safari audio unlock
+    function prepareTargetVideo() {
+      var video = document.getElementById('wine-label-video')
+      if (!video) return null
+      video.muted = true
+      video.defaultMuted = true
+      video.preload = 'none'
       video.volume = 1
       video.playsInline = true
       video.setAttribute('playsinline', '')
       video.setAttribute('webkit-playsinline', '')
+      return video
+    }
 
-      button.addEventListener('click', function () {
-        video.muted = false
-        video.defaultMuted = false
-        video.volume = 1
+    function showSoundButton() {
+      var button = document.getElementById('sound-button')
+      if (button) button.classList.remove('hidden')
+    }
 
-        var playPromise = video.play()
-        if (playPromise && playPromise.then) {
-          playPromise.then(function () {
-            video.pause()
-            video.currentTime = 0
-            video.dataset.audioUnlocked = 'true'
-            button.classList.add('hidden')
-            console.log('AR video audio unlocked.')
-          }).catch(function (error) {
-            button.textContent = 'Tap Again'
-            console.warn('AR video audio unlock failed.', error)
-          })
-        } else {
+    function enableTargetVideoSound() {
+      var video = prepareTargetVideo()
+      var button = document.getElementById('sound-button')
+      if (!video || !button) return
+
+      button.disabled = true
+      video.muted = false
+      video.defaultMuted = false
+      video.volume = 1
+
+      if (video.readyState === 0) video.load()
+
+      var playPromise = video.play()
+      if (playPromise && playPromise.then) {
+        playPromise.then(function () {
           video.dataset.audioUnlocked = 'true'
           button.classList.add('hidden')
+          button.disabled = false
+          console.log('AR video audio enabled.')
+        }).catch(function (error) {
+          button.textContent = 'Tap Again'
+          button.disabled = false
+          console.warn('AR video audio enable failed.', error)
+        })
+        return
+      }
+      video.dataset.audioUnlocked = 'true'
+      button.classList.add('hidden')
+      button.disabled = false
+    }
+
+    // Inject a-scene from template only after engine is ready
+    function appendArScene() {
+      if (document.querySelector('a-scene')) return
+
+      var template = document.getElementById('ar-scene-template')
+      if (!template) throw new Error('AR scene template not found.')
+
+      document.body.appendChild(template.content.cloneNode(true))
+
+      // Move video into a-assets
+      var assets = document.querySelector('a-scene a-assets')
+      var video = document.getElementById('wine-label-video')
+      if (assets && video && video.parentNode !== assets) {
+        assets.appendChild(video)
+      }
+
+      showSoundButton()
+    }
+
+    // Lazily load xr.js + slam chunk only on user interaction
+    function loadXrRuntime() {
+      if (window.XR8) {
+        // XR8 already loaded; ensure slam chunk is ready then resolve
+        return window.XR8.loadChunk
+          ? window.XR8.loadChunk('slam')
+          : Promise.resolve()
+      }
+
+      return new Promise(function (resolve, reject) {
+        // xrloaded fires after xr.js AND all required chunks are initialised
+        window.addEventListener('xrloaded', function () {
+          resolve()
+        }, { once: true })
+
+        if (document.getElementById('xr-runtime-script')) return
+
+        var script = document.createElement('script')
+        script.id = 'xr-runtime-script'
+        script.async = true
+        script.src = getXrRuntimeSrc()
+        // Preload slam chunk together with xr.js so XrController is ready
+        // when xrloaded fires (required for image-target XrController.configure)
+        script.setAttribute('data-preload-chunks', 'slam')
+        script.crossOrigin = 'anonymous'
+        script.onerror = function () {
+          reject(new Error('Failed to load 8th Wall XR runtime.'))
         }
+        document.head.appendChild(script)
       })
     }
+
+    function startBaroneAr() {
+      var button = document.getElementById('ar-start-button')
+      if (!button || button.dataset.starting) return
+
+      button.dataset.starting = 'true'
+      button.disabled = true
+      button.textContent = 'Loading AR...'
+
+      prepareTargetVideo()
+
+      loadXrRuntime().then(function () {
+        appendArScene()
+        button.classList.add('hidden')
+      }).catch(function (error) {
+        button.disabled = false
+        button.dataset.starting = ''
+        button.textContent = 'Tap Again'
+        console.warn('AR load failed:', error)
+      })
+    }
+
+    window.addEventListener('DOMContentLoaded', function () {
+      var startBtn = document.getElementById('ar-start-button')
+      if (startBtn) startBtn.addEventListener('click', startBaroneAr)
+
+      var soundBtn = document.getElementById('sound-button')
+      if (soundBtn) soundBtn.addEventListener('click', enableTargetVideoSound)
+    })
   </script>
-  <!-- xr.js: no data-preload-chunks, slam not needed (disableWorldTracking: true) -->
-  <script async src="./external/xr/xr.js"></script>
 </head>
 
 <body>
   <script src="bundle.js?v=20260718-target-fix"></script>
-  <button id="audio-start-button" type="button">Start Audio</button>
 
-  <a-scene xrconfig="cameraDirection: back; allowedDevices: any; " xrextras-gesture-detector landing-page
-    xrextras-loading xrextras-runtime-error renderer="colorManagement:true;" xrweb="
-    disableWorldTracking: true;">
-    <a-assets timeout="5000">
-      <video id="wine-label-video" muted playsinline webkit-playsinline preload="none" crossorigin="anonymous"
-        loop="true" src="assets/Media/introduce.mp4?v=20260718-target-fix">
-      </video>
-    </a-assets>
-    <script>
-      setupTargetVideoAudioUnlock()
-    </script>
+  <button id="ar-start-button" type="button">Start AR</button>
+  <button id="sound-button" class="hidden" type="button">Enable Sound</button>
 
-    <a-camera position="0 4 10" raycaster="objects: .cantap" cursor="fuse: false; rayOrigin: mouse;">
-    </a-camera>
+  <!-- Video lives outside a-scene initially; appendArScene() moves it in -->
+  <video id="wine-label-video"
+    muted playsinline webkit-playsinline
+    preload="none" crossorigin="anonymous"
+    loop="true"
+    src="assets/Media/introduce_opt.mp4?v=20260718-target-fix">
+  </video>
 
-    <a-light type="directional" intensity="0.5" position="1 1 1"></a-light>
-    <a-light type="ambient" intensity="1"></a-light>
+  <!-- a-scene is in a <template>: not parsed or initialized until cloned into DOM -->
+  <template id="ar-scene-template">
+    <a-scene
+      xrconfig="cameraDirection: back; allowedDevices: any;"
+      xrextras-gesture-detector
+      landing-page
+      xrextras-loading
+      xrextras-runtime-error
+      renderer="colorManagement:true;"
+      xrweb="disableWorldTracking: true;">
 
-    <xrextras-named-image-target name="barone-56-label">
-      <xrextras-target-video-fade video="#wine-label-video"></xrextras-target-video-fade>
-    </xrextras-named-image-target>
-    <!-- <xrextras-named-image-target name="cat-label">
-      <xrextras-target-video-fade video="#wine-label-video"></xrextras-target-video-fade>
-    </xrextras-named-image-target>
-    <xrextras-named-image-target name="barone-castello-label">
-      <xrextras-target-video-fade video="#wine-label-video"></xrextras-target-video-fade>
-    </xrextras-named-image-target> -->
-  </a-scene>
+      <a-assets timeout="10000">
+        <!-- video inserted here by appendArScene() -->
+      </a-assets>
+
+      <a-camera position="0 4 10" raycaster="objects: .cantap" cursor="fuse: false; rayOrigin: mouse;">
+      </a-camera>
+
+      <a-light type="directional" intensity="0.5" position="1 1 1"></a-light>
+      <a-light type="ambient" intensity="1"></a-light>
+
+      <xrextras-named-image-target name="barone-56-label">
+        <xrextras-target-video-fade video="#wine-label-video"></xrextras-target-video-fade>
+      </xrextras-named-image-target>
+
+      <!-- Uncomment to add more targets:
+      <xrextras-named-image-target name="barone-castello-label">
+        <xrextras-target-video-fade video="#wine-label-video"></xrextras-target-video-fade>
+      </xrextras-named-image-target>
+      <xrextras-named-image-target name="cat-label">
+        <xrextras-target-video-fade video="#wine-label-video"></xrextras-target-video-fade>
+      </xrextras-named-image-target>
+      -->
+    </a-scene>
+  </template>
+
 </body>
 
 </html>
