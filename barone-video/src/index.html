@@ -19,12 +19,12 @@
       background: #101118;
     }
 
-    #ar-start-button,
-    #sound-button {
+    #ar-start-button {
       position: fixed;
+      top: 50%;
       left: 50%;
       z-index: 100000;
-      transform: translateX(-50%);
+      transform: translate(-50%, -50%);
       min-width: 150px;
       border: 0;
       border-radius: 8px;
@@ -35,21 +35,11 @@
       cursor: pointer;
     }
 
-    #ar-start-button {
-      top: 50%;
-      transform: translate(-50%, -50%);
-    }
-
-    #sound-button {
-      bottom: 24px;
-    }
-
     #ar-start-button:disabled {
       opacity: 0.72;
     }
 
-    #ar-start-button.hidden,
-    #sound-button.hidden {
+    #ar-start-button.hidden {
       display: none;
     }
 
@@ -70,12 +60,12 @@
       return params.get('xr') === 'cdn' ? XR_CDN_SRC : './external/xr/xr.js'
     }
 
-    // Prepare the video element for Safari audio unlock
+    // Set up video element attributes
     function prepareTargetVideo() {
       var video = document.getElementById('wine-label-video')
       if (!video) return null
-      video.muted = true
-      video.defaultMuted = true
+      video.muted = false
+      video.defaultMuted = false
       video.preload = 'none'
       video.volume = 1
       video.playsInline = true
@@ -84,40 +74,33 @@
       return video
     }
 
-    function showSoundButton() {
-      var button = document.getElementById('sound-button')
-      if (button) button.classList.remove('hidden')
-    }
-
-    function enableTargetVideoSound() {
-      var video = prepareTargetVideo()
-      var button = document.getElementById('sound-button')
-      if (!video || !button) return
-
-      button.disabled = true
+    // Unlock browser audio context during the Start AR user-gesture.
+    // Must be called synchronously inside a click handler (not inside a Promise).
+    // Strategy: muted=false play→pause primes the audio context so that
+    // subsequent unmuted plays (triggered by xrextras on image detection)
+    // are allowed without any extra user interaction.
+    function unlockVideoAudio(video) {
+      if (!video || video.dataset.audioUnlocked) return
       video.muted = false
       video.defaultMuted = false
       video.volume = 1
-
-      if (video.readyState === 0) video.load()
-
-      var playPromise = video.play()
-      if (playPromise && playPromise.then) {
-        playPromise.then(function () {
+      // load() is needed on Safari when preload="none" so play() doesn't reject
+      video.load()
+      var p = video.play()
+      if (p && p.then) {
+        p.then(function () {
+          video.pause()
+          video.currentTime = 0
           video.dataset.audioUnlocked = 'true'
-          button.classList.add('hidden')
-          button.disabled = false
-          console.log('AR video audio enabled.')
-        }).catch(function (error) {
-          button.textContent = 'Tap Again'
-          button.disabled = false
-          console.warn('AR video audio enable failed.', error)
+          console.log('AR video audio unlocked via Start AR gesture.')
+        }).catch(function (err) {
+          // Unlock failed (e.g. browser policy) — video will play muted silently
+          video.muted = true
+          console.warn('Audio unlock failed, falling back to muted:', err)
         })
-        return
+      } else {
+        video.dataset.audioUnlocked = 'true'
       }
-      video.dataset.audioUnlocked = 'true'
-      button.classList.add('hidden')
-      button.disabled = false
     }
 
     // Inject a-scene from template only after engine is ready
@@ -129,14 +112,12 @@
 
       document.body.appendChild(template.content.cloneNode(true))
 
-      // Move video into a-assets
+      // Move video into a-assets so A-Frame manages it
       var assets = document.querySelector('a-scene a-assets')
       var video = document.getElementById('wine-label-video')
       if (assets && video && video.parentNode !== assets) {
         assets.appendChild(video)
       }
-
-      showSoundButton()
     }
 
     // Lazily load xr.js + slam chunk only on user interaction
@@ -179,7 +160,10 @@
       button.disabled = true
       button.textContent = 'Loading AR...'
 
-      prepareTargetVideo()
+      // Unlock audio SYNCHRONOUSLY inside the click handler (user-gesture window).
+      // This must happen before any async/Promise work.
+      var video = prepareTargetVideo()
+      unlockVideoAudio(video)
 
       loadXrRuntime().then(function () {
         appendArScene()
@@ -195,9 +179,6 @@
     window.addEventListener('DOMContentLoaded', function () {
       var startBtn = document.getElementById('ar-start-button')
       if (startBtn) startBtn.addEventListener('click', startBaroneAr)
-
-      var soundBtn = document.getElementById('sound-button')
-      if (soundBtn) soundBtn.addEventListener('click', enableTargetVideoSound)
     })
   </script>
 </head>
@@ -206,7 +187,6 @@
   <script src="bundle.js?v=20260718-target-fix"></script>
 
   <button id="ar-start-button" type="button">Start AR</button>
-  <button id="sound-button" class="hidden" type="button">Enable Sound</button>
 
   <!-- Video lives outside a-scene initially; appendArScene() moves it in -->
   <video id="wine-label-video"
