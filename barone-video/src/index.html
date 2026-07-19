@@ -76,14 +76,14 @@
 
     // Unlock browser audio context during the Start AR user-gesture.
     // Must be called synchronously inside a click handler (not inside a Promise).
-    // Strategy: muted=false play→pause primes the audio context so that
-    // subsequent unmuted plays (triggered by xrextras on image detection)
-    // are allowed without any extra user interaction.
+    // volume=0 ensures the unlock play is completely silent to the user.
+    // volume is restored to 1 after pause() so xrextras plays with full audio
+    // when an image target is detected.
     function unlockVideoAudio(video) {
       if (!video || video.dataset.audioUnlocked) return
       video.muted = false
       video.defaultMuted = false
-      video.volume = 1
+      video.volume = 0          // Silent unlock — user hears nothing
       // load() is needed on Safari when preload="none" so play() doesn't reject
       video.load()
       var p = video.play()
@@ -91,14 +91,17 @@
         p.then(function () {
           video.pause()
           video.currentTime = 0
+          video.volume = 1      // Restore volume for real playback on target detection
           video.dataset.audioUnlocked = 'true'
-          console.log('AR video audio unlocked via Start AR gesture.')
+          console.log('AR video audio unlocked silently via Start AR gesture.')
         }).catch(function (err) {
           // Unlock failed (e.g. browser policy) — video will play muted silently
           video.muted = true
+          video.volume = 1
           console.warn('Audio unlock failed, falling back to muted:', err)
         })
       } else {
+        video.volume = 1
         video.dataset.audioUnlocked = 'true'
       }
     }
