@@ -79,13 +79,16 @@
     // volume=0 ensures the unlock play is completely silent to the user.
     // volume is restored to 1 after pause() so xrextras plays with full audio
     // when an image target is detected.
+    //
+    // NOTE: Do NOT call video.load() before play() here.
+    // load() pre-buffers ~8s of data; on servers without HTTP range request
+    // support, playback stalls at that buffer boundary when xrextras plays later.
+    // Modern iOS Safari can initiate play() from preload=none without load().
     function unlockVideoAudio(video) {
       if (!video || video.dataset.audioUnlocked) return
       video.muted = false
       video.defaultMuted = false
       video.volume = 0          // Silent unlock — user hears nothing
-      // load() is needed on Safari when preload="none" so play() doesn't reject
-      video.load()
       var p = video.play()
       if (p && p.then) {
         p.then(function () {
@@ -95,7 +98,7 @@
           video.dataset.audioUnlocked = 'true'
           console.log('AR video audio unlocked silently via Start AR gesture.')
         }).catch(function (err) {
-          // Unlock failed (e.g. browser policy) — video will play muted silently
+          // play() failed without load() (rare on old iOS) — fall back to muted
           video.muted = true
           video.volume = 1
           console.warn('Audio unlock failed, falling back to muted:', err)
