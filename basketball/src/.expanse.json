@@ -1,0 +1,84 @@
+{
+  "objects": {
+    "2c2ac2d5-3e7d-48bd-a881-6f2f1fd82d3a": {
+      "id": "2c2ac2d5-3e7d-48bd-a881-6f2f1fd82d3a",
+      "name": "Camera",
+      "position": [
+        0,
+        2,
+        5
+      ],
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "geometry": null,
+      "material": null,
+      "components": {},
+      "camera": {
+        "type": "perspective",
+        "xr": {
+          "xrCameraType": "world",
+          "phone": "AR",
+          "desktop": "3D",
+          "headset": "AR"
+        }
+      },
+      "order": 0
+    },
+    "cb283553-0200-4d7e-92fe-01e84bec5421": {
+      "id": "cb283553-0200-4d7e-92fe-01e84bec5421",
+      "name": "Ambient Light",
+      "position": [
+        0,
+        4,
+        2
+      ],
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "geometry": null,
+      "material": null,
+      "components": {},
+      "light": {
+        "type": "ambient",
+        "intensity": 0.6
+      },
+      "order": 1
+    }
+  },
+  "spaces": {
+    "60eeedba-e558-4109-9bb5-98ff2506a97c": {
+      "id": "60eeedba-e558-4109-9bb5-98ff2506a97c",
+      "name": "Basketball",
+      "activeCamera": "2c2ac2d5-3e7d-48bd-a881-6f2f1fd82d3a",
+      "reflections": {
+        "type": "url",
+        "url": "https://cdn.8thwall.com/web/assets/envmap/basic_env_map-m9hqpneh.jpg"
+      }
+    }
+  },
+  "entrySpaceId": "60eeedba-e558-4109-9bb5-98ff2506a97c",
+  "runtimeVersion": {
+    "type": "version",
+    "level": "major",
+    "major": 2,
+    "minor": 0,
+    "patch": 0
+  }
+}

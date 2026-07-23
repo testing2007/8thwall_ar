@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Basketball</title>
+  <meta itemprop="name" content="Basketball">
+  <meta name="twitter:title" content="Basketball">
+  <meta property="og:title" content="Basketball">
+  <meta property="og:site_name" content="Basketball">
+  <meta name="description" content="Swipe to throw basketballs in an 8th Wall A-Frame AR scene.">
+  <meta itemprop="description" content="Swipe to throw basketballs in an 8th Wall A-Frame AR scene.">
+  <meta property="og:description" content="Swipe to throw basketballs in an 8th Wall A-Frame AR scene.">
+  <meta name="twitter:description" content="Swipe to throw basketballs in an 8th Wall A-Frame AR scene.">
+  <meta name="8thwall:renderer" content="aframe:1.4.1">
+  <meta name="8thwall:package" content="@8thwall.xrextras">
+  <meta name="8thwall:package" content="@8thwall.landing-page">
+
+  <script src="https://cdn.8thwall.com/web/aframe/8frame-1.4.1.min.js"></script>
+  <script src="https://cdn.8thwall.com/web/aframe/ammo.wasm.js"></script>
+  <script src="https://cdn.8thwall.com/web/aframe/aframe-physics-system-4.2.2.min.js"></script>
+  <script src="https://cdn.8thwall.com/web/xrextras/xrextras.js"></script>
+  <script src="https://cdn.8thwall.com/web/landing-page/landing-page.js"></script>
+  <script
+    src="https://cdn.jsdelivr.net/npm/@8thwall/engine-binary@1/dist/xr.js"
+    async
+    crossorigin="anonymous"
+    data-preload-chunks="slam">
+  </script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: Akkurat, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI,
+        Roboto, Helvetica Neue, Arial, Noto Sans, sans-serif;
+      touch-action: pan-x pan-y;
+      overflow-x: hidden;
+      overflow-y: hidden;
+    }
+
+    div {
+      font-family: Akkurat, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI,
+        Roboto, Helvetica Neue, Arial, Noto Sans, sans-serif;
+    }
+
+    .prompt-box-8w {
+      font-family: Akkurat, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI,
+        Roboto, Helvetica Neue, Arial, Noto Sans, sans-serif;
+    }
+
+    #requestingCameraPermissions {
+      font-family: Akkurat, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI,
+        Roboto, Helvetica Neue, Arial, Noto Sans, sans-serif;
+    }
+
+    #introImg {
+      width: 55vw;
+      max-width: 270px;
+    }
+
+    #introCard {
+      width: 80vw;
+      max-width: 400px;
+      background: rgba(16, 31, 62, 1);
+      border-radius: 15px;
+      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: absolute;
+      z-index: 2;
+      zoom: 0.7;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      align-self: center;
+      padding: 40px;
+      color: #fff;
+    }
+
+    h1 {
+      font-size: 3rem;
+      font-weight: 200;
+    }
+
+    #cardContainer {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      row-gap: 2.5vh;
+    }
+
+    #begin {
+      unset: all;
+      width: 190px;
+      background: #ff4713;
+      color: white;
+      border: none;
+      border-radius: 50px;
+      height: 50px;
+      font-size: 1rem;
+      font-weight: 200;
+      letter-spacing: 2px;
+      cursor: pointer;
+    }
+
+    .fade-out {
+      animation: fade-out 0.25s linear forwards;
+    }
+
+    @keyframes fade-out {
+      0% {
+        opacity: 1;
+      }
+
+      100% {
+        opacity: 0;
+      }
+    }
+
+    #countdownContainer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #countdown {
+      color: white;
+      text-align: center;
+      font-family: 'Press Start 2P', cursive;
+    }
+
+    #gameUI {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 90%;
+      height: 50px;
+      z-index: 1;
+      display: none;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 1.2rem;
+      color: rgb(255, 255, 255);
+      user-select: none;
+    }
+
+    #gameOver {
+      width: 60vw;
+      max-width: 300px;
+      background: rgba(16, 31, 62, 1);
+      border-radius: 15px;
+      text-align: center;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: absolute;
+      z-index: 2;
+      padding: 30px;
+      color: #fff;
+      font-family: 'Press Start 2P', cursive;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    #playAgain {
+      unset: all;
+      width: 190px;
+      background: #ff4713;
+      color: white;
+      border: none;
+      border-radius: 50px;
+      height: 50px;
+      font-size: 1rem;
+      font-weight: 200;
+      letter-spacing: 2px;
+      cursor: pointer;
+      margin-top: 50px;
+      font-family: 'Press Start 2P', cursive;
+    }
+
+    #orientationOverlay {
+      z-index: 998;
+      height: 100%;
+      width: 100%;
+      position: absolute;
+      backdrop-filter: blur(30px);
+      -webkit-backdrop-filter: blur(30px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #message {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 50%;
+      left: 50%;
+      color: white;
+      font-family: sans-serif;
+      font-size: 1.5em;
+      text-align: center;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="introCard">
+    <div id="cardContainer">
+      <img id="introImg" src="assets/onboarding/logo.png" alt="Basketball" />
+      <p style="font-size: 1.3rem; margin: auto; margin-right: 10%; margin-left: 10%">
+        Swipe to throw basketballs. Score as many times as you can in 60 seconds.
+      </p>
+      <p style="font-size: 1.3rem; margin-top: 0">
+        While using AR, make sure <br />
+        you're in a safe location at all times.
+      </p>
+      <button id="begin">PLAY</button>
+    </div>
+  </div>
+
+  <div id="countdownContainer">
+    <h1 id="countdown">3</h1>
+  </div>
+
+  <div id="gameUI">
+    <div style="font-family: 'Press Start 2P', cursive">
+      SCORE:<span id="score" style="font-family: 'Press Start 2P', cursive">0</span>
+    </div>
+    <div style="font-family: 'Press Start 2P', cursive">
+      0:<span id="timer" style="font-family: 'Press Start 2P', cursive">60</span>
+    </div>
+  </div>
+
+  <div id="gameOver">
+    <h1>GAME OVER</h1>
+    <p style="font-family: sans-serif; font-size: 0.9rem; margin: auto; margin-right: 10%; margin-left: 10%">
+      You scored <span id="finalScore"></span> times <br />
+      <span id="gameOverText"></span>
+    </p>
+    <button id="playAgain" style="font-family: sans-serif; font-size: 1rem">PLAY AGAIN</button>
+  </div>
+
+  <div id="orientationOverlay">
+    <div id="message">
+      Please step back. <br />
+      You are too close to the basket.
+    </div>
+  </div>
+
+  <script src="bundle.js"></script>
+
+  <a-scene
+    physics="driver: ammo; debug: false"
+    responsive-immersive
+    landing-page
+    xrextras-loading
+    xrextras-runtime-error
+    xrextras-gesture-detector
+    renderer="colorManagement: true; webgl2: false"
+    gltf-model="dracoDecoderPath: https://cdn.8thwall.com/web/aframe/draco-decoder/"
+    xrweb="
+      allowedDevices: any;
+      disableXrTablet: true;
+      disableDefaultEnvironment: true"
+    onboarding>
+    <a-assets>
+      <a-asset-item id="basketball-model" src="./assets/models/basketball.glb"></a-asset-item>
+      <a-asset-item id="hmdarcade-model" src="./assets/models/arcade.glb"></a-asset-item>
+      <a-asset-item id="hoop-model" src="./assets/models/new-hoop.glb"></a-asset-item>
+      <a-asset-item id="hoop-physics" src="./assets/models/physics-hoop.glb"></a-asset-item>
+      <a-asset-item id="environment" src="./assets/models/environment.glb"></a-asset-item>
+      <img id="score-img" src="./assets/textures/score.png" />
+      <video
+        id="neon-video"
+        muted
+        autoplay
+        playsinline
+        crossorigin="anonymous"
+        loop="true"
+        src="./assets/videos/neon.mp4"></video>
+      <video
+        id="portal-video"
+        muted
+        autoplay
+        playsinline
+        crossorigin="anonymous"
+        loop="true"
+        src="./assets/videos/portal-video.mp4"></video>
+      <video
+        id="play-video"
+        muted
+        autoplay
+        playsinline
+        crossorigin="anonymous"
+        loop="true"
+        src="./assets/videos/play.mp4"></video>
+    </a-assets>
+
+    <a-entity
+      light="
+        type: directional;
+        shadowBias: -0.0001;
+        intensity: 0.85;
+        castShadow: true;
+        shadowMapHeight:4096;
+        shadowMapWidth:4096;
+        shadowCameraTop: 30;
+        shadowCameraBottom: -10;
+        shadowCameraRight: 20;
+        shadowCameraLeft: -20;
+        shadowRadius: 2;
+        target: #camera"
+      xrextras-attach="target: camera; offset: 4 15 6"
+      position="0.25 4.3 0.5">
+    </a-entity>
+
+    <a-light type="ambient" intensity="0.7"></a-light>
+
+    <a-camera id="camera" position="0 2 0.5" camera-proximity-trigger="radius: 3">
+      <a-sphere
+        id="hand-collider"
+        scale="0.1 0.1 0.1"
+        ammo-body="type: kinematic"
+        ammo-shape="type: sphere"
+        material="transparent: true; opacity: 0; depthWrite: false">
+      </a-sphere>
+      <a-entity id="basketballLauncher"></a-entity>
+    </a-camera>
+
+    <a-sphere id="arcadeProximity" position="0 0 -2.625" visible="false"></a-sphere>
+
+    <a-entity
+      id="arcadeEl"
+      reflections="type: static"
+      scale="1.1 1.1 1.1"
+      physics-object2="model: #hmdarcade-model; body: static; shape: mesh"
+      position="0 0 -1"
+      shadow></a-entity>
+
+    <a-entity
+      scale="1.1 1.1 1.1"
+      physics-object2="model: #hoop-physics; body: static; shape: mesh"
+      position="0 0 -1"></a-entity>
+
+    <a-entity
+      reflections="type: static"
+      gltf-model="#hoop-model"
+      scale="1.1 1.1 1.1"
+      position="0 0 -1"
+      shadow></a-entity>
+
+    <a-sphere
+      id="goal"
+      position="0 2.4 -3.5"
+      radius=".2"
+      color="blue"
+      material="transparent: true; opacity: 0"></a-sphere>
+
+    <a-entity
+      id="playVideo"
+      auto-play-video="video: #play-video"
+      material="shader: flat; src: #play-video; blending: additive; side: front; transparent: true"
+      geometry="primitive: plane; height: 1; width: 1;"
+      scale="1.158 0.695 1"
+      rotation="0 0 0"
+      position="0 3 -3.627">
+    </a-entity>
+
+    <a-entity
+      id="portalVideo1"
+      auto-play-video="video: #portal-video"
+      material="shader: flat; src: #portal-video; blending: additive; side: front; transparent: true"
+      geometry="primitive: plane; height: 1; width: 1;"
+      scale="2.495 1.326 1"
+      rotation="-67.640 000 -90.000"
+      position="0 1.262 -2.663">
+    </a-entity>
+
+    <a-plane
+      id="scored"
+      position="0 3.4 -3.3"
+      scale="0.001 0.001 0.001"
+      material="src: #score-img; side: double; shader: flat; transparent: true">
+    </a-plane>
+
+    <a-entity
+      id="neonVideo1"
+      auto-play-video="video: #neon-video"
+      material="shader: flat; src: #neon-video; blending: additive; side: front; transparent: true"
+      geometry="primitive: circle"
+      scale="0.324 0.289 1"
+      rotation="-90 0 0"
+      position="0 0.981 -0.7484">
+    </a-entity>
+
+    <a-entity
+      id="neonVideo2"
+      auto-play-video="video: #neon-video"
+      material="shader: flat; src: #neon-video; blending: additive; side: front; transparent: true"
+      geometry="primitive: circle"
+      scale="0.324 0.289 1"
+      rotation="-90 0 0"
+      position="0 0.997 -0.7484">
+    </a-entity>
+
+    <a-entity
+      id="neonVideo3"
+      auto-play-video="video: #neon-video"
+      material="shader: flat; src: #neon-video; blending: additive; side: front; transparent: true"
+      geometry="primitive: circle"
+      scale="0.324 0.289 1"
+      rotation="-90 0 0"
+      position="0 1.007 -0.7484">
+    </a-entity>
+
+    <a-plane
+      id="ground"
+      height="100"
+      width="100"
+      rotation="-90 0 0"
+      position="0 0.01 0"
+      material="shader: shadow; transparent: true; opacity: 0.4"
+      ammo-body="type: static"
+      ammo-shape="type: box"
+      set-restitution="restitution: 1"
+      shadow>
+    </a-plane>
+  </a-scene>
+</body>
+
+</html>

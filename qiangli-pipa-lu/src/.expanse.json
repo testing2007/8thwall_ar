@@ -1,0 +1,366 @@
+{
+  "objects": {
+    "47699d9e-18a5-4f88-a4f9-b8be92e8f74a": {
+      "components": {},
+      "geometry": null,
+      "id": "47699d9e-18a5-4f88-a4f9-b8be92e8f74a",
+      "light": {
+        "type": "ambient"
+      },
+      "material": null,
+      "name": "Ambient Light",
+      "position": [
+        10,
+        5,
+        5
+      ],
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "parentId": "88453035-dc0f-486d-868a-8ff7c2fda864",
+      "order": 0.4038940050501252
+    },
+    "a608ddd9-9379-464d-966f-5d8d8674c83c": {
+      "camera": {
+        "type": "perspective",
+        "xr": {
+          "desktop": "disabled",
+          "xrCameraType": "world",
+          "headset": "disabled",
+          "phone": "AR"
+        }
+      },
+      "components": {},
+      "geometry": null,
+      "id": "a608ddd9-9379-464d-966f-5d8d8674c83c",
+      "material": null,
+      "name": "Camera",
+      "position": [
+        0,
+        2,
+        3
+      ],
+      "rotation": [
+        0.0004436887233141012,
+        0.9659425615285845,
+        -0.25875089860082223,
+        0.0016563336561801576
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "parentId": "88453035-dc0f-486d-868a-8ff7c2fda864",
+      "order": 1.0308214152219775
+    },
+    "ac1989e3-3b71-49e2-a05f-e682aeb18c36": {
+      "components": {},
+      "geometry": null,
+      "id": "ac1989e3-3b71-49e2-a05f-e682aeb18c36",
+      "light": {
+        "intensity": 1,
+        "type": "directional"
+      },
+      "material": null,
+      "name": "Directional Light",
+      "position": [
+        20,
+        50,
+        10
+      ],
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "parentId": "88453035-dc0f-486d-868a-8ff7c2fda864",
+      "order": 0.6644431107322474
+    },
+    "87f67d2d-9a53-4707-b1c0-7bb2002365f3": {
+      "id": "87f67d2d-9a53-4707-b1c0-7bb2002365f3",
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "geometry": null,
+      "material": null,
+      "parentId": "88453035-dc0f-486d-868a-8ff7c2fda864",
+      "components": {
+        "200950d1-dfc8-4156-a5b6-c87364f7b08b": {
+          "id": "200950d1-dfc8-4156-a5b6-c87364f7b08b",
+          "name": "Business Card Animations",
+          "parameters": {
+            "linkedInButton": {
+              "type": "entity",
+              "id": "ed4dcdcb-fb32-4cee-87a4-460ff932bbfb"
+            },
+            "emailButton": {
+              "type": "entity",
+              "id": "406d23da-5fda-4409-8358-d68b7763b616"
+            },
+            "model": {
+              "type": "entity",
+              "id": "56b88a38-867c-4fc7-9bee-e5877e7178b5"
+            }
+          }
+        }
+      },
+      "name": "Image Target",
+      "imageTarget": {
+        "name": "qiangli-pipa-lu"
+      },
+      "order": 2.6898461857975353
+    },
+    "56b88a38-867c-4fc7-9bee-e5877e7178b5": {
+      "id": "56b88a38-867c-4fc7-9bee-e5877e7178b5",
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "geometry": null,
+      "material": null,
+      "parentId": "87f67d2d-9a53-4707-b1c0-7bb2002365f3",
+      "components": {},
+      "gltfModel": {
+        "src": {
+          "type": "asset",
+          "asset": "assets/infin8-white.glb"
+        },
+        "animationClip": "",
+        "loop": true
+      },
+      "name": "infin8-white.glb",
+      "order": 1.709585605232501,
+      "hidden": true
+    },
+    "406d23da-5fda-4409-8358-d68b7763b616": {
+      "id": "406d23da-5fda-4409-8358-d68b7763b616",
+      "position": [
+        -0.5,
+        0,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "geometry": null,
+      "material": null,
+      "parentId": "87f67d2d-9a53-4707-b1c0-7bb2002365f3",
+      "components": {
+        "07170b6a-7faa-4455-9bdc-e1927008a85b": {
+          "id": "07170b6a-7faa-4455-9bdc-e1927008a85b",
+          "name": "Call To Action",
+          "parameters": {
+            "link": "https://www.zhpharm-sh.com/NewContent/?CID=16&AID=216"
+          }
+        }
+      },
+      "ui": {
+        "type": "3d",
+        "width": 36,
+        "height": 36,
+        "background": "#ad50ff",
+        "borderRadius": 18,
+        "flexDirection": "row",
+        "backgroundOpacity": 1,
+        "padding": "10",
+        "gap": "6",
+        "alignItems": "center",
+        "justifyContent": "center",
+        "image": null,
+        "backgroundSize": "contain"
+      },
+      "name": "function btn",
+      "order": 3.2299355363138638,
+      "hidden": true
+    },
+    "06be47fc-b86a-4ddc-bf25-3e0cf5e0d957": {
+      "id": "06be47fc-b86a-4ddc-bf25-3e0cf5e0d957",
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "geometry": null,
+      "material": null,
+      "parentId": "406d23da-5fda-4409-8358-d68b7763b616",
+      "components": {},
+      "name": "function link",
+      "ui": {
+        "background": "#ffffff",
+        "backgroundOpacity": 0.5,
+        "width": 50,
+        "height": 14,
+        "text": "func",
+        "color": "#ffffff",
+        "fontSize": 16,
+        "image": null,
+        "backgroundSize": "contain"
+      },
+      "order": 1.0042130600354466
+    },
+    "ed4dcdcb-fb32-4cee-87a4-460ff932bbfb": {
+      "id": "ed4dcdcb-fb32-4cee-87a4-460ff932bbfb",
+      "position": [
+        0.5,
+        0,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "geometry": null,
+      "material": null,
+      "parentId": "87f67d2d-9a53-4707-b1c0-7bb2002365f3",
+      "components": {
+        "d66e38c3-911f-4206-bd1a-3efd8557bae0": {
+          "id": "d66e38c3-911f-4206-bd1a-3efd8557bae0",
+          "name": "Call To Action",
+          "parameters": {
+            "link": "https://www.zhpharm-sh.com/"
+          }
+        }
+      },
+      "ui": {
+        "type": "3d",
+        "width": 36,
+        "height": 36,
+        "background": "#3f63ab",
+        "borderRadius": 18,
+        "flexDirection": "row",
+        "backgroundOpacity": 1,
+        "padding": "10",
+        "gap": "6",
+        "alignItems": "center",
+        "justifyContent": "center",
+        "image": null,
+        "backgroundSize": "contain"
+      },
+      "name": "official link btn",
+      "order": 4.350769855211322,
+      "hidden": true
+    },
+    "53394f2d-7a2a-447a-aee5-de5c00395502": {
+      "id": "53394f2d-7a2a-447a-aee5-de5c00395502",
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "geometry": null,
+      "material": null,
+      "parentId": "ed4dcdcb-fb32-4cee-87a4-460ff932bbfb",
+      "components": {},
+      "name": "official link btn",
+      "ui": {
+        "background": "#ffffff",
+        "backgroundOpacity": 0.5,
+        "width": 50,
+        "height": 14,
+        "text": "link",
+        "color": "#ffffff",
+        "fontSize": 16,
+        "image": null,
+        "backgroundSize": "contain",
+        "font": {
+          "type": "font",
+          "font": "Nunito"
+        }
+      },
+      "order": 1.0042130600354466
+    }
+  },
+  "spaces": {
+    "88453035-dc0f-486d-868a-8ff7c2fda864": {
+      "id": "88453035-dc0f-486d-868a-8ff7c2fda864",
+      "name": "Default Space",
+      "activeCamera": "a608ddd9-9379-464d-966f-5d8d8674c83c",
+      "sky": {
+        "type": "gradient",
+        "colors": [
+          "#464766",
+          "#08061F"
+        ],
+        "style": "linear"
+      }
+    }
+  },
+  "entrySpaceId": "88453035-dc0f-486d-868a-8ff7c2fda864"
+}

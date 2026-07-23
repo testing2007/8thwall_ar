@@ -1,0 +1,23 @@
+{
+  "type": "PLANAR",
+  "properties": {
+    "top": 85,
+    "left": 0,
+    "width": 1024,
+    "height": 1365,
+    "isRotated": false,
+    "originalWidth": 1024,
+    "originalHeight": 1536
+  },
+  "imagePath": "image-targets/qiangli-pipa-lu_luminance.png",
+  "metadata": null,
+  "name": "qiangli-pipa-lu",
+  "resources": {
+    "originalImage": "qiangli-pipa-lu_original.png",
+    "croppedImage": "qiangli-pipa-lu_cropped.png",
+    "thumbnailImage": "qiangli-pipa-lu_thumbnail.png",
+    "luminanceImage": "qiangli-pipa-lu_luminance.png"
+  },
+  "created": 1784773185507,
+  "updated": 1784773185507
+}
