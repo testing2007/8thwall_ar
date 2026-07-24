@@ -1,0 +1,312 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+
+  <title>Carousal AR Experience</title>
+
+  <script src="./external/scripts/8frame-1.5.0.min.js"></script>
+  <script src="./external/xrextras/xrextras.js"></script>
+  <script src="./external/landing-page/landing-page.js"></script>
+
+  <style>
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: #101118;
+      color: #fff;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    button {
+      font: inherit;
+    }
+
+    #ar-start-button {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      z-index: 100000;
+      transform: translate(-50%, -50%);
+      min-width: 150px;
+      border: 0;
+      border-radius: 8px;
+      padding: 14px 20px;
+      color: #fff;
+      background: #151515;
+      font-weight: 700;
+      font-size: 17px;
+      line-height: 1.2;
+      cursor: pointer;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.28);
+    }
+
+    #ar-start-button:disabled {
+      opacity: 0.72;
+    }
+
+    #ar-start-button.hidden {
+      display: none;
+    }
+
+    #detail-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 100001;
+      display: none;
+      background: rgba(9, 10, 14, 0.88);
+    }
+
+    #detail-overlay.open {
+      display: block;
+    }
+
+    .detail-scroll {
+      width: 100%;
+      height: 100%;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      padding: 58px 16px 28px;
+      box-sizing: border-box;
+    }
+
+    #detail-image {
+      display: block;
+      width: min(100%, 560px);
+      height: auto;
+      margin: 0 auto;
+      border-radius: 6px;
+      background: #fff;
+    }
+
+    #detail-close {
+      position: fixed;
+      top: max(14px, env(safe-area-inset-top));
+      right: 14px;
+      z-index: 100002;
+      min-width: 74px;
+      border: 0;
+      border-radius: 8px;
+      padding: 10px 14px;
+      color: #111;
+      background: #fff;
+      font-weight: 700;
+      line-height: 1;
+      cursor: pointer;
+    }
+
+    #ar-debug-status {
+      position: fixed;
+      left: 10px;
+      bottom: max(10px, env(safe-area-inset-bottom));
+      z-index: 100000;
+      display: none;
+      max-width: calc(100vw - 20px);
+      border-radius: 6px;
+      padding: 7px 9px;
+      color: #fff;
+      background: rgba(0, 0, 0, 0.62);
+      font-size: 12px;
+      line-height: 1.25;
+      pointer-events: none;
+    }
+
+    body.debug-ar #ar-debug-status {
+      display: block;
+    }
+  </style>
+
+  <script>
+    if (window.AFRAME && window.AFRAME.THREE) {
+      window.THREE = window.AFRAME.THREE
+    }
+
+    var XR_CDN_SRC = 'https://cdn.jsdelivr.net/npm/@8thwall/engine-binary@1/dist/xr.js'
+
+    function getXrRuntimeSrc() {
+      var params = new URLSearchParams(window.location.search)
+      return params.get('xr') === 'cdn' ? XR_CDN_SRC : './external/xr/xr.js'
+    }
+
+    function appendArScene() {
+      if (document.querySelector('a-scene')) return
+
+      var template = document.getElementById('ar-scene-template')
+      if (!template) throw new Error('AR scene template not found.')
+
+      document.body.appendChild(template.content.cloneNode(true))
+    }
+
+    function loadXrRuntime() {
+      if (window.XR8) {
+        return window.XR8.loadChunk
+          ? window.XR8.loadChunk('slam')
+          : Promise.resolve()
+      }
+
+      return new Promise(function (resolve, reject) {
+        window.addEventListener('xrloaded', function () {
+          resolve()
+        }, { once: true })
+
+        if (document.getElementById('xr-runtime-script')) return
+
+        var script = document.createElement('script')
+        script.id = 'xr-runtime-script'
+        script.async = true
+        script.src = getXrRuntimeSrc()
+        script.setAttribute('data-preload-chunks', 'slam')
+        script.crossOrigin = 'anonymous'
+        script.onerror = function () {
+          reject(new Error('Failed to load 8th Wall XR runtime.'))
+        }
+        document.head.appendChild(script)
+      })
+    }
+
+    function startCarousalAr() {
+      var button = document.getElementById('ar-start-button')
+      if (!button || button.dataset.starting) return
+
+      button.dataset.starting = 'true'
+      button.disabled = true
+      button.textContent = 'Loading AR...'
+      setDebugStatus('loading xr runtime')
+
+      loadXrRuntime().then(function () {
+        appendArScene()
+        button.classList.add('hidden')
+        setDebugStatus('scene started; aim at trigger-label')
+      }).catch(function (error) {
+        button.disabled = false
+        button.dataset.starting = ''
+        button.textContent = 'Tap Again'
+        setDebugStatus('ar load failed')
+        console.warn('AR load failed:', error)
+      })
+    }
+
+    function setDebugStatus(message) {
+      var debug = document.getElementById('ar-debug-status')
+      if (debug) debug.textContent = message
+    }
+
+    function setupDetailOverlay() {
+      var overlay = document.getElementById('detail-overlay')
+      var image = document.getElementById('detail-image')
+      var close = document.getElementById('detail-close')
+      var detailSrc = {
+        'item-1': 'assets/item-1-detail.jpg',
+        'item-2': 'assets/item-2-detail.jpg',
+      }
+
+      function hideDetail() {
+        overlay.classList.remove('open')
+        overlay.setAttribute('aria-hidden', 'true')
+        document.body.dataset.detailOpen = 'false'
+        image.removeAttribute('src')
+      }
+
+      window.addEventListener('show-product-detail', function (event) {
+        var src = detailSrc[event.detail && event.detail.id]
+        if (!src) return
+        image.src = src
+        overlay.classList.add('open')
+        overlay.setAttribute('aria-hidden', 'false')
+        document.body.dataset.detailOpen = 'true'
+        overlay.querySelector('.detail-scroll').scrollTop = 0
+      })
+
+      close.addEventListener('click', hideDetail)
+      overlay.addEventListener('click', function (event) {
+        if (event.target === overlay) hideDetail()
+      })
+    }
+
+    window.addEventListener('DOMContentLoaded', function () {
+      if (new URLSearchParams(window.location.search).get('debug') === '1') {
+        document.body.classList.add('debug-ar')
+      }
+      var startBtn = document.getElementById('ar-start-button')
+      if (startBtn) startBtn.addEventListener('click', startCarousalAr)
+      setupDetailOverlay()
+    })
+  </script>
+</head>
+
+<body data-detail-open="false">
+  <script src="bundle.js?v=20260724-carousal"></script>
+
+  <button id="ar-start-button" type="button">Start AR</button>
+  <div id="ar-debug-status">ready</div>
+
+  <div id="detail-overlay" aria-hidden="true">
+    <button id="detail-close" type="button">Close</button>
+    <div class="detail-scroll">
+      <img id="detail-image" alt="">
+    </div>
+  </div>
+
+  <template id="ar-scene-template">
+    <a-scene
+      xrconfig="cameraDirection: back; allowedDevices: any;"
+      xrextras-gesture-detector
+      landing-page
+      xrextras-loading
+      xrextras-runtime-error
+      renderer="colorManagement:true; antialias: true; alpha: true;"
+      xrweb="disableWorldTracking: true;">
+
+      <a-assets timeout="10000">
+        <img id="bgTexture" src="assets/bg.png">
+        <img id="item1Texture" src="assets/item-1.png">
+        <img id="item2Texture" src="assets/item-2.png">
+      </a-assets>
+
+      <a-camera position="0 4 10" raycaster="objects: .cantap" cursor="fuse: false; rayOrigin: mouse;">
+      </a-camera>
+
+      <a-light type="directional" intensity="0.6" position="1 2 1"></a-light>
+      <a-light type="ambient" intensity="1"></a-light>
+
+      <xrextras-named-image-target name="trigger-label">
+        <a-entity id="carousel-root" carousel-target="items: #item-1,#item-2" position="0 0 0.04">
+          <a-entity
+            curved-image="src: #bgTexture; radius: 0.62; height: 1.52; thetaStart: 1.95; thetaLength: 2.4; opacity: 0.94"
+            position="0 0 0">
+          </a-entity>
+
+          <a-image
+            id="item-1"
+            class="cantap"
+            src="#item1Texture"
+            width="0.65"
+            height="1"
+            transparent="true"
+            material="transparent: true; alphaTest: 0.02; depthWrite: false; opacity: 1"
+            detail-opener="id: item-1">
+          </a-image>
+
+          <a-image
+            id="item-2"
+            class="cantap"
+            src="#item2Texture"
+            width="0.65"
+            height="1"
+            transparent="true"
+            material="transparent: true; alphaTest: 0.02; depthWrite: false; opacity: 0.42"
+            detail-opener="id: item-2">
+          </a-image>
+        </a-entity>
+      </xrextras-named-image-target>
+    </a-scene>
+  </template>
+</body>
+
+</html>

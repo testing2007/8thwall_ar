@@ -9,65 +9,64 @@ ecs.registerComponent({
   },
 
   stateMachine: ({world, eid, schemaAttribute}) => {
-    // Use a state machine for simple event listening
+    const delay = 400
+    let revealTimeouts: number[] = []
+
+    const clearRevealTimeouts = () => {
+      revealTimeouts.forEach(timeoutId => world.time.clearTimeout(timeoutId))
+      revealTimeouts = []
+    }
+
+    const getTargets = () => {
+      const {model, emailButton, linkedInButton} = schemaAttribute.get(eid)
+      return [model, emailButton, linkedInButton]
+    }
+
+    const hideTargets = () => {
+      clearRevealTimeouts()
+      getTargets().forEach((target) => {
+        ecs.Hidden.set(world, target)
+        ecs.ScaleAnimation.remove(world, target)
+      })
+    }
+
+    const animateIn = (target: ecs.Eid) => {
+      ecs.Hidden.remove(world, target)
+      ecs.ScaleAnimation.set(world, target, {
+        fromX: 0.5,
+        fromY: 0.5,
+        fromZ: 0.5,
+        toX: 1,
+        toY: 1,
+        toZ: 1,
+        loop: false,
+        easeOut: true,
+        easingFunction: 'Elastic',
+        duration: 1200,
+      })
+    }
+
     ecs.defineState('default')
       .initial()
-      .listen(world.events.globalId, 'reality.imagefound', () => {
-        // Define a value for the animations to appear sequentially
-        const delay = 400
-
-        // Destructure references to the UI entities from the schema
+      .onEnter(() => {
+        hideTargets()
+      })
+      .listen(world.events.globalId, ecs.events.REALITY_IMAGE_FOUND, () => {
         const {model, emailButton, linkedInButton} = schemaAttribute.get(eid)
 
-        // Show the main model and animate it using scale animation
-        ecs.Hidden.remove(world, model)
-        ecs.ScaleAnimation.set(world, model, {
-          fromX: 0.5,
-          fromY: 0.5,
-          fromZ: 0.5,
-          toX: 1,
-          toY: 1,
-          toZ: 1,
-          loop: false,
-          easeOut: true,
-          easingFunction: 'Elastic',
-          duration: 1200,
-        })
+        hideTargets()
+        animateIn(model)
 
-        // After a short delay, show and animate the email button
+        revealTimeouts.push(world.time.setTimeout(() => {
+          animateIn(emailButton)
+        }, delay))
 
-        world.time.setTimeout(() => {
-          ecs.Hidden.remove(world, emailButton)
-          ecs.ScaleAnimation.set(world, emailButton, {
-            fromX: 0.5,
-            fromY: 0.5,
-            fromZ: 0.5,
-            toX: 1,
-            toY: 1,
-            toZ: 1,
-            loop: false,
-            easeOut: true,
-            easingFunction: 'Elastic',
-            duration: 1200,
-          })
-        }, delay)  // 400 ms delay
-
-        // After a longer delay, show and animate the LinkedIn button
-        world.time.setTimeout(() => {
-          ecs.Hidden.remove(world, linkedInButton)
-          ecs.ScaleAnimation.set(world, linkedInButton, {
-            fromX: 0.5,
-            fromY: 0.5,
-            fromZ: 0.5,
-            toX: 1,
-            toY: 1,
-            toZ: 1,
-            loop: false,
-            easeOut: true,
-            easingFunction: 'Elastic',
-            duration: 1200,
-          })
-        }, delay * 2)  // 800 ms delay
+        revealTimeouts.push(world.time.setTimeout(() => {
+          animateIn(linkedInButton)
+        }, delay * 2))
+      })
+      .listen(world.events.globalId, ecs.events.REALITY_IMAGE_LOST, () => {
+        hideTargets()
       })
   },
 })

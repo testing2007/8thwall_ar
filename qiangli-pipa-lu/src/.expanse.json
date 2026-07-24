@@ -221,42 +221,6 @@
       "order": 3.2299355363138638,
       "hidden": true
     },
-    "06be47fc-b86a-4ddc-bf25-3e0cf5e0d957": {
-      "id": "06be47fc-b86a-4ddc-bf25-3e0cf5e0d957",
-      "position": [
-        0,
-        0,
-        0
-      ],
-      "rotation": [
-        0,
-        0,
-        0,
-        1
-      ],
-      "scale": [
-        1,
-        1,
-        1
-      ],
-      "geometry": null,
-      "material": null,
-      "parentId": "406d23da-5fda-4409-8358-d68b7763b616",
-      "components": {},
-      "name": "function link",
-      "ui": {
-        "background": "#ffffff",
-        "backgroundOpacity": 0.5,
-        "width": 50,
-        "height": 14,
-        "text": "func",
-        "color": "#ffffff",
-        "fontSize": 16,
-        "image": null,
-        "backgroundSize": "contain"
-      },
-      "order": 1.0042130600354466
-    },
     "ed4dcdcb-fb32-4cee-87a4-460ff932bbfb": {
       "id": "ed4dcdcb-fb32-4cee-87a4-460ff932bbfb",
       "position": [
@@ -306,11 +270,46 @@
       "order": 4.350769855211322,
       "hidden": true
     },
-    "53394f2d-7a2a-447a-aee5-de5c00395502": {
-      "id": "53394f2d-7a2a-447a-aee5-de5c00395502",
+    "c7e3ac39-6550-462b-88b0-eae134a9772f": {
+      "id": "c7e3ac39-6550-462b-88b0-eae134a9772f",
       "position": [
+        0.177,
+        1.1,
+        0
+      ],
+      "rotation": [
         0,
         0,
+        0,
+        1
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "geometry": null,
+      "material": null,
+      "parentId": "406d23da-5fda-4409-8358-d68b7763b616",
+      "components": {},
+      "name": "Icon",
+      "ui": {
+        "width": 16,
+        "height": 16,
+        "image": {
+          "type": "asset",
+          "asset": "assets/function-icon.png"
+        },
+        "backgroundOpacity": 1,
+        "backgroundSize": "contain"
+      },
+      "order": 7.3647268715819365
+    },
+    "0c745a62-171f-4f65-8262-f3907fa97fd5": {
+      "id": "0c745a62-171f-4f65-8262-f3907fa97fd5",
+      "position": [
+        -0.823,
+        1.1,
         0
       ],
       "rotation": [
@@ -328,23 +327,18 @@
       "material": null,
       "parentId": "ed4dcdcb-fb32-4cee-87a4-460ff932bbfb",
       "components": {},
-      "name": "official link btn",
+      "name": "Icon (1)",
       "ui": {
-        "background": "#ffffff",
-        "backgroundOpacity": 0.5,
-        "width": 50,
-        "height": 14,
-        "text": "link",
-        "color": "#ffffff",
-        "fontSize": 16,
-        "image": null,
-        "backgroundSize": "contain",
-        "font": {
-          "type": "font",
-          "font": "Nunito"
-        }
+        "width": 16,
+        "height": 16,
+        "image": {
+          "type": "asset",
+          "asset": "assets/official-icon.png"
+        },
+        "backgroundOpacity": 1,
+        "backgroundSize": "contain"
       },
-      "order": 1.0042130600354466
+      "order": 2.7922879575856427
     }
   },
   "spaces": {

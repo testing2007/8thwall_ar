@@ -2,7 +2,6 @@ const path = require('path')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
 
-const createVirtualEntryPlugin = require('./entry-plugin')
 const createDev8Plugin = require('./dev8-plugin')
 
 const rootPath = process.cwd()
@@ -38,31 +37,8 @@ const config = {
     new CopyWebpackPlugin({
       patterns: [
         {
-          from: path.join(rootPath, 'node_modules/@8thwall/ecs/dist'),
-          to: path.join(distPath, 'external/runtime'),
-        },
-        {
-          from: path.join(rootPath, 'node_modules/@8thwall/engine-binary/dist'),
-          to: path.join(distPath, 'external/xr'),
-        },
-        {
-          from: path.join(rootPath, 'external/scripts'),
-          to: path.join(distPath, 'external/scripts'),
-          noErrorOnMissing: true,
-        },
-        {
-          from: path.join(rootPath, 'external/xrextras'),
-          to: path.join(distPath, 'external/xrextras'),
-          noErrorOnMissing: true,
-        },
-        {
-          from: path.join(rootPath, 'external/xrextras-shared-resources'),
-          to: path.join(distPath, 'external/xrextras-shared-resources'),
-          noErrorOnMissing: true,
-        },
-        {
-          from: path.join(rootPath, 'external/landing-page'),
-          to: path.join(distPath, 'external/landing-page'),
+          from: path.join(rootPath, 'external'),
+          to: path.join(distPath, 'external'),
           noErrorOnMissing: true,
         },
         {
@@ -75,10 +51,12 @@ const config = {
           to: path.join(distPath, 'image-targets'),
           noErrorOnMissing: true,
         },
+        {
+          from: path.join(rootPath, 'node_modules/@8thwall/ecs/dist'),
+          to: path.join(distPath, 'external/runtime'),
+          noErrorOnMissing: true,
+        },
       ],
-    }),
-    createVirtualEntryPlugin({
-      srcDir: srcPath,
     }),
   ],
   resolve: {extensions: ['.ts', '.js']},
@@ -98,13 +76,14 @@ const config = {
     compress: true,
     hot: true,
     liveReload: false,
+    allowedHosts: 'all',
     headers: {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
       'Access-Control-Allow-Headers': 'X-Requested-With, content-type, Authorization',
+      'Cache-Control': 'no-store',
     },
     client: {
-      webSocketURL: 'ws://0.0.0.0/ws',
       overlay: {
         warnings: false,
         errors: true,
