@@ -1,0 +1,16 @@
+{
+  "name": "cookie-ar-animated-pack",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node generate_animated_glb.mjs",
+    "inspect": "node inspect_glb.mjs",
+    "validate": "node validate_glb.mjs"
+  },
+  "dependencies": {
+    "@gltf-transform/core": "4.2.1",
+    "@gltf-transform/extensions": "4.2.1",
+    "gltf-validator": "2.0.0-dev.3.10",
+    "three": "0.179.1"
+  }
+}

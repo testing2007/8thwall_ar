@@ -1,0 +1,32 @@
+{
+  "source_reference": "00_reference_box_front.png",
+  "blender_box_size_m": {
+    "width_x": 0.095,
+    "depth_y": 0.045,
+    "height_z": 0.18
+  },
+  "front_y_recommended": -0.023,
+  "assets": {
+    "10_SCAN": [
+      "10_scan_triangle_wire.png",
+      "10_scan_line_white.png",
+      "10_scan_comet_cyan.png",
+      "10_logo_outline_oreo.png"
+    ],
+    "20_FRONT": [
+      "20_front_digital_cover.png",
+      "20_milk_splash.png",
+      "20_front_strips/front_strip_00.png ... front_strip_15.png"
+    ],
+    "30_INFO": [
+      "30_info_glass_panel.png",
+      "30_info_twist.png",
+      "30_info_lick.png",
+      "30_info_dunk.png"
+    ],
+    "40_COOKIES": [
+      "40_cookie_hero.png",
+      "40_cookie_stack_01.png ... 40_cookie_stack_08.png"
+    ]
+  }
+}

@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="2048" viewBox="0 0 1024 2048">
+  <defs>
+    <filter id="glow"><feGaussianBlur stdDeviation="7" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <style>
+      .white{fill:#f8fdff}.cyan{fill:#84edff}.lime{fill:#d8ec50}.line{stroke:#9af1ff;stroke-width:5;fill:none;opacity:.9}
+      .small{font-family:'DejaVu Sans',sans-serif;font-size:34px}.body{font-family:'DejaVu Sans',sans-serif;font-size:30px}
+      .label{font-family:'DejaVu Sans',sans-serif;font-weight:700;font-size:68px}.num{font-family:'DejaVu Sans',sans-serif;font-weight:700;font-size:92px}
+    </style>
+    <g id="cookie">
+      <circle r="106" fill="#111016" stroke="#a9f4ff" stroke-width="8"/>
+      <circle r="83" fill="#22202a" stroke="#6acbdb" stroke-width="4"/>
+      <circle r="62" fill="none" stroke="#8d8997" stroke-width="5" stroke-dasharray="9 11"/>
+      <path d="M-42-15L-18-42 0-15 24-42 44-14 18 12 0 42-20 12z" fill="none" stroke="#b7b2c2" stroke-width="6"/>
+      <text x="0" y="13" text-anchor="middle" class="small white" font-weight="700">OREO</text>
+    </g>
+  </defs>
+  <g filter="url(#glow)">
+    <text x="512" y="130" text-anchor="middle" class="small white" font-weight="700">Original</text>
+    <text x="512" y="270" text-anchor="middle" class="white" font-family="DejaVu Sans" font-weight="700" font-size="150">OREO</text>
+    <text x="512" y="335" text-anchor="middle" class="small lime" font-weight="700">MILK'S FAVORITE COOKIE</text>
+    <path d="M100 400H924" class="line"/>
+    <text x="110" y="485" class="body white">TWIST IT. TASTE THE CREAM. DUNK IN MILK.</text>
+    <text x="110" y="535" class="body cyan">TWIST · LICK · DUNK</text>
+  </g>
+
+  <g transform="translate(0 10)">
+    <text x="105" y="780" class="num white">1</text>
+    <text x="215" y="755" class="label white">TWIST</text>
+    <text x="215" y="805" class="body cyan">OPEN THE COOKIE SHELL</text>
+    <g transform="translate(790 745)"><use href="#cookie"/><path d="M-22-120L75-165" class="line"/><path d="M-72 120L25 165" class="line"/></g>
+    <path d="M100 935H924" class="line" opacity=".55"/>
+
+    <text x="105" y="1190" class="num white">2</text>
+    <text x="215" y="1165" class="label white">LICK</text>
+    <text x="215" y="1215" class="body cyan">TASTE THE CREAM</text>
+    <g transform="translate(790 1160)"><ellipse rx="108" ry="68" fill="#f7fbf3" stroke="#9af1ff" stroke-width="7"/><path d="M-70 5Q0-45 70 5Q0 45-70 5" fill="#e6e5dc"/></g>
+    <path d="M100 1350H924" class="line" opacity=".55"/>
+
+    <text x="105" y="1605" class="num white">3</text>
+    <text x="215" y="1580" class="label white">DUNK</text>
+    <text x="215" y="1630" class="body cyan">DUNK IT IN MILK</text>
+    <g transform="translate(790 1585)"><use href="#cookie"/><path d="M-120 75Q-25 25 120 82" stroke="#f8fdff" stroke-width="18" fill="none"/><circle cx="-125" cy="70" r="12" class="white"/><circle cx="130" cy="78" r="9" class="white"/></g>
+    <path d="M100 1780H924" class="line" opacity=".55"/>
+    <text x="512" y="1885" text-anchor="middle" class="small white">SCAN • REVEAL • ENJOY</text>
+  </g>
+</svg>

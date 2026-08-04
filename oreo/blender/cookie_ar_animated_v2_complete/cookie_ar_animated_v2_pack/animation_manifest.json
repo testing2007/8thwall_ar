@@ -1,0 +1,57 @@
+{
+  "asset": "cookie_ar_animated_v2.glb",
+  "fps": 30,
+  "durationSeconds": 6.0,
+  "units": "meters",
+  "target": {
+    "widthMm": 75,
+    "heightMm": 150,
+    "depthMm": 38,
+    "origin": "front-face center",
+    "axes": {"x": "right", "y": "up", "z": "toward camera"}
+  },
+  "clips": [
+    {
+      "name": "MASTER_FULL_6S",
+      "masterRange": [0.0, 6.0],
+      "purpose": "8th Wall production playback; contains the complete reference sequence"
+    },
+    {
+      "name": "A01_SCAN_TRACE",
+      "masterRange": [0.0, 1.85],
+      "purpose": "front scan sweep, outline tracing, and small sparks"
+    },
+    {
+      "name": "A02_FRONT_ACTIVATE",
+      "masterRange": [1.2, 2.55],
+      "purpose": "front glow activation and hero cookie reveal"
+    },
+    {
+      "name": "A03_PANEL_DEPLOY",
+      "masterRange": [2.35, 3.75],
+      "purpose": "3D information cage deployment and staged content reveal"
+    },
+    {
+      "name": "A04_COOKIE_DROP",
+      "masterRange": [3.65, 4.35],
+      "purpose": "hero cookie sinks and turns from front view to a slanted side view"
+    },
+    {
+      "name": "A05_COOKIE_STACK",
+      "masterRange": [4.05, 5.35],
+      "purpose": "remaining sandwich cookies rise and settle into an offset stack"
+    },
+    {
+      "name": "A06_IDLE_LOOP",
+      "masterRange": [5.35, 6.0],
+      "purpose": "subtle final-state breathing loop"
+    }
+  ],
+  "runtimePolicy": {
+    "productionClip": "MASTER_FULL_6S",
+    "loop": false,
+    "pauseOnTargetLost": true,
+    "resumeOnTargetFound": true,
+    "perNodeTweenCodeRequired": false
+  }
+}

@@ -1,0 +1,113 @@
+{
+  "file": "cookie_ar_animated_v2.glb",
+  "sizeBytes": 3177548,
+  "sceneCount": 1,
+  "nodeCount": 50,
+  "meshCount": 18,
+  "materialCount": 15,
+  "textureCount": 10,
+  "triangleCount": 748,
+  "animations": [
+    {
+      "name": "MASTER_FULL_6S",
+      "durationSeconds": 6,
+      "channels": 56,
+      "samplers": 56,
+      "duplicateTargets": []
+    },
+    {
+      "name": "A01_SCAN_TRACE",
+      "durationSeconds": 1.85,
+      "channels": 19,
+      "samplers": 19,
+      "duplicateTargets": []
+    },
+    {
+      "name": "A02_FRONT_ACTIVATE",
+      "durationSeconds": 1.35,
+      "channels": 4,
+      "samplers": 4,
+      "duplicateTargets": []
+    },
+    {
+      "name": "A03_PANEL_DEPLOY",
+      "durationSeconds": 1.4,
+      "channels": 12,
+      "samplers": 12,
+      "duplicateTargets": []
+    },
+    {
+      "name": "A04_COOKIE_DROP",
+      "durationSeconds": 0.7,
+      "channels": 3,
+      "samplers": 3,
+      "duplicateTargets": []
+    },
+    {
+      "name": "A05_COOKIE_STACK",
+      "durationSeconds": 1.3,
+      "channels": 18,
+      "samplers": 18,
+      "duplicateTargets": []
+    },
+    {
+      "name": "A06_IDLE_LOOP",
+      "durationSeconds": 0.65,
+      "channels": 3,
+      "samplers": 3,
+      "duplicateTargets": []
+    }
+  ],
+  "hierarchy": [
+    "AR_ROOT",
+    "  00_OCCLUSION_GUIDE",
+    "    OCC_PACKAGE_BOX",
+    "  10_FRONT_FX",
+    "    FX_FRONT_GLOW",
+    "    FX_SCAN_SWEEP",
+    "    FX_TRACE_FRAME",
+    "      FX_TRACE_TOP",
+    "      FX_TRACE_RIGHT",
+    "      FX_TRACE_BOTTOM",
+    "      FX_TRACE_LEFT",
+    "    FX_LOGO_RING",
+    "    FX_SPARKS",
+    "      FX_SPARK_01",
+    "      FX_SPARK_02",
+    "      FX_SPARK_03",
+    "      FX_SPARK_04",
+    "      FX_SPARK_05",
+    "      FX_SPARK_06",
+    "  20_INFO_PANEL",
+    "    PANEL_DEPLOY_ROOT",
+    "      PANEL_GLASS_FRONT",
+    "      PANEL_GLASS_BACK",
+    "      PANEL_EDGE_TOP_FRONT",
+    "      PANEL_EDGE_BOTTOM_FRONT",
+    "      PANEL_EDGE_LEFT_FRONT",
+    "      PANEL_EDGE_RIGHT_FRONT",
+    "      PANEL_EDGE_TOP_BACK",
+    "      PANEL_EDGE_BOTTOM_BACK",
+    "      PANEL_EDGE_LEFT_BACK",
+    "      PANEL_EDGE_RIGHT_BACK",
+    "      PANEL_EDGE_DEPTH_LT",
+    "      PANEL_EDGE_DEPTH_RT",
+    "      PANEL_EDGE_DEPTH_LB",
+    "      PANEL_EDGE_DEPTH_RB",
+    "      PANEL_HUD_ROOT",
+    "        PANEL_TITLE",
+    "        PANEL_STEP_01",
+    "        PANEL_STEP_02",
+    "        PANEL_STEP_03",
+    "        PANEL_STATUS",
+    "  30_COOKIE_ANIMATION",
+    "    COOKIE_STACK_ROOT",
+    "      COOKIE_01_HERO",
+    "      COOKIE_02",
+    "      COOKIE_03",
+    "      COOKIE_04",
+    "      COOKIE_05",
+    "      COOKIE_06",
+    "      COOKIE_07"
+  ]
+}

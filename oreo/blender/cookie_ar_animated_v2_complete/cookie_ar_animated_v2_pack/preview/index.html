@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cookie AR Animated GLB Preview</title>
+  <style>
+    html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: #08131f; }
+    canvas { display: block; width: 100%; height: 100%; }
+    #label {
+      position: fixed; left: 18px; top: 16px; color: #dff9ff; font: 600 15px/1.4 system-ui, sans-serif;
+      padding: 8px 12px; border: 1px solid rgba(120,225,255,.45); border-radius: 9px;
+      background: rgba(5,20,34,.72); backdrop-filter: blur(5px);
+    }
+  </style>
+</head>
+<body>
+  <div id="label">MASTER_FULL_6S · <span id="time">0.00</span>s</div>
+  <script type="importmap">
+    {"imports":{"three":"../node_modules/three/build/three.module.js"}}
+  </script>
+  <script type="module" src="./viewer.js"></script>
+</body>
+</html>

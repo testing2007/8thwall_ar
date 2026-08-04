@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="2048" viewBox="0 0 512 2048">
+  <defs>
+    <filter id="glow"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <style>.w{fill:#f8fdff}.c{fill:#8defff}.y{fill:#dceb42}.t{font-family:'DejaVu Sans',sans-serif}.line{stroke:#b8f5ff;stroke-width:5;fill:none}</style>
+  </defs>
+  <g filter="url(#glow)">
+    <text x="48" y="110" class="t w" font-size="46" font-weight="700">PRODUCT INFO</text>
+    <path d="M46 150H466" class="line"/>
+    <text x="48" y="215" class="t c" font-size="25">OREO VANILLA CREAM</text>
+    <text x="48" y="255" class="t w" font-size="22">COOKIE PRODUCT • NET WT. 192 g</text>
+    <text x="48" y="295" class="t w" font-size="22">STORE IN A COOL AND DRY PLACE</text>
+    <text x="48" y="335" class="t w" font-size="22">INGREDIENTS / NUTRITION FACTS</text>
+    <rect x="45" y="390" width="422" height="410" rx="8" class="line"/>
+    <path d="M45 480H467M45 570H467M45 660H467M190 390V800M330 390V800" class="line" opacity=".65"/>
+    <text x="66" y="446" class="t w" font-size="24">ENERGY</text><text x="350" y="446" class="t c" font-size="24">147 kcal</text>
+    <text x="66" y="536" class="t w" font-size="24">PROTEIN</text><text x="350" y="536" class="t c" font-size="24">1.7 g</text>
+    <text x="66" y="626" class="t w" font-size="24">FAT</text><text x="350" y="626" class="t c" font-size="24">6.8 g</text>
+    <text x="66" y="716" class="t w" font-size="24">CARBS</text><text x="350" y="716" class="t c" font-size="24">20.5 g</text>
+    <text x="66" y="770" class="t w" font-size="19">per serving / reference display</text>
+    <path d="M-30 1120L542 870" stroke="#dceb42" stroke-width="36" opacity=".85"/>
+    <path d="M-30 1170L542 920" stroke="#f8fdff" stroke-width="8" opacity=".75"/>
+    <text x="48" y="1280" class="t w" font-size="32" font-weight="700">HOW TO ENJOY</text>
+    <text x="48" y="1340" class="t c" font-size="25">1 TWIST  •  2 LICK  •  3 DUNK</text>
+    <path d="M48 1390H464" class="line"/>
+    <text x="48" y="1460" class="t w" font-size="21">ENJOY SOON AFTER OPENING.</text>
+    <text x="48" y="1500" class="t w" font-size="21">REFERENCE ARTWORK FOR AR ANIMATION.</text>
+    <g transform="translate(50 1590)" fill="none" stroke="#9af1ff" stroke-width="6">
+      <rect width="300" height="250"/><path d="M22 25h72v72H22zM206 25h72v72h-72zM22 153h72v72H22z"/><path d="M125 25v40h35v35h45v52h-42v50h-38v-58h42v-42h-42V75h38V25z"/>
+    </g>
+    <text x="50" y="1910" class="t w" font-size="22">AR PRODUCT EXPERIENCE</text>
+    <text x="50" y="1950" class="t y" font-size="22">OREO • ORIGINAL</text>
+  </g>
+</svg>

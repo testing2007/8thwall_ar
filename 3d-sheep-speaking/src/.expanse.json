@@ -1,0 +1,193 @@
+{
+  "objects": {
+    "2c7d7c4d-14c0-4a46-a3fc-1c6bc4c9b761": {
+      "id": "2c7d7c4d-14c0-4a46-a3fc-1c6bc4c9b761",
+      "position": [
+        0,
+        5,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "geometry": null,
+      "material": null,
+      "parentId": "8a10e928-1c2a-4cb5-94e5-93d6649d73ea",
+      "components": {},
+      "name": "Camera",
+      "camera": {
+        "type": "perspective",
+        "xr": {
+          "xrCameraType": "world",
+          "phone": "AR",
+          "desktop": "3D",
+          "headset": "AR",
+          "world": {
+            "disableWorldTracking": false
+          }
+        }
+      },
+      "order": 0
+    },
+    "21d4c710-641e-4460-9a5f-f4cd91182d1f": {
+      "id": "21d4c710-641e-4460-9a5f-f4cd91182d1f",
+      "position": [
+        0,
+        3,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "geometry": null,
+      "material": null,
+      "parentId": "8a10e928-1c2a-4cb5-94e5-93d6649d73ea",
+      "components": {},
+      "light": {
+        "type": "ambient",
+        "intensity": 0.5,
+        "color": "#333333"
+      },
+      "name": "Ambient Light",
+      "order": 1
+    },
+    "13854c6c-d0bf-435c-a81f-2fc786968e7b": {
+      "id": "13854c6c-d0bf-435c-a81f-2fc786968e7b",
+      "position": [
+        3,
+        5,
+        4
+      ],
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "geometry": null,
+      "material": null,
+      "parentId": "8a10e928-1c2a-4cb5-94e5-93d6649d73ea",
+      "components": {},
+      "light": {
+        "type": "directional",
+        "intensity": 1.8
+      },
+      "name": "Directional Light",
+      "order": 2
+    },
+    "595d6e7d-eb1e-42a8-a7ad-6ff2f3e0b209": {
+      "id": "595d6e7d-eb1e-42a8-a7ad-6ff2f3e0b209",
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "geometry": null,
+      "material": null,
+      "parentId": "8a10e928-1c2a-4cb5-94e5-93d6649d73ea",
+      "components": {
+        "67e8aa22-376e-4339-9658-19a85c0f6e8c": {
+          "id": "67e8aa22-376e-4339-9658-19a85c0f6e8c",
+          "name": "play-music-on-image-target",
+          "parameters": {}
+        }
+      },
+      "name": "Trigger Label",
+      "imageTarget": {
+        "name": "trigger-label"
+      },
+      "order": 3
+    },
+    "63da06ca-d2bc-4217-80d3-b4fc0c78d5f0": {
+      "id": "63da06ca-d2bc-4217-80d3-b4fc0c78d5f0",
+      "position": [
+        -0.06546423579913546,
+        -0.612469961012069,
+        0.6254418918698481
+      ],
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "scale": [
+        0.25,
+        0.25,
+        0.25
+      ],
+      "geometry": null,
+      "material": null,
+      "parentId": "595d6e7d-eb1e-42a8-a7ad-6ff2f3e0b209",
+      "components": {},
+      "gltfModel": {
+        "src": {
+          "type": "asset",
+          "asset": "assets/sheep.glb"
+        },
+        "animationClip": "mouse.003动作",
+        "loop": true,
+        "paused": false,
+        "time": 0
+      },
+      "name": "Sheep",
+      "shadow": {
+        "castShadow": true,
+        "receiveShadow": true
+      },
+      "order": 4
+    }
+  },
+  "spaces": {
+    "8a10e928-1c2a-4cb5-94e5-93d6649d73ea": {
+      "id": "8a10e928-1c2a-4cb5-94e5-93d6649d73ea",
+      "name": "Sheep Image Target",
+      "activeCamera": "2c7d7c4d-14c0-4a46-a3fc-1c6bc4c9b761",
+      "includedSpaces": [],
+      "reflections": {
+        "type": "url",
+        "url": "https://cdn.8thwall.com/web/assets/envmap/basic_env_map-m9hqpneh.jpg"
+      }
+    }
+  },
+  "entrySpaceId": "8a10e928-1c2a-4cb5-94e5-93d6649d73ea",
+  "runtimeVersion": {
+    "type": "version",
+    "level": "major",
+    "major": 2,
+    "minor": 0,
+    "patch": 0
+  }
+}
