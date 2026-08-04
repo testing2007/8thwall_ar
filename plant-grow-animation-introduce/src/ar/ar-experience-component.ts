@@ -2,6 +2,7 @@ import * as ecs from '@8thwall/ecs'
 import type {Camera, Object3D} from 'three'
 
 import {AssetLoader} from './asset-loader'
+import {installAudioUnlock} from './audio-unlock'
 import {ExperienceStateMachine} from './experience-state-machine'
 import {ExperienceTimelineController} from './experience-timeline-controller'
 import {ImageTargetController} from './image-target-controller'
@@ -10,6 +11,9 @@ import {ParticleController} from './particle-controller'
 import {PlantController} from './plant-controller'
 import {VideoMenuController} from './video-menu-controller'
 import {VideoPlayerController} from './video-player-controller'
+
+// Pre-unlock audio on first user touch — must run before any component setup.
+installAudioUnlock()
 
 type ExperienceInstance = {
   timeline: ExperienceTimelineController
@@ -108,7 +112,7 @@ async function createExperience(world: ecs.World, anchorEid: ecs.Eid) {
       player,
       machine,
       {
-        openVideo: item => timeline.openVideo(item),
+        openVideo: (item, videoEl) => timeline.openVideo(item, videoEl),
         closeVideo: () => timeline.closeVideo(),
         closeVideoAndDisappearPlant: () => timeline.closeVideoAndDisappearPlant(),
       },
@@ -116,8 +120,8 @@ async function createExperience(world: ecs.World, anchorEid: ecs.Eid) {
 
     player.setRequestClose(() => void timeline.closeVideo())
 
-    // Wire drawer card taps → timeline.openVideo
-    menu.setOnSelect((item) => void timeline.openVideo(item))
+    // Wire drawer card taps → timeline.openVideo (with pre-played video for audio unlock)
+    menu.setOnSelect((item, videoEl) => void timeline.openVideo(item, videoEl))
 
     instances.set(anchorEid, {
       timeline,

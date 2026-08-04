@@ -27,8 +27,12 @@ type ArVideoCard = {
 // Dual-mode video menu:
 //   • AR mode  — Three.js floating cards attached to the image-target anchor,
 //                shown while the target is visible (on the bottle label).
-//   • Drawer mode — HTML bottom-drawer, shown when the target is lost so the
-//                   user can still choose and play a video.
+//   • Drawer mode — HTML full-screen-style panel, shown when the target is
+//                   lost so the user can still choose and play a video.
+//
+// Poster images are shown immediately (no video download). Videos are only
+// downloaded when the user explicitly taps a card — the tap gesture itself
+// unlocks audio on iOS/Android so audio plays without user friction.
 // ---------------------------------------------------------------------------
 
 export class VideoMenuController {
@@ -46,7 +50,7 @@ export class VideoMenuController {
   private drawerVisible = false
 
   // ── Shared ──
-  private onSelectCallback: ((item: VideoItem) => void) | null = null
+  private onSelectCallback: ((item: VideoItem, videoEl: HTMLVideoElement) => void) | null = null
 
   constructor(private readonly items = videos) {
     this.root.name = 'VideoMenuRoot'
@@ -67,11 +71,11 @@ export class VideoMenuController {
   get arIsVisible() { return this.arVisible }
   get drawerIsVisible() { return this.drawerVisible }
 
-  setOnSelect(callback: (item: VideoItem) => void) {
+  setOnSelect(callback: (item: VideoItem, videoEl: HTMLVideoElement) => void) {
     this.onSelectCallback = callback
   }
 
-  // ── AR menu (Three.js cards) ────────────────────────────────────────────
+  // ── AR menu (Three.js cards on bottle) ──────────────────────────────────
 
   async showArCards() {
     this.killArTimelines()
@@ -82,11 +86,11 @@ export class VideoMenuController {
 
     this.arCards.forEach((card, index) => {
       card.root.visible = true
-      card.root.position.set(0, 0.05, 0)
-      card.root.scale.setScalar(0.4)
+      card.root.position.set(0, 0, 0)
+      card.root.scale.setScalar(0.3)
       card.material.opacity = 0
 
-      const delay = index * 0.1
+      const delay = index * 0.14
       timeline.to(card.root.position, {
         x: card.baseX,
         y: card.baseY,
@@ -96,10 +100,10 @@ export class VideoMenuController {
       timeline.to(card.root.scale, {
         x: 1, y: 1, z: 1,
         duration: 0.45,
-        ease: 'back.out(1.6)',
+        ease: 'back.out(1.5)',
       }, delay)
       timeline.to(card.material, {
-        opacity: 0.88,
+        opacity: 0.92,
         duration: 0.35,
         ease: 'power2.out',
       }, delay)
@@ -118,7 +122,7 @@ export class VideoMenuController {
     this.arCards.forEach((card) => {
       card.root.visible = false
       card.root.position.set(card.baseX, card.baseY, 0)
-      card.root.scale.setScalar(0.4)
+      card.root.scale.setScalar(0.3)
       card.material.opacity = 0
     })
   }
@@ -130,11 +134,10 @@ export class VideoMenuController {
 
     this.arCards.forEach((card) => {
       if (card.item.id === item.id) {
-        timeline.to(card.root.position, {x: 0, y: 0, z: 0.045, duration: 0.38, ease: 'power2.inOut'}, 0)
-        timeline.to(card.root.scale, {x: 1.16, y: 1.16, z: 1.16, duration: 0.28, yoyo: true, repeat: 1, ease: 'power2.inOut'}, 0)
+        timeline.to(card.root.scale, {x: 1.12, y: 1.12, z: 1.12, duration: 0.22, yoyo: true, repeat: 1, ease: 'power2.inOut'}, 0)
       } else {
-        timeline.to(card.root.scale, {x: 0.35, y: 0.35, z: 0.35, duration: 0.32, ease: 'power2.in'}, 0)
-        timeline.to(card.material, {opacity: 0, duration: 0.28, ease: 'power2.in'}, 0)
+        timeline.to(card.root.scale, {x: 0.28, y: 0.28, z: 0.28, duration: 0.28, ease: 'power2.in'}, 0)
+        timeline.to(card.material, {opacity: 0, duration: 0.24, ease: 'power2.in'}, 0)
       }
     })
 
@@ -143,7 +146,7 @@ export class VideoMenuController {
     this.hideArCards()
   }
 
-  // ── Drawer (HTML) ──────────────────────────────────────────────────────
+  // ── Drawer (HTML panel) ─────────────────────────────────────────────────
 
   async showDrawer() {
     if (!this.drawer || this.drawerVisible) return
@@ -158,20 +161,19 @@ export class VideoMenuController {
     if (!this.drawer || !this.drawerVisible) return
     this.drawer.classList.remove('ar-drawer--visible')
     this.drawerVisible = false
-    await waitMs(340)
+    await waitMs(380)
     if (!this.drawerVisible) this.drawer.hidden = true
   }
 
-  // ── Unified (called by timeline) ───────────────────────────────────────
+  // ── Unified (called by timeline) ────────────────────────────────────────
 
-  /** Used by timeline for backward compat. Call showArCards() or showDrawer() directly instead. */
   async showVideoMenu() {
     await this.showArCards()
   }
 
-  /** Called when user taps a card (from either AR or drawer). */
+  /** Called when user taps a card (from either AR or drawer).
+   *  Hides both menus — actual video open is handled by the onSelectCallback. */
   async selectCard(item: VideoItem) {
-    // Hide both menus.
     void this.selectArCard(item)
     void this.hideDrawer()
     await waitMs(380)
@@ -189,7 +191,7 @@ export class VideoMenuController {
     this.arCards.forEach((card) => {
       card.root.visible = false
       card.root.position.set(card.baseX, card.baseY, 0)
-      card.root.scale.setScalar(0.4)
+      card.root.scale.setScalar(0.3)
       card.material.opacity = 0
     })
 
@@ -209,7 +211,6 @@ export class VideoMenuController {
     this.drawerCardEls.clear()
   }
 
-  /** Returns AR hit areas so InteractionController raycasting still works. */
   getInteractiveObjects() {
     return this.arCards.map(card => card.hitArea)
   }
@@ -218,41 +219,69 @@ export class VideoMenuController {
     return this.items.find(item => item.id === videoId)
   }
 
-  // ─── Three.js AR card construction ──────────────────────────────────────
+  // ─── AR card construction (Three.js) ────────────────────────────────────
+  // Cards are laid out vertically (portrait stack), sized to match the
+  // reference screenshot style — wide tiles with poster image texture.
 
   private createArCards() {
-    const positions = [
-      {x: -0.42, y: -0.1},
-      {x: 0, y: 0.05},
-      {x: 0.42, y: -0.1},
-    ]
+    const count = this.items.length
+    // Vertical spacing between card centers
+    const spacing = 0.32
+    const totalHeight = (count - 1) * spacing
+    const startY = totalHeight / 2
 
     this.arCards = this.items.map((item, index) => {
       const cardRoot = new Group()
       cardRoot.name = `VideoCard0${index + 1}`
 
+      // Use a combined canvas texture: draws overlay immediately, poster loaded lazily.
+      // No TextureLoader = no network request on startup → faster initialization.
       const material = new MeshBasicMaterial({
-        map: this.createArCardTexture(item, index),
+        map: this.createArCardCanvas(item, index),
         transparent: true,
         opacity: 0,
         depthWrite: false,
       })
 
-      const mesh = new Mesh(new PlaneGeometry(0.28, 0.18), material)
+      // Card width × height (16:9 wide tile, larger than before)
+      const cardW = 0.58
+      const cardH = 0.33
+
+      const mesh = new Mesh(new PlaneGeometry(cardW, cardH), material)
       mesh.name = `${cardRoot.name}_Visual`
 
+      // Load poster image lazily (after startup) and redraw into the existing canvas.
+      if (item.thumbnailUrl) {
+        const img = new Image()
+        img.crossOrigin = 'anonymous'
+        img.onload = () => {
+          const tex = material.map as CanvasTexture
+          const canvas = tex.image as HTMLCanvasElement
+          const ctx = canvas.getContext('2d')
+          if (!ctx) return
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
+          this.drawArCardOverlayOnCtx(ctx, item, index, canvas.width, canvas.height)
+          tex.needsUpdate = true
+        }
+        img.src = item.thumbnailUrl
+      }
+
       const hitArea = new Mesh(
-        new PlaneGeometry(0.32, 0.22),
+        new PlaneGeometry(cardW + 0.04, cardH + 0.04),
         new MeshBasicMaterial({transparent: true, opacity: 0, depthWrite: false}),
       )
       hitArea.name = `${cardRoot.name}_HitArea`
       hitArea.userData.interactionType = 'video-card'
       hitArea.userData.videoId = item.id
       hitArea.userData.videoItem = item
-      hitArea.position.z = 0.004
+      hitArea.position.z = 0.005
 
       cardRoot.add(mesh, hitArea)
-      cardRoot.position.set(positions[index].x, positions[index].y, 0)
+
+      const posX = 0
+      const posY = startY - index * spacing
+
+      cardRoot.position.set(posX, posY, 0)
       this.root.add(cardRoot)
 
       return {
@@ -260,8 +289,8 @@ export class VideoMenuController {
         root: cardRoot,
         hitArea,
         material,
-        baseX: positions[index].x,
-        baseY: positions[index].y,
+        baseX: posX,
+        baseY: posY,
       }
     })
   }
@@ -269,9 +298,9 @@ export class VideoMenuController {
   private startArFloating() {
     this.arFloatTweens = this.arCards.map((card, index) =>
       gsap.to(card.root.position, {
-        y: card.baseY + 0.018,
-        duration: 1.4 + index * 0.12,
-        delay: index * 0.05,
+        y: card.baseY + 0.016,
+        duration: 1.5 + index * 0.15,
+        delay: index * 0.08,
         repeat: -1,
         yoyo: true,
         ease: 'sine.inOut',
@@ -290,51 +319,79 @@ export class VideoMenuController {
     this.arFloatTweens = []
   }
 
-  private createArCardTexture(item: VideoItem, index: number) {
+  /** Create the initial canvas texture (dark bg + overlay). Poster draws into it later. */
+  private createArCardCanvas(item: VideoItem, index: number) {
+    const W = 580
+    const H = 330
     const canvas = document.createElement('canvas')
-    canvas.width = 512
-    canvas.height = 320
+    canvas.width = W
+    canvas.height = H
     const ctx = canvas.getContext('2d')!
 
-    const gradient = ctx.createLinearGradient(0, 0, 512, 320)
-    gradient.addColorStop(0, 'rgba(10, 47, 87, 0.78)')
-    gradient.addColorStop(1, 'rgba(53, 190, 255, 0.38)')
-    ctx.fillStyle = gradient
-    ctx.fillRect(0, 0, 512, 320)
+    // Dark background
+    ctx.fillStyle = '#030a1a'
+    ctx.fillRect(0, 0, W, H)
 
-    ctx.strokeStyle = '#75d6ff'
-    ctx.lineWidth = 8
-    ctx.strokeRect(12, 12, 488, 296)
-
-    ctx.fillStyle = '#d9f7ff'
-    ctx.font = '600 46px Arial'
-    ctx.fillText(item.title, 42, 92)
-    ctx.font = '400 30px Arial'
-    ctx.fillText(formatDuration(item.duration), 42, 142)
-
-    ctx.fillStyle = `#${COLORS.sapphire.toString(16).padStart(6, '0')}`
-    ctx.beginPath()
-    ctx.arc(390, 210, 58, 0, Math.PI * 2)
-    ctx.fill()
-
-    ctx.fillStyle = '#ffffff'
-    ctx.beginPath()
-    ctx.moveTo(374, 178)
-    ctx.lineTo(374, 242)
-    ctx.lineTo(424, 210)
-    ctx.closePath()
-    ctx.fill()
-
-    ctx.fillStyle = '#d9f7ff'
-    ctx.font = '500 22px Arial'
-    ctx.fillText(`0${index + 1}`, 42, 260)
+    this.drawArCardOverlayOnCtx(ctx, item, index, W, H)
 
     const texture = new CanvasTexture(canvas)
     texture.needsUpdate = true
     return texture
   }
 
+  /** Draw the overlay elements (border, play button, title) onto a 2D context. */
+  private drawArCardOverlayOnCtx(
+    ctx: CanvasRenderingContext2D,
+    item: VideoItem,
+    index: number,
+    W: number,
+    H: number,
+  ) {
+    // Bottom gradient for title readability
+    const grad = ctx.createLinearGradient(0, H * 0.45, 0, H)
+    grad.addColorStop(0, 'rgba(0,0,0,0)')
+    grad.addColorStop(1, 'rgba(0,0,20,0.82)')
+    ctx.fillStyle = grad
+    ctx.fillRect(0, 0, W, H)
+
+    // Glowing border
+    ctx.strokeStyle = 'rgba(117,214,255,0.6)'
+    ctx.lineWidth = 6
+    ctx.strokeRect(4, 4, W - 8, H - 8)
+
+    // Play circle
+    const cx = W / 2
+    const cy = H / 2 - 14
+    ctx.beginPath()
+    ctx.arc(cx, cy, 44, 0, Math.PI * 2)
+    ctx.fillStyle = 'rgba(39,183,255,0.82)'
+    ctx.fill()
+    ctx.beginPath()
+    ctx.moveTo(cx - 16, cy - 22)
+    ctx.lineTo(cx - 16, cy + 22)
+    ctx.lineTo(cx + 26, cy)
+    ctx.closePath()
+    ctx.fillStyle = '#fff'
+    ctx.fill()
+
+    // Title
+    ctx.fillStyle = '#ffffff'
+    ctx.font = 'bold 36px Arial'
+    ctx.shadowColor = 'rgba(0,0,0,0.8)'
+    ctx.shadowBlur = 8
+    ctx.fillText(item.title.toUpperCase(), 24, H - 52)
+
+    // Index badge
+    ctx.shadowBlur = 0
+    ctx.fillStyle = 'rgba(39,183,255,0.9)'
+    ctx.font = 'bold 22px Arial'
+    ctx.fillText(`${String(index + 1).padStart(2, '0')}`, 24, 36)
+  }
+
+
   // ─── HTML Drawer construction ────────────────────────────────────────────
+  // Large vertical card list, poster images shown immediately.
+  // Videos are NOT pre-loaded — only the onSelectCallback triggers download.
 
   private buildDrawer() {
     const drawer = document.createElement('div')
@@ -343,25 +400,30 @@ export class VideoMenuController {
     drawer.setAttribute('role', 'dialog')
     drawer.setAttribute('aria-label', 'Video list')
 
-    const handle = document.createElement('div')
-    handle.className = 'ar-drawer__handle'
-
+    // Header
     const header = document.createElement('div')
     header.className = 'ar-drawer__header'
+
+    const brand = document.createElement('p')
+    brand.className = 'ar-drawer__brand'
+    brand.textContent = 'BOMBAY SAPPHIRE'
+
     const title = document.createElement('p')
     title.className = 'ar-drawer__title'
-    title.textContent = 'Choose a video'
-    header.appendChild(title)
+    title.textContent = 'TAP TO WATCH RECIPE VIDEOS'
 
-    const track = document.createElement('div')
-    track.className = 'ar-drawer__track'
+    header.append(brand, title)
+
+    // Vertical card list
+    const list = document.createElement('div')
+    list.className = 'ar-drawer__list'
 
     this.items.forEach((item, index) => {
       const card = this.buildDrawerCard(item, index)
-      track.appendChild(card)
+      list.appendChild(card)
     })
 
-    drawer.append(handle, header, track)
+    drawer.append(header, list)
     document.body.appendChild(drawer)
     this.drawer = drawer
   }
@@ -374,83 +436,76 @@ export class VideoMenuController {
     card.setAttribute('tabindex', '0')
     card.setAttribute('aria-label', `Play ${item.title}`)
 
-    const thumb = document.createElement('div')
-    thumb.className = 'ar-video-card__thumb'
-    const canvas = document.createElement('canvas')
-    canvas.className = 'ar-video-card__canvas'
-    thumb.appendChild(canvas)
+    // Poster image — shown immediately, no video download
+    const poster = document.createElement('img')
+    poster.className = 'ar-video-card__poster'
+    if (item.thumbnailUrl) {
+      poster.src = item.thumbnailUrl
+      poster.alt = item.title
+    }
 
-    const badge = document.createElement('span')
-    badge.className = 'ar-video-card__badge'
-    badge.textContent = String(index + 1).padStart(2, '0')
+    // Dark gradient overlay for text readability
+    const overlay = document.createElement('div')
+    overlay.className = 'ar-video-card__overlay'
 
-    const playIcon = document.createElement('div')
-    playIcon.className = 'ar-video-card__play'
-    playIcon.innerHTML = `<svg viewBox="0 0 24 24" fill="white" width="28" height="28"><path d="M8 5v14l11-7z"/></svg>`
+    // Play button (center)
+    const playBtn = document.createElement('div')
+    playBtn.className = 'ar-video-card__play'
+    playBtn.innerHTML = `
+      <svg viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg" width="56" height="56">
+        <circle cx="30" cy="30" r="29" fill="rgba(39,183,255,0.85)" stroke="rgba(255,255,255,0.5)" stroke-width="2"/>
+        <path d="M23 18L47 30L23 42V18Z" fill="white"/>
+      </svg>`
 
+    // Title at bottom
     const info = document.createElement('div')
     info.className = 'ar-video-card__info'
+
+    const brand = document.createElement('span')
+    brand.className = 'ar-video-card__brand-badge'
+    brand.innerHTML = `<img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='18'%3E%3Crect width='80' height='18' rx='3' fill='rgba(39,183,255,0.8)'/%3E%3Ctext x='4' y='13' font-family='Arial' font-size='9' font-weight='bold' fill='white'%3EBOMBAY SAPPHIRE%3C/text%3E%3C/svg%3E" alt="Bombay Sapphire" />`
+
     const titleEl = document.createElement('p')
     titleEl.className = 'ar-video-card__title'
-    titleEl.textContent = item.title
-    const dur = document.createElement('p')
-    dur.className = 'ar-video-card__duration'
-    dur.textContent = formatDuration(item.duration)
-    info.append(titleEl, dur)
+    titleEl.textContent = item.title.toUpperCase()
 
-    card.append(thumb, badge, playIcon, info)
-    card.addEventListener('click', () => this.onSelectCallback?.(item))
+    info.append(brand, titleEl)
+    card.append(poster, overlay, playBtn, info)
+
+    // Click handler: create & play video SYNCHRONOUSLY inside the user gesture.
+    // This is the only reliable way to unlock audio on iOS Safari.
+    const handleSelect = () => {
+      card.classList.add('ar-video-card--active')
+      setTimeout(() => card.classList.remove('ar-video-card--active'), 400)
+
+      // Create video element + call play() HERE (inside gesture) before any async.
+      const videoEl = document.createElement('video')
+      videoEl.playsInline = true
+      videoEl.muted = false
+      videoEl.defaultMuted = false
+      videoEl.volume = 1
+      videoEl.preload = 'auto'
+      videoEl.crossOrigin = 'anonymous'
+      videoEl.src = item.videoUrl
+      videoEl.setAttribute('playsinline', '')
+      videoEl.setAttribute('webkit-playsinline', '')
+
+      // Synchronous play() — browser considers this user-initiated.
+      videoEl.play().catch(() => {
+        videoEl.muted = true
+        void videoEl.play().catch(() => undefined)
+      })
+
+      this.onSelectCallback?.(item, videoEl)
+    }
+
+    card.addEventListener('click', handleSelect)
     card.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); this.onSelectCallback?.(item) }
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleSelect() }
     })
 
     this.drawerCardEls.set(item.id, card)
-    void this.extractFirstFrame(item.videoUrl, canvas)
     return card
-  }
-
-  private async extractFirstFrame(src: string, canvas: HTMLCanvasElement) {
-    const video = document.createElement('video')
-    video.muted = true
-    video.playsInline = true
-    video.preload = 'metadata'
-    video.crossOrigin = 'anonymous'
-    video.src = src
-
-    try {
-      await new Promise<void>((resolve, reject) => {
-        const timeout = window.setTimeout(() => reject(new Error('timeout')), 4000)
-        video.addEventListener('loadedmetadata', () => { video.currentTime = 0.001 }, {once: true})
-        video.addEventListener('seeked', () => { window.clearTimeout(timeout); resolve() }, {once: true})
-        video.addEventListener('error', () => { window.clearTimeout(timeout); reject(new Error('video error')) }, {once: true})
-        video.load()
-      })
-
-      const ctx = canvas.getContext('2d')
-      if (!ctx) return
-      canvas.width = video.videoWidth || 320
-      canvas.height = video.videoHeight || 180
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
-      canvas.classList.add('ar-video-card__canvas--loaded')
-    } catch {
-      this.drawPlaceholder(canvas)
-    } finally {
-      video.removeAttribute('src')
-      video.load()
-    }
-  }
-
-  private drawPlaceholder(canvas: HTMLCanvasElement) {
-    canvas.width = 320
-    canvas.height = 180
-    const ctx = canvas.getContext('2d')
-    if (!ctx) return
-    const grad = ctx.createLinearGradient(0, 0, 320, 180)
-    grad.addColorStop(0, 'rgba(10,30,60,1)')
-    grad.addColorStop(1, 'rgba(0,80,120,1)')
-    ctx.fillStyle = grad
-    ctx.fillRect(0, 0, 320, 180)
-    canvas.classList.add('ar-video-card__canvas--loaded')
   }
 
   // ─── Drawer styles ───────────────────────────────────────────────────────
@@ -461,105 +516,147 @@ export class VideoMenuController {
     const style = document.createElement('style')
     style.id = 'ar-drawer-style'
     style.textContent = `
-      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
+      /* ── Full-screen drawer panel ─────────────────────────── */
       .ar-drawer {
         position: fixed;
-        bottom: 0; left: 0; right: 0;
+        inset: 0;
         z-index: 2147482000;
-        padding: 0 0 env(safe-area-inset-bottom, 12px);
-        background: rgba(4, 12, 26, 0.82);
-        backdrop-filter: blur(22px) saturate(1.4);
-        -webkit-backdrop-filter: blur(22px) saturate(1.4);
-        border-top: 1px solid rgba(117, 214, 255, 0.3);
-        border-radius: 20px 20px 0 0;
-        box-shadow: 0 -4px 32px rgba(0,0,0,0.55), 0 -1px 0 rgba(117,214,255,0.1) inset;
+        display: flex;
+        flex-direction: column;
+        background: rgba(2, 6, 18, 0.96);
+        backdrop-filter: blur(18px) saturate(1.3);
+        -webkit-backdrop-filter: blur(18px) saturate(1.3);
         transform: translateY(100%);
-        transition: transform 0.38s cubic-bezier(0.32, 0.94, 0.6, 1);
+        transition: transform 0.42s cubic-bezier(0.32, 0.94, 0.6, 1);
         will-change: transform;
-        touch-action: pan-y;
+        overflow: hidden;
         pointer-events: auto;
       }
       .ar-drawer--visible { transform: translateY(0%); }
 
-      .ar-drawer__handle {
-        width: 36px; height: 4px;
-        background: rgba(117,214,255,0.35);
-        border-radius: 2px;
-        margin: 10px auto 0;
-      }
+      /* ── Header ───────────────────────────────────────────── */
       .ar-drawer__header {
-        display: flex; align-items: center;
-        padding: 10px 18px 4px;
+        padding: 28px 24px 12px;
+        text-align: center;
+        flex-shrink: 0;
+        border-bottom: 1px solid rgba(117,214,255,0.18);
+      }
+      .ar-drawer__brand {
+        margin: 0 0 4px;
+        font: 800 13px/1 'Inter', 'Helvetica Neue', sans-serif;
+        letter-spacing: 0.22em;
+        color: rgba(117,214,255,0.7);
+        text-transform: uppercase;
       }
       .ar-drawer__title {
         margin: 0;
-        font: 600 13px/1 'Inter','Helvetica Neue',sans-serif;
-        letter-spacing: 0.08em;
+        font: 700 20px/1.2 'Inter', 'Helvetica Neue', sans-serif;
+        letter-spacing: 0.04em;
+        color: #d4af5a;
         text-transform: uppercase;
-        color: rgba(117,214,255,0.75);
+        text-shadow: 0 0 20px rgba(212,175,90,0.4);
       }
-      .ar-drawer__track {
-        display: flex; gap: 12px;
-        padding: 12px 18px 18px;
-        overflow-x: auto;
-        overscroll-behavior-x: contain;
-        -webkit-overflow-scrolling: touch;
-        scroll-snap-type: x mandatory;
-        scrollbar-width: none;
-      }
-      .ar-drawer__track::-webkit-scrollbar { display: none; }
 
+      /* ── Vertical card list ───────────────────────────────── */
+      .ar-drawer__list {
+        flex: 1;
+        overflow-y: auto;
+        overscroll-behavior-y: contain;
+        -webkit-overflow-scrolling: touch;
+        padding: 16px 20px 32px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      /* ── Video card — large poster style ──────────────────── */
       .ar-video-card {
-        position: relative; flex: 0 0 172px;
-        border-radius: 12px; overflow: hidden; cursor: pointer;
-        background: rgba(8,22,44,0.9);
-        border: 1px solid rgba(117,214,255,0.18);
-        box-shadow: 0 2px 16px rgba(0,0,0,0.45);
-        scroll-snap-align: start;
-        transition: transform 0.22s cubic-bezier(0.34,1.56,0.64,1), border-color 0.2s, box-shadow 0.2s;
-        -webkit-tap-highlight-color: transparent; user-select: none;
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        border-radius: 10px;
+        overflow: hidden;
+        cursor: pointer;
+        background: #030a1a;
+        border: 2px solid rgba(117,214,255,0.3);
+        box-shadow:
+          0 4px 24px rgba(0,0,0,0.6),
+          0 0 0 1px rgba(117,214,255,0.08) inset;
+        flex-shrink: 0;
+        -webkit-tap-highlight-color: transparent;
+        user-select: none;
+        transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
       }
-      .ar-video-card:active, .ar-video-card--active {
-        transform: scale(0.96);
-        border-color: rgba(117,214,255,0.6);
-        box-shadow: 0 0 18px rgba(39,183,255,0.45);
+      .ar-video-card:active,
+      .ar-video-card--active {
+        transform: scale(0.97);
+        border-color: rgba(117,214,255,0.75);
+        box-shadow: 0 0 28px rgba(39,183,255,0.5), 0 4px 24px rgba(0,0,0,0.6);
       }
-      .ar-video-card__thumb {
-        width: 100%; aspect-ratio: 16/9; overflow: hidden; background: #020c1e;
+
+      /* ── Poster image ─────────────────────────────────────── */
+      .ar-video-card__poster {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
       }
-      .ar-video-card__canvas {
-        display: block; width: 100%; height: 100%; object-fit: cover;
-        opacity: 0; transition: opacity 0.4s;
+
+      /* ── Dark gradient overlay ────────────────────────────── */
+      .ar-video-card__overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          to bottom,
+          rgba(0,0,0,0.1) 0%,
+          rgba(0,0,0,0.0) 40%,
+          rgba(0,0,20,0.72) 100%
+        );
       }
-      .ar-video-card__canvas--loaded { opacity: 1; }
+
+      /* ── Play button (center) ─────────────────────────────── */
       .ar-video-card__play {
-        position: absolute; top: 0; left: 0; right: 0; bottom: 50%;
-        display: flex; align-items: center; justify-content: center;
-        background: rgba(0,0,0,0.22); opacity: 0;
-        transition: opacity 0.2s; pointer-events: none;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        filter: drop-shadow(0 2px 12px rgba(39,183,255,0.6));
+        transition: filter 0.2s ease, transform 0.2s ease;
+        pointer-events: none;
       }
-      .ar-video-card:hover .ar-video-card__play,
-      .ar-video-card:active .ar-video-card__play { opacity: 1; }
-      .ar-video-card__badge {
-        position: absolute; top: 8px; left: 8px;
-        font: 700 10px/1 'Inter',monospace; letter-spacing: 0.04em;
-        color: rgba(117,214,255,0.85);
-        background: rgba(4,12,26,0.72);
-        border: 1px solid rgba(117,214,255,0.22);
-        border-radius: 4px; padding: 2px 5px;
+      .ar-video-card:active .ar-video-card__play,
+      .ar-video-card--active .ar-video-card__play {
+        filter: drop-shadow(0 2px 24px rgba(39,183,255,0.9));
+        transform: translate(-50%, -50%) scale(1.08);
       }
-      .ar-video-card__info { padding: 8px 10px 10px; }
+
+      /* ── Info (bottom) ────────────────────────────────────── */
+      .ar-video-card__info {
+        position: absolute;
+        bottom: 0; left: 0; right: 0;
+        padding: 10px 14px 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+      }
+      .ar-video-card__brand-badge img {
+        display: block;
+        height: 18px;
+        width: auto;
+      }
       .ar-video-card__title {
-        margin: 0 0 2px;
-        font: 600 12px/1.3 'Inter','Helvetica Neue',sans-serif;
-        color: rgba(255,255,255,0.92);
-        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-      }
-      .ar-video-card__duration {
         margin: 0;
-        font: 400 10px/1 'Inter',monospace;
-        color: rgba(117,214,255,0.6); letter-spacing: 0.04em;
+        font: 700 16px/1.2 'Inter', 'Helvetica Neue', sans-serif;
+        color: #ffffff;
+        letter-spacing: 0.06em;
+        text-shadow: 0 1px 8px rgba(0,0,0,0.9);
       }
     `
     document.head.appendChild(style)
@@ -567,13 +664,6 @@ export class VideoMenuController {
 }
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
-
-function formatDuration(seconds?: number) {
-  if (!seconds) return '--:--'
-  const m = Math.floor(seconds / 60)
-  const s = Math.floor(seconds % 60).toString().padStart(2, '0')
-  return `${m}:${s}`
-}
 
 function waitMs(ms: number) {
   return new Promise<void>(resolve => window.setTimeout(resolve, ms))

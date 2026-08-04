@@ -8,27 +8,11 @@ import type {VideoItem} from './types'
 
 // ---------------------------------------------------------------------------
 // ExperienceTimelineController
-//
-// Orchestrates:
-//   • Plant growth animation
-//   • AR 3D video cards (shown when image target is FOUND)
-//   • HTML bottom drawer (shown when image target is LOST)
-//   • Full-screen video playback
-//
-// The dual-mode menu logic:
-//   targetPresent = true  → use menu.showArCards()   (3D cards on bottle)
-//   targetPresent = false → use menu.showDrawer()    (HTML bottom panel)
 // ---------------------------------------------------------------------------
 
 export class ExperienceTimelineController {
-  /** Whether the image target is currently visible */
   private targetPresent = false
-
-  /** Monotonically increasing. Incrementing it cancels all in-flight awaits. */
   private runId = 0
-
-  /** True while an async intro/video-open/close sequence is running. */
-  private busy = false
 
   constructor(
     private readonly machine: ExperienceStateMachine,
@@ -40,38 +24,29 @@ export class ExperienceTimelineController {
 
   // ─── Image target callbacks ─────────────────────────────────────────────
 
-  /** Called by ImageTargetController when the target becomes visible. */
   async onTargetFound() {
     this.targetPresent = true
     await this.playIntro()
   }
 
-  /** Called by ImageTargetController when the target has been stably lost. */
   async onTargetLost() {
     this.targetPresent = false
-    await this.resetAfterTargetLost()
+    this.resetAfterTargetLost()
   }
 
   // ─── Intro sequence ─────────────────────────────────────────────────────
 
-  /** Starts (or restarts) the plant-growth intro sequence.
-   *  Safely aborts any currently running sequence via runId. */
   async playIntro() {
-    // ── 1. Synchronous hard-reset ─────────────────────────────────────────
-    // Capture our runId BEFORE any await so no concurrent call can race us.
     this.runId += 1
     const runId = this.runId
-    this.busy = false
 
-    // Synchronously reset everything to a clean slate.
+    // Synchronous hard-reset — must happen before any await.
     this.plant.reset()
     this.particles.reset()
-    this.player.reset()           // sync: kills GSAP, hides overlay
-    this.menu.reset()             // sync: hides AR cards + drawer immediately
-    this.machine.hardReset()      // sync: sets state to SCANNING
+    this.player.reset()
+    this.menu.reset()
+    this.machine.hardReset()   // → SCANNING
 
-    // ── 2. Async intro sequence ───────────────────────────────────────────
-    this.busy = true
     try {
       await this.machine.transitionTo(ARExperienceState.TARGET_FOUND)
       if (!this.isActive(runId)) return
@@ -84,13 +59,13 @@ export class ExperienceTimelineController {
       await this.machine.transitionTo(ARExperienceState.PLANT_GROWING)
       if (!this.isActive(runId)) return
 
-      // ── Plant growth + AR cards in PARALLEL ───────────────────────────
+      // Plant growth + AR cards in parallel.
       const growthPromise = this.plant.playGrowth()
-
-      // Show 3D cards immediately alongside plant growth (don't wait for growth to finish)
       void this.menu.showArCards()
 
-      // Wait for both to complete
+      // Immediately allow video selection (state = PLANT_GROWING at this point)
+      // openVideo will handle interrupting the growth if user taps early.
+
       await Promise.all([growthPromise, energyPromise])
       if (!this.isActive(runId)) return
 
@@ -98,69 +73,85 @@ export class ExperienceTimelineController {
       if (!this.isActive(runId)) return
       this.plant.playIdle()
 
-      await this.machine.transitionTo(ARExperienceState.VIDEO_MENU_ENTERING)
-      if (!this.isActive(runId)) return
       await this.machine.transitionTo(ARExperienceState.VIDEO_MENU_IDLE)
-    } finally {
-      if (this.isActive(runId)) this.busy = false
+    } catch {
+      // runId cancelled — normal exit
     }
   }
 
   // ─── Target lost ─────────────────────────────────────────────────────────
 
-  private async resetAfterTargetLost() {
-    const runId = ++this.runId
-    this.busy = false
+  /** Synchronous reset — no awaits so the state is updated immediately. */
+  private resetAfterTargetLost() {
+    // Cancel any in-flight plant-growth sequence.
+    this.runId += 1
 
-    // Hide AR cards immediately, show the drawer so user can still pick videos.
     this.menu.hideArCards()
-    void this.player.close({fadeAudioDuration: 0, shrinkDuration: 0})
-
+    this.player.reset()
     this.plant.reset()
     this.particles.reset()
 
-    if (!this.isActive(runId)) return
+    // Go directly to VIDEO_MENU_IDLE (synchronous) so the drawer cards work
+    // immediately without waiting for async transitions.
+    this.machine.hardReset()   // → SCANNING synchronously
 
-    // Show drawer (if not already visible)
+    // Kick off the two state transitions asynchronously.
+    void this._transitionToMenuIdle()
+
+    // Show drawer immediately.
     if (!this.menu.drawerIsVisible) {
       void this.menu.showDrawer()
     }
+  }
 
-    // Keep state at VIDEO_MENU_IDLE so openVideo works from the drawer.
-    await this.machine.forceTransitionTo(ARExperienceState.RESETTING)
-    if (!this.isActive(runId)) return
-    await this.machine.forceTransitionTo(ARExperienceState.VIDEO_MENU_IDLE)
+  private async _transitionToMenuIdle() {
+    await this.machine.transitionTo(ARExperienceState.VIDEO_MENU_IDLE)
   }
 
   // ─── Video open / close ──────────────────────────────────────────────────
 
-  async openVideo(item: VideoItem) {
-    if (this.busy) return
-    if (!this.machine.canInteract(
+  /**
+   * Open a video. Accepts an optional pre-created video element so the caller
+   * can call video.play() directly inside a user gesture (ensures audio on iOS).
+   */
+  async openVideo(item: VideoItem, preloadedVideoEl?: HTMLVideoElement) {
+    // Allow opening from multiple states (including PLANT_GROWING so early taps work).
+    const allowed = this.machine.canInteract(
       ARExperienceState.VIDEO_MENU_IDLE,
       ARExperienceState.PLANT_IDLE,
-    )) return
+      ARExperienceState.PLANT_GROWING,
+      ARExperienceState.SCANNING,     // drawer may fire before full transition
+      ARExperienceState.VIDEO_MENU_ENTERING,
+    )
+    if (!allowed) return
 
-    this.busy = true
+    // Cancel any plant-growth in progress.
+    this.runId += 1
+
     try {
+      this.machine.hardReset()
+
+      // Open video FIRST (before any await) to keep play() in the gesture chain.
+      const playerOpenPromise = this.player.open(item, preloadedVideoEl)
+
+      // Hide menu asynchronously (fire-and-forget).
+      void this.menu.selectCard(item)
+
       await this.machine.transitionTo(ARExperienceState.VIDEO_OPENING, {videoId: item.id})
-      await this.menu.selectCard(item)     // hides both AR cards and drawer
-      await this.player.open(item)
+      await playerOpenPromise
       await this.machine.transitionTo(ARExperienceState.VIDEO_PLAYING, {videoId: item.id})
-    } finally {
-      this.busy = false
+    } catch (e) {
+      console.warn('[Timeline] openVideo failed:', e)
     }
   }
 
   async closeVideo() {
-    if (this.busy || !this.machine.canInteract(ARExperienceState.VIDEO_PLAYING)) return
-    this.busy = true
+    if (!this.machine.canInteract(ARExperienceState.VIDEO_PLAYING)) return
 
     try {
       await this.machine.transitionTo(ARExperienceState.VIDEO_CLOSING)
       await this.player.close()
 
-      // After video closes, show whichever menu is appropriate.
       if (this.targetPresent) {
         await this.menu.showArCards()
       } else {
@@ -168,21 +159,20 @@ export class ExperienceTimelineController {
       }
 
       await this.machine.transitionTo(ARExperienceState.VIDEO_MENU_IDLE)
-    } finally {
-      this.busy = false
+    } catch (e) {
+      console.warn('[Timeline] closeVideo failed:', e)
     }
   }
 
   async closeVideoAndDisappearPlant() {
-    if (this.busy || !this.machine.canInteract(ARExperienceState.VIDEO_PLAYING)) return
-    this.busy = true
+    if (!this.machine.canInteract(ARExperienceState.VIDEO_PLAYING)) return
 
     try {
       await this.machine.transitionTo(ARExperienceState.VIDEO_CLOSING)
       await this.player.close()
       await this.disappearPlant()
-    } finally {
-      this.busy = false
+    } catch (e) {
+      console.warn('[Timeline] closeVideoAndDisappearPlant failed:', e)
     }
   }
 
@@ -198,28 +188,11 @@ export class ExperienceTimelineController {
 
   async reset() {
     this.runId += 1
-    this.busy = false
     this.menu.reset()
     this.player.reset()
     this.plant.reset()
     this.particles.reset()
-    await this.machine.transitionTo(ARExperienceState.RESETTING)
-    await this.machine.transitionTo(ARExperienceState.SCANNING)
-  }
-
-  // ─── Pause / resume (for future use) ────────────────────────────────────
-
-  pauseForTargetLost() {
-    this.runId += 1
-    this.busy = false
-    this.plant.pause()
-    this.player.pause()
-    this.particles.pause()
-  }
-
-  resumeFromTargetFound() {
-    this.plant.resume()
-    this.particles.resume()
+    this.machine.hardReset()
   }
 
   // ─── Private ────────────────────────────────────────────────────────────

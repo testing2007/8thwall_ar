@@ -6,4 +6,4 @@ node_modules
 *.zip
 /package/
 *.swp
-**/blend
+**/blender

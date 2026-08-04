@@ -26,7 +26,7 @@ export class VideoPlayerController {
     this.requestClose = callback
   }
 
-  async open(item: VideoItem) {
+  async open(item: VideoItem, preloadedVideoEl?: HTMLVideoElement) {
     this.releaseVideo()
     this.ensureOverlay()
 
@@ -38,17 +38,47 @@ export class VideoPlayerController {
     this.shell.style.transform = 'translate(-50%, -50%) scale(0.86)'
     this.loading.hidden = false
 
-    const video = document.createElement('video')
-    video.className = 'ar-screen-video'
-    video.playsInline = true
-    video.muted = false
-    video.defaultMuted = false
-    video.crossOrigin = 'anonymous'
-    video.preload = 'metadata'
-    video.volume = 1
-    video.src = item.videoUrl
-    video.setAttribute('playsinline', '')
-    video.setAttribute('webkit-playsinline', '')
+    let video: HTMLVideoElement
+    let playPromise: Promise<void>
+
+    if (preloadedVideoEl) {
+      // Caller already called play() inside the user gesture — audio is unlocked.
+      video = preloadedVideoEl
+      video.className = 'ar-screen-video'
+      // Ensure it's not muted (caller may have muted as fallback).
+      // Re-attempt unmuted playback if it was muted.
+      if (video.muted) {
+        video.muted = false
+        playPromise = video.play().catch(() => {
+          video.muted = true
+          return video.play().catch(() => undefined)
+        })
+      } else {
+        playPromise = Promise.resolve()
+      }
+    } else {
+      // Fallback: create video here. Audio may be muted on iOS if not in gesture.
+      video = document.createElement('video')
+      video.className = 'ar-screen-video'
+      video.playsInline = true
+      video.muted = false
+      video.defaultMuted = false
+      video.crossOrigin = 'anonymous'
+      video.preload = 'auto'
+      video.volume = 1
+      video.src = item.videoUrl
+      video.setAttribute('playsinline', '')
+      video.setAttribute('webkit-playsinline', '')
+
+      playPromise = video.play().catch((error) => {
+        console.warn('[ARExperience] Screen video play failed (trying muted):', error)
+        video.muted = true
+        return video.play().catch((mutedError) => {
+          console.warn('[ARExperience] Muted screen video fallback failed:', mutedError)
+        })
+      })
+    }
+
     video.addEventListener('click', (event) => {
       event.stopPropagation()
       this.togglePlayback()
@@ -57,19 +87,9 @@ export class VideoPlayerController {
     this.video = video
     this.shell.insertBefore(video, this.loading)
 
-    // This play request is intentionally issued before any await, so mobile Safari
-    // still treats it as part of the user's card tap gesture.
-    const playPromise = video.play().catch((error) => {
-      console.warn('[ARExperience] Screen video play failed:', error)
-      video.muted = true
-      return video.play().catch((mutedError) => {
-        console.warn('[ARExperience] Muted screen video fallback failed:', mutedError)
-      })
-    })
-
     await Promise.race([
       this.waitForVideoReady(video),
-      wait(1200),
+      wait(1500),
     ])
 
     this.fitShellToVideo()
@@ -86,6 +106,7 @@ export class VideoPlayerController {
     this.activeTimeline = null
     await playPromise
   }
+
 
   async play() {
     if (!this.video) return

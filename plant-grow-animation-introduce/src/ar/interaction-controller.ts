@@ -12,7 +12,7 @@ import {VideoPlayerController} from './video-player-controller'
 import type {InteractiveObject, VideoItem} from './types'
 
 type InteractionCallbacks = {
-  openVideo(item: VideoItem): Promise<void>
+  openVideo(item: VideoItem, videoEl: HTMLVideoElement): Promise<void>
   closeVideo(): Promise<void>
   closeVideoAndDisappearPlant(): Promise<void>
 }
@@ -21,7 +21,9 @@ export class InteractionController {
   private readonly raycaster = new Raycaster()
   private readonly pointer = new Vector2()
   private enabled = true
-  private readonly onPointerDown = (event: PointerEvent) => void this.handlePointerDown(event)
+  // Use 'click' (not 'pointerdown') so iOS Safari recognises it as a trusted
+  // user gesture for audio playback. Click fires after touchend.
+  private readonly onClick = (event: MouseEvent) => void this.handleClick(event)
 
   constructor(
     private readonly camera: Camera,
@@ -31,22 +33,17 @@ export class InteractionController {
     private readonly machine: ExperienceStateMachine,
     private readonly callbacks: InteractionCallbacks,
   ) {
-    window.addEventListener('pointerdown', this.onPointerDown, {passive: true})
+    window.addEventListener('click', this.onClick, {passive: true})
   }
 
-  pause() {
-    this.enabled = false
-  }
-
-  resume() {
-    this.enabled = true
-  }
+  pause() { this.enabled = false }
+  resume() { this.enabled = true }
 
   dispose() {
-    window.removeEventListener('pointerdown', this.onPointerDown)
+    window.removeEventListener('click', this.onClick)
   }
 
-  private async handlePointerDown(event: PointerEvent) {
+  private async handleClick(event: MouseEvent) {
     if (!this.enabled) return
 
     this.pointer.x = (event.clientX / window.innerWidth) * 2 - 1
@@ -57,6 +54,7 @@ export class InteractionController {
     if (!hit) return
 
     const interactionType = hit.userData.interactionType
+
     if (interactionType === 'close-button' && this.machine.canInteract(ARExperienceState.VIDEO_PLAYING)) {
       await this.callbacks.closeVideo()
       return
@@ -67,9 +65,16 @@ export class InteractionController {
       return
     }
 
-    if (interactionType === 'video-card' && this.machine.canInteract(ARExperienceState.VIDEO_MENU_IDLE)) {
-      const item = hit.userData.videoItem
-      if (item) await this.callbacks.openVideo(item)
+    if (interactionType === 'video-card') {
+      const item = hit.userData.videoItem as VideoItem | undefined
+      if (!item) return
+
+      // ── Create & play the video HERE, inside the synchronous gesture chain ──
+      // This is the ONLY reliable way to get audio on iOS Safari:
+      // video.play() must be called with no microtask/macrotask gap from the touch event.
+      const videoEl = createAndPlayVideo(item.videoUrl)
+
+      await this.callbacks.openVideo(item, videoEl)
       return
     }
 
@@ -80,8 +85,8 @@ export class InteractionController {
 
   private getPriorityHit() {
     const buckets = [
-      this.player.getInteractiveObjects().filter(object => object.userData.interactionType === 'close-button'),
-      this.player.getInteractiveObjects().filter(object => object.userData.interactionType === 'video-surface'),
+      this.player.getInteractiveObjects().filter(o => o.userData.interactionType === 'close-button'),
+      this.player.getInteractiveObjects().filter(o => o.userData.interactionType === 'video-surface'),
       this.menu.getInteractiveObjects(),
       this.plant.getInteractiveObjects(),
     ]
@@ -90,7 +95,6 @@ export class InteractionController {
       const hit = this.intersect(bucket)
       if (hit) return hit
     }
-
     return null
   }
 
@@ -98,4 +102,34 @@ export class InteractionController {
     const hits = this.raycaster.intersectObjects(objects, true)
     return (hits[0]?.object as InteractiveObject | undefined) ?? null
   }
+}
+
+// ─── Helper ─────────────────────────────────────────────────────────────────
+
+/**
+ * Creates a <video> element and synchronously calls play() — must be called
+ * directly inside a user gesture handler with no await before it.
+ * Returns the element so it can be passed to VideoPlayerController.open().
+ */
+function createAndPlayVideo(src: string): HTMLVideoElement {
+  const video = document.createElement('video')
+  video.playsInline = true
+  video.muted = false
+  video.defaultMuted = false
+  video.volume = 1
+  video.preload = 'auto'
+  video.crossOrigin = 'anonymous'
+  video.src = src
+  video.setAttribute('playsinline', '')
+  video.setAttribute('webkit-playsinline', '')
+
+  // Synchronous play() inside the gesture → audio allowed by browser.
+  video.play().catch(() => {
+    // If unmuted play fails (gesture check passed but policy still blocks),
+    // fall back to muted. VideoPlayerController.open() will retry unmuted.
+    video.muted = true
+    void video.play().catch(() => undefined)
+  })
+
+  return video
 }

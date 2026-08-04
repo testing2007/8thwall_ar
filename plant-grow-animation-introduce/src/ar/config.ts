@@ -1,6 +1,7 @@
-import video01Url from '../assets/video/stock-footage-new-york-usa-june-panning-shot-of-various-popular-branded-gin-bottles-including.webm'
-import video02Url from '../assets/video/stock-footage-berkeley-heights-nj-usa-preparing-a-gin-and-tonic-cocktail-at-home.webm'
-import video03Url from '../assets/video/stock-footage-wetzlar-germany-gin-bombay-sapphire-on-the-bar-counter.webm'
+import video01Url from '../assets/video/1.mp4'
+import video01Poster from '../assets/video/1_poster.jpg'
+import video02Url from '../assets/video/2.mp4'
+import video02Poster from '../assets/video/2_poster.jpg'
 
 import type {VideoItem} from './types'
 
@@ -55,24 +56,17 @@ export const LAYOUT = {
 export const videos: VideoItem[] = [
   {
     id: 'video-01',
-    title: 'Bottle Story',
-    duration: 12,
-    thumbnailUrl: '',
+    title: 'Orange & Peppercorn Twist',
+    duration: 30,
+    thumbnailUrl: video01Poster,
     videoUrl: video01Url,
   },
   {
     id: 'video-02',
-    title: 'Gin & Tonic',
-    duration: 15,
-    thumbnailUrl: '',
+    title: 'Lemon & Thyme Twist',
+    duration: 45,
+    thumbnailUrl: video02Poster,
     videoUrl: video02Url,
-  },
-  {
-    id: 'video-03',
-    title: 'Bar Moment',
-    duration: 11,
-    thumbnailUrl: '',
-    videoUrl: video03Url,
   },
 ]
 
