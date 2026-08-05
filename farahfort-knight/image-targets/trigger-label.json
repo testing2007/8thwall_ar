@@ -1,0 +1,31 @@
+{
+  "type": "CYLINDER",
+  "properties": {
+    "targetCircumferenceTop": 95,
+    "cylinderSideLength": 150,
+    "cylinderCircumferenceTop": 270,
+    "cylinderCircumferenceBottom": 255,
+    "arcAngle": 180,
+    "coniness": 0,
+    "inputMode": "ADVANCED",
+    "unit": "mm",
+    "top": 130,
+    "left": 0,
+    "width": 993,
+    "height": 1324,
+    "isRotated": false,
+    "originalWidth": 993,
+    "originalHeight": 1584
+  },
+  "imagePath": "image-targets/trigger-label_luminance.png",
+  "metadata": null,
+  "name": "trigger-label",
+  "resources": {
+    "originalImage": "trigger-label_original.png",
+    "croppedImage": "trigger-label_cropped.png",
+    "thumbnailImage": "trigger-label_thumbnail.png",
+    "luminanceImage": "trigger-label_luminance.png"
+  },
+  "created": 1785888311889,
+  "updated": 1785888311889
+}
