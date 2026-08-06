@@ -4,7 +4,7 @@
       "id": "2c7d7c4d-14c0-4a46-a3fc-1c6bc4c9b761",
       "position": [
         0,
-        5,
+        0,
         0
       ],
       "rotation": [
@@ -33,7 +33,8 @@
           "world": {
             "disableWorldTracking": false
           }
-        }
+        },
+        "farClip": 1000
       },
       "order": 0
     },
@@ -95,73 +96,6 @@
       },
       "name": "Directional Light",
       "order": 2
-    },
-    "595d6e7d-eb1e-42a8-a7ad-6ff2f3e0b209": {
-      "id": "595d6e7d-eb1e-42a8-a7ad-6ff2f3e0b209",
-      "position": [
-        0,
-        0,
-        0
-      ],
-      "rotation": [
-        0,
-        0,
-        0,
-        1
-      ],
-      "scale": [
-        1,
-        1,
-        1
-      ],
-      "geometry": null,
-      "material": null,
-      "parentId": "8a10e928-1c2a-4cb5-94e5-93d6649d73ea",
-      "components": {
-        "67e8aa22-376e-4339-9658-19a85c0f6e8c": {
-          "id": "67e8aa22-376e-4339-9658-19a85c0f6e8c",
-          "name": "play-music-on-image-target",
-          "parameters": {}
-        }
-      },
-      "name": "Trigger Label",
-      "imageTarget": {
-        "name": "trigger-label"
-      },
-      "order": 3
-    },
-    "adeff868-0197-48bf-918c-67293638a2d6": {
-      "id": "adeff868-0197-48bf-918c-67293638a2d6",
-      "position": [
-        0,
-        0,
-        0
-      ],
-      "rotation": [
-        0,
-        0,
-        0,
-        1
-      ],
-      "scale": [
-        1,
-        1,
-        1
-      ],
-      "geometry": null,
-      "material": null,
-      "parentId": "595d6e7d-eb1e-42a8-a7ad-6ff2f3e0b209",
-      "components": {},
-      "gltfModel": {
-        "src": {
-          "type": "asset",
-          "asset": "assets/farahfort_knight.glb"
-        },
-        "animationClip": "",
-        "loop": true
-      },
-      "name": "farahfort_knight.glb",
-      "order": 1.1440363923313748
     }
   },
   "spaces": {

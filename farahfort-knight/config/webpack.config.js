@@ -38,6 +38,11 @@ const config = {
     new CopyWebpackPlugin({
       patterns: [
         {
+          from: path.join(rootPath, 'external'),
+          to: path.join(distPath, 'external'),
+          noErrorOnMissing: true,
+        },
+        {
           from: path.join(rootPath, 'node_modules/@8thwall/ecs/dist'),
           to: path.join(distPath, 'external/runtime'),
         },
@@ -55,6 +60,7 @@ const config = {
     }),
     createVirtualEntryPlugin({
       srcDir: srcPath,
+      initScene: false,
     }),
   ],
   resolve: {extensions: ['.ts', '.js']},

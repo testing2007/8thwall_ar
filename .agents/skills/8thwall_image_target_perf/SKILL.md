@@ -3,7 +3,11 @@ name: 8thwall-image-target-perf
 description: >
   8th Wall Image Target AR 项目在 Safari 移动端（无痕浏览）加载慢、
   XrController null 报错、视频音频无法自动解锁、视频播放中途停止等问题的
-  诊断与修复模式。适用于使用 A-Frame + xrextras + xrweb 的 Image Target 场景。
+  诊断与修复模式。适用于：
+  (1) A-Frame + xrextras + xrweb 的 Image Target 场景；
+  (2) ECS + TypeScript + Three.js + GSAP 的自定义 AR 体验。
+  包含：ECS GltfModel 动画重播、iOS 音频解锁双重方案、
+  状态机点击灵敏度、Three.js 材质崩溃、视频编解码器兼容性等。
 ---
 
 # 8th Wall Image Target AR — Safari 性能与音频优化
@@ -221,3 +225,412 @@ function prepareTargetVideo() {
 ## 参考实现
 
 [barone-video/src/index.html](file:///d:/workspace/8thwall%20example/8thwall_ar/barone-video/src/index.html)
+
+---
+
+---
+
+# ECS + TypeScript + Three.js 架构专项经验
+
+> 以下章节适用于使用 **8th Wall ECS + TypeScript + Three.js + GSAP** 的自定义 AR 体验，
+> 区别于上方 A-Frame 方案。来源项目：`plant-grow-animation-introduce`。
+
+---
+
+## A. ECS GltfModel 动画重播问题
+
+**症状**：通过 `ecs.GltfModel.mutate` 控制的 GLTF 动画只有首次能播放，第二次扫描不触发。
+
+**根因**：ECS 采用 **diff 机制**，只有值**发生变化**时才更新 WebGL 状态。
+第一次播放完，reset 时 `time` 从某值设为 0；第二次再 reset 时 `time` 已经是 0，设 0 → **无变化 → seek 被跳过**，动画不重播。
+
+**修复：双帧策略**——第一帧停在极小非零值，第二帧再归零触发真实 diff：
+
+```ts
+playStudioGrowthAnimation() {
+  const modelEid = this.getGltfModelEid()
+  if (!modelEid) return
+
+  // Step 1 (sync): 停在极小非零 time，让 ECS 在下次 reset 时注册真实 delta
+  ecs.GltfModel.mutate(this.world, modelEid, (cursor) => {
+    cursor.animationClip = PLANT_GLB.fallbackGrowClip
+    cursor.loop = false
+    cursor.timeScale = 0.001   // 极小非零 → ECS 认为 timeScale 有变化
+    cursor.time = 0.0001       // 极小非零 → 第二次 reset 归 0 时才能产生 diff
+  })
+
+  // Step 2 (next frame): 真正从头播放
+  requestAnimationFrame(() => {
+    ecs.GltfModel.mutate(this.world, modelEid, (cursor) => {
+      cursor.timeScale = 1
+      cursor.time = 0
+    })
+  })
+}
+```
+
+**经验**：凡是 ECS mutate 驱动的状态，若需要重置到"之前的值"，必须先 mutate 到一个中间值，再 mutate 回目标值，否则 diff 系统认为没有变化。
+
+---
+
+## B. Three.js 材质崩溃 — `onBeforeCompile = undefined`
+
+**错误信息**：
+```
+TypeError: Cannot read properties of undefined (reading 'toString')
+  at MeshBasicMaterial.customProgramCacheKey (three.module.js:9611)
+  at Object.getParameters (runtime.js:13:216177)
+```
+
+**根因**：Three.js 内部 `customProgramCacheKey()` 会调用 `this.onBeforeCompile.toString()`。
+若代码中出现 `material.onBeforeCompile = undefined`，Three.js 渲染器在下次 draw call 时必然崩溃。
+
+**修复**：
+```ts
+// ❌ 错误 — 会导致渲染崩溃
+material.onBeforeCompile = undefined
+
+// ✅ 正确（若要清除）
+material.onBeforeCompile = () => {}
+
+// ✅ 最好：直接删除该行，不设置此属性
+```
+
+**诊断**：错误栈出现 `customProgramCacheKey` 时，立即检查所有 `MeshBasicMaterial` /
+`MeshStandardMaterial` 是否被手动设置了 `onBeforeCompile = null/undefined`。
+
+---
+
+## C. iOS Safari 视频音频解锁 — ECS/TypeScript 架构下的可靠方案
+
+**症状**：点击 Three.js 3D 卡片（通过 raycasting 交互）**有时**无声音，
+点击 HTML 抽屉卡片（click 事件）**总是**有声音。
+
+**根因**：
+- iOS Safari 只信任 `touchend`/`click` 事件为可信用户手势（trusted user gesture）
+- `pointerdown` 不完全信任：raycasting 消耗几毫秒后，手势信任窗口可能已过期
+- 手势链中任何 `await`（即使是微任务）都可能在老版 iOS Safari 上打断信任
+
+**三层修复方案**（缺一不可）：
+
+### C-1. 全局音频预解锁（首次触摸时）
+
+```ts
+// audio-unlock.ts
+let installed = false
+
+export function installAudioUnlock(): void {
+  if (installed) return
+  installed = true
+
+  const unlock = () => {
+    // 解锁 Web Audio API（AudioContext）
+    const Ctx = window.AudioContext ?? (window as any).webkitAudioContext
+    if (Ctx) {
+      const ctx = new Ctx()
+      const buffer = ctx.createBuffer(1, 1, 22050)
+      const source = ctx.createBufferSource()
+      source.buffer = buffer
+      source.connect(ctx.destination)
+      source.start(0)
+      void ctx.resume().then(() => ctx.close()).catch(() => undefined)
+    }
+
+    // 解锁 video 音频门（静音短视频）
+    const v = document.createElement('video')
+    v.muted = true
+    v.playsInline = true
+    v.setAttribute('playsinline', '')
+    // 最小有效 MP4（1帧 1×1px 无声）的 base64
+    v.src = 'data:video/mp4;base64,' +
+      'AAAAHGZ0eXBpc29tAAACAGlzb21pc28ybXA0MAAAAARH9AAABW1kYXQAAAAA'
+    void v.play().catch(() => undefined)
+  }
+
+  // capture 阶段确保在任何组件 handler 之前触发；once 只执行一次
+  document.addEventListener('touchstart', unlock, {capture: true, passive: true, once: true})
+  document.addEventListener('click', unlock, {capture: true, passive: true, once: true})
+}
+```
+
+在主组件模块顶层（非函数内）调用：
+```ts
+// ar-experience-component.ts 顶层
+import {installAudioUnlock} from './audio-unlock'
+installAudioUnlock()   // 模块加载时立即注册，早于任何 ECS 实例化
+```
+
+### C-2. 使用 `click` 替代 `pointerdown` 处理 Three.js 交互
+
+```ts
+// ❌ pointerdown — iOS 不完全信任
+window.addEventListener('pointerdown', handler, {passive: true})
+
+// ✅ click — 等同 touchend，iOS 100% 信任，与 HTML 抽屉 click 行为完全一致
+window.addEventListener('click', handler, {passive: true})
+```
+
+验证：用 click 事件后，3D 卡片与 HTML 抽屉行为保持一致，都 100% 有声音。
+
+### C-3. 在 click 处理函数最前端（所有 await 之前）同步创建 video + play()
+
+```ts
+// interaction-controller.ts
+private async handleClick(event: MouseEvent) {
+  if (!this.enabled) return
+  // ... 同步计算 raycaster 坐标 ...
+  const hit = this.getPriorityHit()
+  if (!hit) return
+
+  if (hit.userData.interactionType === 'video-card') {
+    const item = hit.userData.videoItem as VideoItem
+    // ⬇ 必须在所有 await 之前，处于手势链同步部分
+    const videoEl = createAndPlayVideo(item.videoUrl)
+    await this.callbacks.openVideo(item, videoEl)
+  }
+}
+
+// 辅助函数：在手势同步上下文内创建并启动播放
+function createAndPlayVideo(src: string): HTMLVideoElement {
+  const video = document.createElement('video')
+  video.playsInline = true
+  video.muted = false
+  video.defaultMuted = false
+  video.volume = 1
+  video.preload = 'auto'
+  video.crossOrigin = 'anonymous'
+  video.src = src   // 设置正确的 src（防止多视频混淆）
+  video.setAttribute('playsinline', '')
+  video.setAttribute('webkit-playsinline', '')
+  // 同步 play()，失败时降级静音
+  video.play().catch(() => {
+    video.muted = true
+    void video.play().catch(() => undefined)
+  })
+  return video
+}
+```
+
+### C-4. HTML 抽屉卡片同样需要在 click 内同步创建 video
+
+```ts
+// video-menu-controller.ts — 抽屉卡片点击处理
+card.addEventListener('click', () => {
+  // 同步创建 video + play() — 保持在 click 手势链内
+  const videoEl = document.createElement('video')
+  videoEl.playsInline = true
+  videoEl.muted = false
+  videoEl.defaultMuted = false
+  videoEl.volume = 1
+  videoEl.preload = 'auto'
+  videoEl.crossOrigin = 'anonymous'
+  videoEl.src = item.videoUrl
+  videoEl.setAttribute('playsinline', '')
+  videoEl.setAttribute('webkit-playsinline', '')
+  videoEl.play().catch(() => {
+    videoEl.muted = true
+    void videoEl.play().catch(() => undefined)
+  })
+  // 将预播放的 video 元素传给回调，避免再次 play()
+  this.onSelectCallback?.(item, videoEl)
+})
+```
+
+### C-5. VideoPlayerController.open() 接收预创建的 video 元素
+
+```ts
+// video-player-controller.ts
+async open(item: VideoItem, preloadedVideoEl?: HTMLVideoElement) {
+  this.releaseVideo()
+  this.ensureOverlay()
+
+  let video: HTMLVideoElement
+  let playPromise: Promise<void>
+
+  if (preloadedVideoEl) {
+    // 直接使用已在手势内启动的 video 元素（音频已解锁）
+    video = preloadedVideoEl
+    video.className = 'ar-screen-video'
+    // 若调用方因 play() 失败而静音，尝试恢复有声
+    if (video.muted) {
+      video.muted = false
+      playPromise = video.play().catch(() => {
+        video.muted = true
+        return video.play().catch(() => undefined)
+      })
+    } else {
+      playPromise = Promise.resolve()
+    }
+  } else {
+    // 降级：自行创建（可能无声）
+    video = document.createElement('video')
+    // ... 设置属性 + play() ...
+  }
+
+  this.video = video
+  this.shell.insertBefore(video, this.loading)
+  // ... 等待 loadedmetadata + 播放动画 ...
+}
+```
+
+---
+
+## D. 状态机设计 — 点击灵敏度与并发控制
+
+### D-1. 用状态机状态替代 `busy` 标志
+
+**问题**：`busy = true` 期间（如植物生长），用户点击视频卡片无响应；
+`busy` 标志也容易与异步状态机产生竞态。
+
+**修复**：完全移除 `busy`，改由状态机状态控制：
+```ts
+async openVideo(item: VideoItem, preloadedVideoEl?: HTMLVideoElement) {
+  // 允许从多个状态触发（包括植物生长中）
+  const allowed = this.machine.canInteract(
+    ARExperienceState.VIDEO_MENU_IDLE,
+    ARExperienceState.PLANT_IDLE,
+    ARExperienceState.PLANT_GROWING,    // 植物生长中也可点击
+    ARExperienceState.SCANNING,         // 抽屉出现前的瞬间
+    ARExperienceState.VIDEO_MENU_ENTERING,
+  )
+  if (!allowed) return
+
+  // 通过 runId 取消正在进行的生长动画
+  this.runId += 1
+  this.machine.hardReset()
+  // ...
+}
+```
+
+### D-2. `resetAfterTargetLost` 必须同步更新状态
+
+**问题**：目标丢失后，经过多次 `await forceTransitionTo` 才到达 `VIDEO_MENU_IDLE`，
+用户在此期间点击抽屉卡片时状态还未就绪，`canInteract` 失败。
+
+**修复**：目标丢失时**同步**调用 `hardReset()`，状态立即生效：
+```ts
+// ✅ 同步重置 — 抽屉卡片立即可点击
+private resetAfterTargetLost() {
+  this.runId += 1
+  this.menu.hideArCards()
+  this.player.reset()
+  this.plant.reset()
+  this.particles.reset()
+  this.machine.hardReset()           // 同步：state → SCANNING，立即生效
+  void this._transitionToMenuIdle()  // 异步：触发状态事件，不阻塞点击
+  if (!this.menu.drawerIsVisible) void this.menu.showDrawer()
+}
+
+// ExperienceStateMachine.hardReset()
+hardReset() {
+  this.flushCleanups()
+  this.transitionToken += 1
+  this.currentState = ARExperienceState.SCANNING  // 同步赋值，无 await
+}
+```
+
+### D-3. runId 模式取消 in-flight 异步序列
+
+```ts
+// 用单调递增 runId 取消所有 in-flight await
+private runId = 0
+
+async playIntro() {
+  this.runId += 1
+  const runId = this.runId
+
+  // ... async 操作中每个 await 后检查 ...
+  await someAsyncOp()
+  if (this.runId !== runId) return  // 被新的 onTargetFound 取消了
+}
+```
+
+---
+
+## E. Three.js AR 3D 卡片性能优化
+
+### E-1. 避免 TextureLoader 在构造时发起网络请求
+
+```ts
+// ❌ 慢：TextureLoader 在构造时立即发起 HTTP 请求
+const loader = new TextureLoader()
+loader.load(item.thumbnailUrl, (texture) => {
+  material.map = texture
+  material.needsUpdate = true
+})
+
+// ✅ 快：new Image() 懒加载 + canvas 合并纹理
+private createArCardCanvas(item: VideoItem, index: number): CanvasTexture {
+  const W = 580, H = 330
+  const canvas = document.createElement('canvas')
+  canvas.width = W; canvas.height = H
+  const ctx = canvas.getContext('2d')!
+
+  // 立即绘制深色背景 + overlay（标题 + 播放按钮）
+  ctx.fillStyle = '#030a1a'
+  ctx.fillRect(0, 0, W, H)
+  this.drawCardOverlay(ctx, item, index, W, H)
+
+  // 构造器返回后才懒加载封面图
+  if (item.thumbnailUrl) {
+    const img = new Image()
+    img.crossOrigin = 'anonymous'
+    img.onload = () => {
+      ctx.drawImage(img, 0, 0, W, H)          // 绘制封面
+      this.drawCardOverlay(ctx, item, index, W, H)  // 重绘 overlay 在封面上
+      texture.needsUpdate = true
+    }
+    img.src = item.thumbnailUrl               // 异步加载，不阻塞初始化
+  }
+
+  const texture = new CanvasTexture(canvas)
+  texture.needsUpdate = true
+  return texture
+}
+```
+
+### E-2. 单 Mesh 替代双 Mesh（background + overlay）
+
+每个 AR 卡片使用两层 Mesh（底图 + overlay）会增加 draw call 和材质管理复杂度。
+将底图和 overlay 合并到同一个 canvas 纹理，单 Mesh 即可，减少 Three.js 渲染开销。
+
+---
+
+## F. 视频编解码器兼容性
+
+### F-1. iOS Safari 不支持 H.265（HEVC）
+
+**症状**：视频播放显示黑屏，无错误提示。
+
+**根因**：iOS Safari 对 H.265 支持有限（需要 iOS 11+ 且特定条件），
+在部分 Safari 版本中 H.265 MP4 直接显示黑屏。
+
+**解决**：视频必须使用 **H.264（AVC）** 编码：
+```bash
+# ✅ 正确：H.264 编码，Safari 全版本兼容
+ffmpeg -i input.mp4 \
+  -c:v libx264 -preset slow -crf 23 \
+  -c:a aac -b:a 128k \
+  -movflags +faststart \
+  output_h264.mp4
+
+# ❌ 错误：H.265 → iOS Safari 黑屏
+ffmpeg -i input.mp4 -c:v libx265 output_h265.mp4
+```
+
+### F-2. `-movflags +faststart` 确保边下边播
+
+moov atom（视频元数据）默认在文件末尾，Safari 必须下载完整文件才能播放。
+`-movflags +faststart` 将 moov atom 移到文件头，支持边下边播。
+
+---
+
+## 参考实现
+
+- [barone-video/src/index.html](file:///d:/workspace/8thwall%20example/8thwall_ar/barone-video/src/index.html)（A-Frame 方案）
+- [plant-grow-animation-introduce/src/ar/](file:///d:/workspace/8thwall%20example/8thwall_ar/plant-grow-animation-introduce/src/ar/)（ECS + TypeScript 方案）
+  - [audio-unlock.ts](file:///d:/workspace/8thwall%20example/8thwall_ar/plant-grow-animation-introduce/src/ar/audio-unlock.ts)
+  - [interaction-controller.ts](file:///d:/workspace/8thwall%20example/8thwall_ar/plant-grow-animation-introduce/src/ar/interaction-controller.ts)
+  - [experience-timeline-controller.ts](file:///d:/workspace/8thwall%20example/8thwall_ar/plant-grow-animation-introduce/src/ar/experience-timeline-controller.ts)
+  - [video-menu-controller.ts](file:///d:/workspace/8thwall%20example/8thwall_ar/plant-grow-animation-introduce/src/ar/video-menu-controller.ts)
+  - [video-player-controller.ts](file:///d:/workspace/8thwall%20example/8thwall_ar/plant-grow-animation-introduce/src/ar/video-player-controller.ts)

@@ -1,30 +1,167 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
 
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
 
   <title>farahfort_knight</title>
   <meta itemprop="name" content="farahfort_knight">
   <meta name="twitter:title" content="farahfort_knight">
   <meta property="og:title" content="farahfort_knight">
   <meta property="og:site_name" content="farahfort_knight">
-  <meta name="description" content="Scan the trigger label to show a 3D sheep and play music.">
-  <meta itemprop="description" content="Scan the trigger label to show a 3D sheep and play music.">
-  <meta property="og:description" content="Scan the trigger label to show a 3D sheep and play music.">
-  <meta name="twitter:description" content="Scan the trigger label to show a 3D sheep and play music.">
-  <script crossorigin="anonymous" src="./external/runtime/runtime.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@8thwall/engine-binary@1/dist/xr.js" async crossorigin="anonymous"
-    data-preload-chunks="slam"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@8thwall/landing-page@1/dist/landing-page.js"
-    crossorigin="anonymous"></script>
-  <meta property="og:image" content="assets/trigger-label.jpg">
+  <meta name="description" content="Scan the trigger label to play ar.mp4.">
+  <meta itemprop="description" content="Scan the trigger label to play ar.mp4.">
+  <meta property="og:description" content="Scan the trigger label to play ar.mp4.">
+  <meta name="twitter:description" content="Scan the trigger label to play ar.mp4.">
+  <meta property="og:image" content="assets/trigger-label.png">
+
+  <script src="./external/scripts/8frame-1.5.0.min.js"></script>
+  <script src="./external/xrextras/xrextras.js"></script>
+  <script src="./external/landing-page/landing-page.js"></script>
+  <script>
+    if (window.AFRAME && window.AFRAME.THREE) {
+      window.THREE = window.AFRAME.THREE;
+    }
+
+    window.addEventListener('DOMContentLoaded', function () {
+      var params = new URLSearchParams(window.location.search);
+      var preview = document.getElementById('local-video-preview');
+
+      if (params.has('previewVideo')) {
+        if (preview) {
+          preview.hidden = false;
+        }
+        return;
+      }
+
+      var template = document.getElementById('ar-scene-template');
+      if (template && !document.querySelector('a-scene')) {
+        document.body.appendChild(template.content.cloneNode(true));
+      }
+    });
+  </script>
+  <script async src="./external/xr/xr.js" data-preload-chunks="slam"></script>
+  <style>
+    html,
+    body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #101118;
+    }
+
+    #local-video-preview {
+      position: fixed;
+      inset: 0;
+      z-index: 10;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background: #101118;
+    }
+
+    #local-video-preview[hidden] {
+      display: none;
+    }
+
+    #local-video-preview video {
+      width: min(100%, 420px);
+      max-height: calc(100vh - 48px);
+      background: #000;
+    }
+
+    #ar-play-video-button {
+      position: fixed;
+      left: 50%;
+      bottom: 28px;
+      z-index: 100000;
+      transform: translateX(-50%);
+      border: 0;
+      border-radius: 999px;
+      padding: 0;
+      width: 64px;
+      height: 64px;
+      display: grid;
+      place-items: center;
+      background: rgba(255, 255, 255, 0.9);
+      box-shadow: 0 8px 28px rgba(0, 0, 0, 0.28);
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    #ar-play-video-button[hidden] {
+      display: none;
+    }
+
+    #ar-play-video-button img {
+      width: 42px;
+      height: 42px;
+      object-fit: contain;
+    }
+
+    #ar-play-video-button.is-loading {
+      background: rgba(255, 255, 255, 0.96);
+    }
+
+    #ar-play-video-button.is-loading img {
+      display: none;
+    }
+
+    #ar-play-video-button.is-loading::after {
+      width: 32px;
+      height: 32px;
+      border: 4px solid rgba(208, 44, 65, 0.25);
+      border-top-color: #d02c41;
+      border-radius: 999px;
+      content: "";
+      animation: ar-spin 0.8s linear infinite;
+    }
+
+    @keyframes ar-spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+  </style>
 </head>
 
 <body>
   <script src="bundle.js"></script>
 
+  <div id="local-video-preview" hidden>
+    <video controls playsinline webkit-playsinline preload="metadata" src="assets/ar.mp4"></video>
+  </div>
+
+  <template id="ar-scene-template">
+    <a-scene xrconfig="cameraDirection: back; allowedDevices: any;" xrextras-gesture-detector landing-page
+      xrextras-loading xrextras-runtime-error renderer="colorManagement:true;" xrweb="disableWorldTracking: true;">
+      <a-assets timeout="10000">
+        <img id="ar-poster" src="assets/poster.png">
+        <video id="ar-video" playsinline webkit-playsinline preload="metadata" crossorigin="anonymous" loop="true"
+          poster="assets/poster.png" src="assets/ar.mp4">
+        </video>
+      </a-assets>
+
+      <a-camera position="0 4 10" raycaster="objects: .cantap" cursor="fuse: false; rayOrigin: mouse;">
+      </a-camera>
+
+      <a-light type="directional" intensity="0.5" position="1 1 1"></a-light>
+      <a-light type="ambient" intensity="1"></a-light>
+
+      <xrextras-named-image-target name="trigger-label">
+        <a-entity tap-to-play-video-with-sound="
+          video: #ar-video;
+          poster: #ar-poster;
+          keyColor: #37723e;
+          similarity: 0.06;
+          smoothness: 0.02;
+          spill: 0.18;">
+        </a-entity>
+      </xrextras-named-image-target>
+    </a-scene>
+  </template>
 </body>
 
 </html>

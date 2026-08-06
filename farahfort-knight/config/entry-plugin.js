@@ -31,7 +31,7 @@ if (module.hot) {
 }`
 
 const createVirtualEntryPlugin = (options = {}) => {
-  const {srcDir} = options
+  const {srcDir, initScene = true} = options
   const virtualModules = new VirtualModulesPlugin()
   const importedFiles = new Set()
   const ignoredFoldersPaths = IGNORED_FOLDERS.map(folder => path.join(srcDir, folder))
@@ -58,7 +58,9 @@ const createVirtualEntryPlugin = (options = {}) => {
       })
       .join('\n')
 
-    const content = `${imports}\n${SCENE_INIT_CONTENT}`
+    const content = initScene
+      ? `${imports}\n${SCENE_INIT_CONTENT}`
+      : imports
 
     virtualModules.writeModule(path.join(srcDir, 'entry.js'), content)
   }

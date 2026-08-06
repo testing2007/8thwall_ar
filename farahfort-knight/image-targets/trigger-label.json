@@ -1,15 +1,15 @@
 {
   "type": "CYLINDER",
   "properties": {
-    "targetCircumferenceTop": 95,
-    "cylinderSideLength": 150,
+    "targetCircumferenceTop": 80,
+    "cylinderSideLength": 148,
     "cylinderCircumferenceTop": 270,
-    "cylinderCircumferenceBottom": 255,
+    "cylinderCircumferenceBottom": 260,
     "arcAngle": 180,
     "coniness": 0,
     "inputMode": "ADVANCED",
     "unit": "mm",
-    "top": 130,
+    "top": 30,
     "left": 0,
     "width": 993,
     "height": 1324,
@@ -27,5 +27,5 @@
     "luminanceImage": "trigger-label_luminance.png"
   },
   "created": 1785888311889,
-  "updated": 1785888311889
+  "updated": 1786014379536
 }
