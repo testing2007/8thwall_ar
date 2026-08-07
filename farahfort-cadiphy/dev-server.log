@@ -1,0 +1,157 @@
+
+> @8thwall/studio-build@0.1.0 serve
+> node ./node_modules/webpack-dev-server/bin/webpack-dev-server.js --mode=development --config config/webpack.config.js --host 0.0.0.0
+
+assets by path [1m[32mexternal/[39m[22m 49.4 MiB 90 assets
+assets by path [1m[32massets/[39m[22m 149 KiB
+  asset [1m[32massets/trigger-label.png[39m[22m 119 KiB [1m[32m[emitted][39m[22m [from: assets/trigger-label.png] [1m[32m[copied][39m[22m
+  asset [1m[32massets/cadiphy_bloom_test.glb[39m[22m 13.9 KiB [1m[32m[emitted][39m[22m [from: assets/cadiphy_bloom_test.glb] [1m[32m[copied][39m[22m
+  asset [1m[32massets/build_glb.py[39m[22m 9.91 KiB [1m[32m[emitted][39m[22m [from: assets/build_glb.py] [1m[32m[copied][39m[22m
+  asset [1m[32massets/bloom-demo.js[39m[22m 3.47 KiB [1m[32m[emitted][39m[22m [from: assets/bloom-demo.js] [1m[32m[copied][39m[22m
+  + 2 assets
+assets by path [1m[32mimage-targets/[39m[22m 796 KiB
+  asset [1m[32mimage-targets/trigger-label_luminance.png[39m[22m 313 KiB [1m[32m[emitted][39m[22m [from: ../image-targets/trigger-label_luminance.png] [1m[32m[copied][39m[22m
+  asset [1m[32mimage-targets/trigger-label_original.png[39m[22m 182 KiB [1m[32m[emitted][39m[22m [from: ../image-targets/trigger-label_original.png] [1m[32m[copied][39m[22m
+  asset [1m[32mimage-targets/trigger-label_cropped.png[39m[22m 159 KiB [1m[32m[emitted][39m[22m [from: ../image-targets/trigger-label_cropped.png] [1m[32m[copied][39m[22m
+  asset [1m[32mimage-targets/trigger-label_thumbnail.png[39m[22m 142 KiB [1m[32m[emitted][39m[22m [from: ../image-targets/trigger-label_thumbnail.png] [1m[32m[copied][39m[22m
+  asset [1m[32mimage-targets/trigger-label.json[39m[22m 809 bytes [1m[32m[emitted][39m[22m [from: ../image-targets/trigger-label.json] [1m[32m[copied][39m[22m
+asset [1m[32mbundle.js[39m[22m 457 KiB [1m[32m[emitted][39m[22m (name: main)
+asset [1m[32mindex.html[39m[22m 1.45 KiB [1m[32m[emitted][39m[22m
+runtime modules 26.6 KiB 11 modules
+modules by path [1m../node_modules/[39m[22m 337 KiB
+  modules by path [1m../node_modules/webpack-dev-server/client/[39m[22m 71.8 KiB 16 modules
+  modules by path [1m../node_modules/three/examples/jsm/[39m[22m 207 KiB 13 modules
+  modules by path [1m../node_modules/webpack/hot/*.js[39m[22m 5.56 KiB 4 modules
+  modules by path [1m../node_modules/html-entities/dist/esm/*.js[39m[22m 33.5 KiB 4 modules
+  + 2 modules
+modules by path [1m./[39m[22m 4.82 KiB
+  modules by path [1m./*.js[39m[22m 4.73 KiB 3 modules
+  modules by path [1m./assets/[39m[22m 89 bytes
+    [1m./assets/bloom-demo.js[39m[22m 40 bytes [1m[33m[built][39m[22m [1m[33m[code generated][39m[22m
+    [1m./assets/cadiphy_bloom_test.glb[39m[22m 49 bytes [1m[33m[built][39m[22m [1m[33m[code generated][39m[22m
+[1mexternal "THREE"[39m[22m 42 bytes [1m[33m[built][39m[22m [1m[33m[code generated][39m[22m
+[1m../image-targets/trigger-label.json[39m[22m 665 bytes [1m[33m[built][39m[22m [1m[33m[code generated][39m[22m
+webpack 5.105.3 compiled [1m[32msuccessfully[39m[22m in 1841 ms
+undefined Emit file change: D:\workspace\8thwall example\8thwall_ar\farahfort-cadiphy\src\entry.js 1786066689010
+assets by status 50.4 MiB [1m[32m[cached][39m[22m 102 assets
+assets by path [1m[32m.[39m[22m 458 KiB
+  asset [1m[32mbundle.js[39m[22m 457 KiB [1m[32m[emitted][39m[22m (name: main)
+  asset [1m[32mmain.ab60a27e4e47144a4cc3.hot-update.js[39m[22m 843 bytes [1m[32m[emitted][39m[22m [1m[32m[immutable][39m[22m [1m[32m[hmr][39m[22m (name: main)
+  asset [1m[32mmain.ab60a27e4e47144a4cc3.hot-update.json[39m[22m 28 bytes [1m[32m[emitted][39m[22m [1m[32m[immutable][39m[22m [1m[32m[hmr][39m[22m
+Entrypoint [1mmain[39m[22m 458 KiB = [1m[32mbundle.js[39m[22m 457 KiB [1m[32mmain.ab60a27e4e47144a4cc3.hot-update.js[39m[22m 843 bytes
+cached modules 342 KiB [1m[32m[cached][39m[22m 45 modules
+runtime modules 26.6 KiB 11 modules
+[1m./entry.js[39m[22m 74 bytes [1m[33m[built][39m[22m
+webpack 5.105.3 compiled [1m[32msuccessfully[39m[22m in 53 ms
+assets by status 50.4 MiB [1m[32m[cached][39m[22m 101 assets
+assets by path [1m[32m.[39m[22m 468 KiB
+  assets by path [1m[32m*.js[39m[22m 464 KiB
+    asset [1m[32mbundle.js[39m[22m 457 KiB [1m[32m[emitted][39m[22m (name: main)
+    asset [1m[32mmain.552b12c3564153517ff9.hot-update.js[39m[22m 6.69 KiB [1m[32m[emitted][39m[22m [1m[32m[immutable][39m[22m [1m[32m[hmr][39m[22m (name: main)
+  asset [1m[32massets/bloom-demo.js[39m[22m 3.66 KiB [1m[32m[emitted][39m[22m [from: assets/bloom-demo.js] [1m[32m[copied][39m[22m
+  asset [1m[32mmain.552b12c3564153517ff9.hot-update.json[39m[22m 28 bytes [1m[32m[emitted][39m[22m [1m[32m[immutable][39m[22m [1m[32m[hmr][39m[22m
+Entrypoint [1mmain[39m[22m 464 KiB = [1m[32mbundle.js[39m[22m 457 KiB [1m[32mmain.552b12c3564153517ff9.hot-update.js[39m[22m 6.69 KiB
+cached modules 339 KiB [1m[32m[cached][39m[22m 44 modules
+runtime modules 26.6 KiB 11 modules
+javascript modules 3.7 KiB
+  [1m./bloom-demo.js[39m[22m 3.66 KiB [1m[33m[built][39m[22m [1m[33m[code generated][39m[22m
+  [1m./assets/bloom-demo.js[39m[22m 40 bytes [1m[33m[built][39m[22m
+webpack 5.105.3 compiled [1m[32msuccessfully[39m[22m in 84 ms
+assets by status 37.1 MiB [1m[32m[cached][39m[22m 67 assets
+assets by path [1m[32m.[39m[22m 13.6 MiB
+  assets by path [1m[32mexternal/runtime/resources/fonts/[39m[22m 5.09 MiB 28 assets
+  assets by path [1m[32mexternal/runtime/resources/draco/[39m[22m 956 KiB
+    assets by path [1m[32mexternal/runtime/resources/draco/*.js[39m[22m 668 KiB
+      asset [1m[32mexternal/runtime/resources/draco/draco_decoder.js[39m[22m 603 KiB [1m[32m[emitted][39m[22m [from: ../external/runtime/resources/draco/draco_decoder.js] [1m[32m[copied][39m[22m
+      asset [1m[32mexternal/runtime/resources/draco/draco_wasm_wrapper.js[39m[22m 64.5 KiB [1m[32m[emitted][39m[22m [from: ../external/runtime/resources/draco/draco_wasm_wrapper.js] [1m[32m[copied][39m[22m
+    asset [1m[32mexternal/runtime/resources/draco/draco_decoder.wasm[39m[22m 277 KiB [1m[32m[emitted][39m[22m [from: ../external/runtime/resources/draco/draco_decoder.wasm] [1m[32m[copied][39m[22m
+    asset [1m[32mexternal/runtime/resources/draco/LICENSE[39m[22m 11.1 KiB [1m[32m[emitted][39m[22m [from: ../external/runtime/resources/draco/LICENSE] [1m[32m[copied][39m[22m
+  assets by path [1m[32mexternal/runtime/resources/splat/*.js[39m[22m 3.38 MiB
+    asset [1m[32mexternal/runtime/resources/splat/splat-worker.js[39m[22m 2.26 MiB [1m[32m[emitted][39m[22m [from: ../external/runtime/resources/splat/splat-worker.js] [1m[32m[copied][39m[22m
+    asset [1m[32mexternal/runtime/resources/splat/splat-loader.js[39m[22m 1.12 MiB [1m[32m[emitted][39m[22m [from: ../external/runtime/resources/splat/splat-loader.js] [1m[32m[copied][39m[22m
+  asset [1m[32mexternal/runtime/runtime.js[39m[22m 4.16 MiB [1m[32m[emitted][39m[22m [from: ../external/runtime/runtime.js] [1m[32m[copied][39m[22m
+  asset [1m[32mexternal/runtime/LICENSE[39m[22m 1.04 KiB [1m[32m[emitted][39m[22m [from: ../external/runtime/LICENSE] [1m[32m[copied][39m[22m
+  asset [1m[32mexternal/runtime/runtime.js.LICENSE.txt[39m[22m 92 bytes [1m[32m[emitted][39m[22m [from: ../external/runtime/runtime.js.LICENSE.txt] [1m[32m[copied][39m[22m
+cached modules 342 KiB (javascript) 26.6 KiB (runtime) [1m[32m[cached][39m[22m 57 modules
+webpack 5.105.3 compiled [1m[32msuccessfully[39m[22m in 72 ms
+assets by status 50.7 MiB [1m[32m[cached][39m[22m 104 assets
+cached modules 342 KiB (javascript) 26.6 KiB (runtime) [1m[32m[cached][39m[22m 57 modules
+webpack 5.105.3 compiled [1m[32msuccessfully[39m[22m in 75 ms
+assets by status 50.3 MiB [1m[32m[cached][39m[22m 102 assets
+assets by path [1m[32m.[39m[22m 468 KiB
+  assets by path [1m[32m*.js[39m[22m 464 KiB
+    asset [1m[32mbundle.js[39m[22m 458 KiB [1m[32m[emitted][39m[22m (name: main)
+    asset [1m[32mmain.09a0b1e100e7404c819f.hot-update.js[39m[22m 6.75 KiB [1m[32m[emitted][39m[22m [1m[32m[immutable][39m[22m [1m[32m[hmr][39m[22m (name: main)
+  asset [1m[32massets/bloom-demo.js[39m[22m 3.69 KiB [1m[32m[emitted][39m[22m [from: assets/bloom-demo.js] [1m[32m[copied][39m[22m
+  asset [1m[32mmain.09a0b1e100e7404c819f.hot-update.json[39m[22m 28 bytes [1m[32m[emitted][39m[22m [1m[32m[immutable][39m[22m [1m[32m[hmr][39m[22m
+Entrypoint [1mmain[39m[22m 464 KiB = [1m[32mbundle.js[39m[22m 458 KiB [1m[32mmain.09a0b1e100e7404c819f.hot-update.js[39m[22m 6.75 KiB
+cached modules 339 KiB [1m[32m[cached][39m[22m 44 modules
+runtime modules 26.6 KiB 11 modules
+javascript modules 3.72 KiB
+  [1m./bloom-demo.js[39m[22m 3.69 KiB [1m[33m[built][39m[22m [1m[33m[code generated][39m[22m
+  [1m./assets/bloom-demo.js[39m[22m 40 bytes [1m[33m[built][39m[22m
+webpack 5.105.3 compiled [1m[32msuccessfully[39m[22m in 46 ms
+assets by status 50.3 MiB [1m[32m[cached][39m[22m 102 assets
+assets by path [1m[32m.[39m[22m 460 KiB
+  assets by path [1m[32m*.js[39m[22m 458 KiB
+    asset [1m[32mbundle.js[39m[22m 458 KiB [1m[32m[emitted][39m[22m (name: main)
+    asset [1m[32mmain.4257b6c9298b02789114.hot-update.js[39m[22m 843 bytes [1m[32m[emitted][39m[22m [1m[32m[immutable][39m[22m [1m[32m[hmr][39m[22m (name: main)
+  asset [1m[32mindex.html[39m[22m 1.45 KiB [1m[32m[emitted][39m[22m
+  asset [1m[32mmain.4257b6c9298b02789114.hot-update.json[39m[22m 28 bytes [1m[32m[emitted][39m[22m [1m[32m[immutable][39m[22m [1m[32m[hmr][39m[22m
+Entrypoint [1mmain[39m[22m 458 KiB = [1m[32mbundle.js[39m[22m 458 KiB [1m[32mmain.4257b6c9298b02789114.hot-update.js[39m[22m 843 bytes
+cached modules 342 KiB [1m[32m[cached][39m[22m 46 modules
+runtime modules 26.6 KiB 11 modules
+webpack 5.105.3 compiled [1m[32msuccessfully[39m[22m in 72 ms
+assets by status 50.3 MiB [1m[32m[cached][39m[22m 102 assets
+assets by path [1m[32m.[39m[22m 454 KiB
+  assets by path [1m[32m*.js[39m[22m 448 KiB
+    asset [1m[32mbundle.js[39m[22m 439 KiB [1m[32m[emitted][39m[22m (name: main)
+    asset [1m[32mmain.d1ac29068fd5af8e0435.hot-update.js[39m[22m 8.87 KiB [1m[32m[emitted][39m[22m [1m[32m[immutable][39m[22m [1m[32m[hmr][39m[22m (name: main)
+  asset [1m[32massets/bloom-demo.js[39m[22m 5.86 KiB [1m[32m[emitted][39m[22m [from: assets/bloom-demo.js] [1m[32m[copied][39m[22m
+  asset [1m[32mmain.d1ac29068fd5af8e0435.hot-update.json[39m[22m 227 bytes [1m[32m[emitted][39m[22m [1m[32m[immutable][39m[22m [1m[32m[hmr][39m[22m
+Entrypoint [1mmain[39m[22m 448 KiB = [1m[32mbundle.js[39m[22m 439 KiB [1m[32mmain.d1ac29068fd5af8e0435.hot-update.js[39m[22m 8.87 KiB
+cached modules 323 KiB [1m[32m[cached][39m[22m 41 modules
+runtime modules 26.6 KiB 11 modules
+javascript modules 5.9 KiB
+  [1m./bloom-demo.js[39m[22m 5.86 KiB [1m[33m[built][39m[22m [1m[33m[code generated][39m[22m
+  [1m./assets/bloom-demo.js[39m[22m 40 bytes [1m[33m[built][39m[22m
+webpack 5.105.3 compiled [1m[32msuccessfully[39m[22m in 51 ms
+assets by status 50.7 MiB [1m[32m[cached][39m[22m 104 assets
+cached modules 328 KiB (javascript) 26.6 KiB (runtime) [1m[32m[cached][39m[22m 54 modules
+webpack 5.105.3 compiled [1m[32msuccessfully[39m[22m in 37 ms
+assets by status 50.3 MiB [1m[32m[cached][39m[22m 102 assets
+assets by path [1m[32m.[39m[22m 445 KiB
+  assets by path [1m[32m*.js[39m[22m 439 KiB
+    asset [1m[32mbundle.js[39m[22m 430 KiB [1m[32m[emitted][39m[22m (name: main)
+    asset [1m[32mmain.6452fff2b6fb7ce93429.hot-update.js[39m[22m 8.83 KiB [1m[32m[emitted][39m[22m [1m[32m[immutable][39m[22m [1m[32m[hmr][39m[22m (name: main)
+  asset [1m[32massets/bloom-demo.js[39m[22m 6.05 KiB [1m[32m[emitted][39m[22m [from: assets/bloom-demo.js] [1m[32m[copied][39m[22m
+  asset [1m[32mmain.6452fff2b6fb7ce93429.hot-update.json[39m[22m 154 bytes [1m[32m[emitted][39m[22m [1m[32m[immutable][39m[22m [1m[32m[hmr][39m[22m
+Entrypoint [1mmain[39m[22m 439 KiB = [1m[32mbundle.js[39m[22m 430 KiB [1m[32mmain.6452fff2b6fb7ce93429.hot-update.js[39m[22m 8.83 KiB
+cached modules 317 KiB [1m[32m[cached][39m[22m 39 modules
+runtime modules 26.6 KiB 11 modules
+javascript modules 6.09 KiB
+  [1m./bloom-demo.js[39m[22m 6.05 KiB [1m[33m[built][39m[22m [1m[33m[code generated][39m[22m
+  [1m./assets/bloom-demo.js[39m[22m 40 bytes [1m[33m[built][39m[22m
+webpack 5.105.3 compiled [1m[32msuccessfully[39m[22m in 64 ms
+assets by status 50.7 MiB [1m[32m[cached][39m[22m 103 assets
+asset [1m[32massets/README_bloom_test.md[39m[22m 2.56 KiB [1m[32m[emitted][39m[22m [from: assets/README_bloom_test.md] [1m[32m[copied][39m[22m
+cached modules 323 KiB (javascript) 26.6 KiB (runtime) [1m[32m[cached][39m[22m 52 modules
+webpack 5.105.3 compiled [1m[32msuccessfully[39m[22m in 28 ms
+undefined Emit file change: D:\workspace\8thwall example\8thwall_ar\farahfort-cadiphy\src\entry.js 1786069305636
+assets by status 37.1 MiB [1m[32m[cached][39m[22m 67 assets
+assets by path [1m[32m.[39m[22m 13.7 MiB
+  assets by path [1m[32mexternal/runtime/resources/fonts/[39m[22m 5.09 MiB 28 assets
+  assets by path [1m[32mexternal/runtime/resources/draco/[39m[22m 1.02 MiB
+    assets by path [1m[32mexternal/runtime/resources/draco/*.js[39m[22m 761 KiB
+      asset [1m[32mexternal/runtime/resources/draco/draco_decoder.js[39m[22m 696 KiB [1m[32m[emitted][39m[22m [from: ../node_modules/@8thwall/ecs/dist/resources/draco/draco_decoder.js] [1m[32m[copied][39m[22m
+      asset [1m[32mexternal/runtime/resources/draco/draco_wasm_wrapper.js[39m[22m 65 KiB [1m[32m[emitted][39m[22m [from: ../node_modules/@8thwall/ecs/dist/resources/draco/draco_wasm_wrapper.js] [1m[32m[copied][39m[22m
+    asset [1m[32mexternal/runtime/resources/draco/draco_decoder.wasm[39m[22m 277 KiB [1m[32m[emitted][39m[22m [from: ../node_modules/@8thwall/ecs/dist/resources/draco/draco_decoder.wasm] [1m[32m[copied][39m[22m
+    asset [1m[32mexternal/runtime/resources/draco/LICENSE[39m[22m 11.1 KiB [1m[32m[emitted][39m[22m [from: ../node_modules/@8thwall/ecs/dist/resources/draco/LICENSE] [1m[32m[copied][39m[22m
+  assets by path [1m[32mexternal/runtime/resources/splat/*.js[39m[22m 3.38 MiB
+    asset [1m[32mexternal/runtime/resources/splat/splat-worker.js[39m[22m 2.26 MiB [1m[32m[emitted][39m[22m [from: ../node_modules/@8thwall/ecs/dist/resources/splat/splat-worker.js] [1m[32m[copied][39m[22m
+    asset [1m[32mexternal/runtime/resources/splat/splat-loader.js[39m[22m 1.12 MiB [1m[32m[emitted][39m[22m [from: ../node_modules/@8thwall/ecs/dist/resources/splat/splat-loader.js] [1m[32m[copied][39m[22m
+  asset [1m[32mexternal/runtime/runtime.js[39m[22m 4.17 MiB [1m[32m[emitted][39m[22m [from: ../node_modules/@8thwall/ecs/dist/runtime.js] [1m[32m[copied][39m[22m
+  asset [1m[32mexternal/runtime/LICENSE[39m[22m 1.04 KiB [1m[32m[emitted][39m[22m [from: ../node_modules/@8thwall/ecs/dist/LICENSE] [1m[32m[copied][39m[22m
+cached modules 323 KiB (javascript) 26.6 KiB (runtime) [1m[32m[cached][39m[22m 51 modules
+[1m./entry.js[39m[22m 74 bytes [1m[33m[built][39m[22m
+webpack 5.105.3 compiled [1m[32msuccessfully[39m[22m in 130 ms
