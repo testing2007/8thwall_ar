@@ -155,3 +155,304 @@ assets by path [1m[32m.[39m[22m 13.7 MiB
 cached modules 323 KiB (javascript) 26.6 KiB (runtime) [1m[32m[cached][39m[22m 51 modules
 [1m./entry.js[39m[22m 74 bytes [1m[33m[built][39m[22m
 webpack 5.105.3 compiled [1m[32msuccessfully[39m[22m in 130 ms
+assets by status 50.4 MiB [1m[32m[cached][39m[22m 102 assets
+assets by path [1m[32m.[39m[22m 441 KiB
+  asset [1m[32mbundle.js[39m[22m 431 KiB [1m[32m[emitted][39m[22m (name: main)
+  asset [1m[32mmain.c4f85149f87ee6328bc7.hot-update.js[39m[22m 9.81 KiB [1m[32m[emitted][39m[22m [1m[32m[immutable][39m[22m [1m[32m[hmr][39m[22m (name: main)
+  asset [1m[32mmain.c4f85149f87ee6328bc7.hot-update.json[39m[22m 28 bytes [1m[32m[emitted][39m[22m [1m[32m[immutable][39m[22m [1m[32m[hmr][39m[22m
+Entrypoint [1mmain[39m[22m 441 KiB = [1m[32mbundle.js[39m[22m 431 KiB [1m[32mmain.c4f85149f87ee6328bc7.hot-update.js[39m[22m 9.81 KiB
+cached modules 317 KiB [1m[32m[cached][39m[22m 39 modules
+runtime modules 26.6 KiB 11 modules
+javascript modules 7.09 KiB
+  [1m./entry.js[39m[22m 74 bytes [1m[33m[built][39m[22m
+  [1m./bloom-demo.js[39m[22m 7.02 KiB [1m[33m[built][39m[22m [1m[33m[code generated][39m[22m
+webpack 5.105.3 compiled [1m[32msuccessfully[39m[22m in 196 ms
+assets by status 50.8 MiB [1m[32m[cached][39m[22m 103 assets
+cached modules 324 KiB (javascript) 26.6 KiB (runtime) [1m[32m[cached][39m[22m 52 modules
+webpack 5.105.3 compiled [1m[32msuccessfully[39m[22m in 97 ms
+assets by status 50.4 MiB [1m[32m[cached][39m[22m 102 assets
+assets by path [1m[32m.[39m[22m 442 KiB
+  asset [1m[32mbundle.js[39m[22m 432 KiB [1m[32m[emitted][39m[22m (name: main)
+  asset [1m[32mmain.5388384298cb84e244c9.hot-update.js[39m[22m 10.3 KiB [1m[32m[emitted][39m[22m [1m[32m[immutable][39m[22m [1m[32m[hmr][39m[22m (name: main)
+  asset [1m[32mmain.5388384298cb84e244c9.hot-update.json[39m[22m 28 bytes [1m[32m[emitted][39m[22m [1m[32m[immutable][39m[22m [1m[32m[hmr][39m[22m
+Entrypoint [1mmain[39m[22m 442 KiB = [1m[32mbundle.js[39m[22m 432 KiB [1m[32mmain.5388384298cb84e244c9.hot-update.js[39m[22m 10.3 KiB
+cached modules 317 KiB [1m[32m[cached][39m[22m 40 modules
+runtime modules 26.6 KiB 11 modules
+[1m./bloom-demo.js[39m[22m 7.51 KiB [1m[33m[built][39m[22m [1m[33m[code generated][39m[22m
+webpack 5.105.3 compiled [1m[32msuccessfully[39m[22m in 165 ms
+assets by status 50.8 MiB [1m[32m[cached][39m[22m 103 assets
+asset [1m[32massets/cadiphy_bloom_test - 副本.glb[39m[22m 13.9 KiB [1m[32m[emitted][39m[22m [from: assets/cadiphy_bloom_test - 副本.glb] [1m[32m[copied][39m[22m
+cached modules 324 KiB (javascript) 26.6 KiB (runtime) [1m[32m[cached][39m[22m 52 modules
+webpack 5.105.3 compiled [1m[32msuccessfully[39m[22m in 82 ms
+assets by status 50.8 MiB [1m[32m[cached][39m[22m 103 assets
+asset [1m[32massets/cadiphy_bloom_test.glb[39m[22m 24.2 KiB [1m[32m[emitted][39m[22m [from: assets/cadiphy_bloom_test.glb] [1m[32m[copied][39m[22m
+cached modules 324 KiB (javascript) 26.6 KiB (runtime) [1m[32m[cached][39m[22m 51 modules
+[1m./assets/cadiphy_bloom_test.glb[39m[22m 49 bytes [1m[33m[built][39m[22m
+webpack 5.105.3 compiled [1m[32msuccessfully[39m[22m in 162 ms
+assets by status 50.8 MiB [1m[32m[cached][39m[22m 103 assets
+asset [1m[32massets/cadiphy_bloom_test.glb[39m[22m 24.2 KiB [1m[32m[emitted][39m[22m [from: assets/cadiphy_bloom_test.glb] [1m[32m[copied][39m[22m
+cached modules 324 KiB (javascript) 26.6 KiB (runtime) [1m[32m[cached][39m[22m 51 modules
+[1m./assets/cadiphy_bloom_test.glb[39m[22m 49 bytes [1m[33m[built][39m[22m
+webpack 5.105.3 compiled [1m[32msuccessfully[39m[22m in 177 ms
+assets by status 50.4 MiB [1m[32m[cached][39m[22m 103 assets
+assets by path [1m[32m.[39m[22m 442 KiB
+  asset [1m[32mbundle.js[39m[22m 432 KiB [1m[32m[emitted][39m[22m (name: main)
+  asset [1m[32mmain.fd79c6089929868ee0cb.hot-update.js[39m[22m 10.5 KiB [1m[32m[emitted][39m[22m [1m[32m[immutable][39m[22m [1m[32m[hmr][39m[22m (name: main)
+  asset [1m[32mmain.fd79c6089929868ee0cb.hot-update.json[39m[22m 28 bytes [1m[32m[emitted][39m[22m [1m[32m[immutable][39m[22m [1m[32m[hmr][39m[22m
+Entrypoint [1mmain[39m[22m 442 KiB = [1m[32mbundle.js[39m[22m 432 KiB [1m[32mmain.fd79c6089929868ee0cb.hot-update.js[39m[22m 10.5 KiB
+cached modules 317 KiB [1m[32m[cached][39m[22m 40 modules
+runtime modules 26.6 KiB 11 modules
+[1m./bloom-demo.js[39m[22m 7.66 KiB [1m[33m[built][39m[22m [1m[33m[code generated][39m[22m
+webpack 5.105.3 compiled [1m[32msuccessfully[39m[22m in 170 ms
+assets by status 50.8 MiB [1m[32m[cached][39m[22m 103 assets
+cached modules 324 KiB (javascript) 26.6 KiB (runtime) [1m[32m[cached][39m[22m 52 modules
+webpack 5.105.3 compiled [1m[32msuccessfully[39m[22m in 81 ms
+assets by status 50.8 MiB [1m[32m[cached][39m[22m 102 assets
+asset [1m[32massets/cadiphy_bloom_test.glb[39m[22m 24.2 KiB [1m[32m[emitted][39m[22m [from: assets/cadiphy_bloom_test.glb] [1m[32m[copied][39m[22m
+cached modules 324 KiB (javascript) 26.6 KiB (runtime) [1m[32m[cached][39m[22m 51 modules
+[1m./assets/cadiphy_bloom_test.glb[39m[22m 49 bytes [1m[33m[built][39m[22m
+webpack 5.105.3 compiled [1m[32msuccessfully[39m[22m in 81 ms
+assets by status 50.4 MiB [1m[32m[cached][39m[22m 102 assets
+assets by path [1m[32m.[39m[22m 210 KiB
+  asset [1m[32mbundle.js[39m[22m 206 KiB [1m[32m[emitted][39m[22m (name: main)
+  asset [1m[32mmain.df43ce88c85fee8a4470.hot-update.js[39m[22m 3.84 KiB [1m[32m[emitted][39m[22m [1m[32m[immutable][39m[22m [1m[32m[hmr][39m[22m (name: main)
+  asset [1m[32mmain.df43ce88c85fee8a4470.hot-update.json[39m[22m 583 bytes [1m[32m[emitted][39m[22m [1m[32m[immutable][39m[22m [1m[32m[hmr][39m[22m
+Entrypoint [1mmain[39m[22m 209 KiB = [1m[32mbundle.js[39m[22m 206 KiB [1m[32mmain.df43ce88c85fee8a4470.hot-update.js[39m[22m 3.84 KiB
+cached modules 130 KiB [1m[32m[cached][39m[22m 28 modules
+runtime modules 26.6 KiB 11 modules
+javascript modules 1.26 KiB
+  [1m./entry.js[39m[22m 74 bytes [1m[33m[code generated][39m[22m
+  [1m./app.js[39m[22m 1.19 KiB [1m[33m[code generated][39m[22m
+  [1m./bloom-demo.js[39m[22m 1 bytes [1m[33m[built][39m[22m [1m[33m[code generated][39m[22m
+webpack 5.105.3 compiled [1m[32msuccessfully[39m[22m in 145 ms
+assets by status 50.6 MiB [1m[32m[cached][39m[22m 103 assets
+cached modules 132 KiB (javascript) 26.6 KiB (runtime) [1m[32m[cached][39m[22m 42 modules
+webpack 5.105.3 compiled [1m[32msuccessfully[39m[22m in 143 ms
+assets by status 50.4 MiB [1m[32m[cached][39m[22m 102 assets
+assets by path [1m[32m.[39m[22m 682 KiB
+  asset [1m[32mbundle.js[39m[22m 442 KiB [1m[32m[emitted][39m[22m (name: main)
+  asset [1m[32mmain.83b44cdfbe5d271250f3.hot-update.js[39m[22m 240 KiB [1m[32m[emitted][39m[22m [1m[32m[immutable][39m[22m [1m[32m[hmr][39m[22m (name: main)
+  asset [1m[32mmain.83b44cdfbe5d271250f3.hot-update.json[39m[22m 28 bytes [1m[32m[emitted][39m[22m [1m[32m[immutable][39m[22m [1m[32m[hmr][39m[22m
+Entrypoint [1mmain[39m[22m 682 KiB = [1m[32mbundle.js[39m[22m 442 KiB [1m[32mmain.83b44cdfbe5d271250f3.hot-update.js[39m[22m 240 KiB
+cached modules 319 KiB [1m[32m[cached][39m[22m 39 modules
+runtime modules 26.6 KiB 11 modules
+javascript modules 13.8 KiB
+  [1m./entry.js[39m[22m 74 bytes [1m[33m[code generated][39m[22m
+  [1m./app.js[39m[22m 1.19 KiB [1m[33m[code generated][39m[22m
+  [1m./bloom-demo.js[39m[22m 12.6 KiB [1m[33m[built][39m[22m [1m[33m[code generated][39m[22m
+webpack 5.105.3 compiled [1m[32msuccessfully[39m[22m in 193 ms
+assets by status 50.8 MiB [1m[32m[cached][39m[22m 102 assets
+asset [1m[32massets/cadiphy_bloom_test.glb[39m[22m 24.1 KiB [1m[32m[emitted][39m[22m [from: assets/cadiphy_bloom_test.glb] [1m[32m[copied][39m[22m
+cached modules 332 KiB (javascript) 26.6 KiB (runtime) [1m[32m[cached][39m[22m 52 modules
+[1m./assets/cadiphy_bloom_test.glb[39m[22m 49 bytes [1m[33m[built][39m[22m
+webpack 5.105.3 compiled [1m[32msuccessfully[39m[22m in 92 ms
+assets by status 50.4 MiB [1m[32m[cached][39m[22m 102 assets
+assets by path [1m[32m.[39m[22m 458 KiB
+  asset [1m[32mbundle.js[39m[22m 442 KiB [1m[32m[emitted][39m[22m (name: main)
+  asset [1m[32mmain.fc3f5c60976772624f8c.hot-update.js[39m[22m 16 KiB [1m[32m[emitted][39m[22m [1m[32m[immutable][39m[22m [1m[32m[hmr][39m[22m (name: main)
+  asset [1m[32mmain.fc3f5c60976772624f8c.hot-update.json[39m[22m 28 bytes [1m[32m[emitted][39m[22m [1m[32m[immutable][39m[22m [1m[32m[hmr][39m[22m
+Entrypoint [1mmain[39m[22m 458 KiB = [1m[32mbundle.js[39m[22m 442 KiB [1m[32mmain.fc3f5c60976772624f8c.hot-update.js[39m[22m 16 KiB
+cached modules 320 KiB [1m[32m[cached][39m[22m 41 modules
+runtime modules 26.6 KiB 11 modules
+[1m./bloom-demo.js[39m[22m 12.6 KiB [1m[33m[built][39m[22m [1m[33m[code generated][39m[22m
+webpack 5.105.3 compiled [1m[32msuccessfully[39m[22m in 178 ms
+assets by status 50.8 MiB [1m[32m[cached][39m[22m 103 assets
+cached modules 320 KiB (javascript) 26.6 KiB (runtime) [1m[32m[cached][39m[22m 52 modules
+[1m./bloom-demo.js[39m[22m 12.6 KiB [1m[33m[built][39m[22m
+webpack 5.105.3 compiled [1m[32msuccessfully[39m[22m in 128 ms
+assets by status 50.8 MiB [1m[32m[cached][39m[22m 103 assets
+cached modules 320 KiB (javascript) 26.6 KiB (runtime) [1m[32m[cached][39m[22m 52 modules
+[1m./bloom-demo.js[39m[22m 12.6 KiB [1m[33m[built][39m[22m
+webpack 5.105.3 compiled [1m[32msuccessfully[39m[22m in 78 ms
+assets by status 50.8 MiB [1m[32m[cached][39m[22m 103 assets
+cached modules 320 KiB (javascript) 26.6 KiB (runtime) [1m[32m[cached][39m[22m 52 modules
+[1m./bloom-demo.js[39m[22m 12.6 KiB [1m[33m[built][39m[22m
+webpack 5.105.3 compiled [1m[32msuccessfully[39m[22m in 74 ms
+assets by status 50.4 MiB [1m[32m[cached][39m[22m 102 assets
+assets by path [1m[32m.[39m[22m 458 KiB
+  asset [1m[32mbundle.js[39m[22m 442 KiB [1m[32m[emitted][39m[22m (name: main)
+  asset [1m[32mmain.e5b5ed0655ed95ef9c5b.hot-update.js[39m[22m 16.1 KiB [1m[32m[emitted][39m[22m [1m[32m[immutable][39m[22m [1m[32m[hmr][39m[22m (name: main)
+  asset [1m[32mmain.e5b5ed0655ed95ef9c5b.hot-update.json[39m[22m 28 bytes [1m[32m[emitted][39m[22m [1m[32m[immutable][39m[22m [1m[32m[hmr][39m[22m
+Entrypoint [1mmain[39m[22m 458 KiB = [1m[32mbundle.js[39m[22m 442 KiB [1m[32mmain.e5b5ed0655ed95ef9c5b.hot-update.js[39m[22m 16.1 KiB
+cached modules 320 KiB [1m[32m[cached][39m[22m 41 modules
+runtime modules 26.6 KiB 11 modules
+[1m./bloom-demo.js[39m[22m 12.7 KiB [1m[33m[built][39m[22m [1m[33m[code generated][39m[22m
+webpack 5.105.3 compiled [1m[32msuccessfully[39m[22m in 115 ms
+assets by status 50.8 MiB [1m[32m[cached][39m[22m 103 assets
+cached modules 320 KiB (javascript) 26.6 KiB (runtime) [1m[32m[cached][39m[22m 52 modules
+[1m./bloom-demo.js[39m[22m 12.7 KiB [1m[33m[built][39m[22m
+webpack 5.105.3 compiled [1m[32msuccessfully[39m[22m in 82 ms
+assets by status 50.8 MiB [1m[32m[cached][39m[22m 103 assets
+cached modules 320 KiB (javascript) 26.6 KiB (runtime) [1m[32m[cached][39m[22m 52 modules
+[1m./bloom-demo.js[39m[22m 12.7 KiB [1m[33m[built][39m[22m
+webpack 5.105.3 compiled [1m[32msuccessfully[39m[22m in 132 ms
+assets by status 50.8 MiB [1m[32m[cached][39m[22m 103 assets
+cached modules 320 KiB (javascript) 26.6 KiB (runtime) [1m[32m[cached][39m[22m 52 modules
+[1m./bloom-demo.js[39m[22m 12.7 KiB [1m[33m[built][39m[22m
+webpack 5.105.3 compiled [1m[32msuccessfully[39m[22m in 98 ms
+assets by status 50.8 MiB [1m[32m[cached][39m[22m 102 assets
+asset [1m[32massets/cadiphy_bloom_test.glb[39m[22m 24.1 KiB [1m[32m[emitted][39m[22m [from: assets/cadiphy_bloom_test.glb] [1m[32m[copied][39m[22m
+cached modules 333 KiB (javascript) 26.6 KiB (runtime) [1m[32m[cached][39m[22m 52 modules
+[1m./assets/cadiphy_bloom_test.glb[39m[22m 49 bytes [1m[33m[built][39m[22m
+webpack 5.105.3 compiled [1m[32msuccessfully[39m[22m in 203 ms
+assets by status 50.8 MiB [1m[32m[cached][39m[22m 102 assets
+asset [1m[32massets/cadiphy_bloom_test.glb[39m[22m 24.1 KiB [1m[32m[emitted][39m[22m [from: assets/cadiphy_bloom_test.glb] [1m[32m[copied][39m[22m
+cached modules 333 KiB (javascript) 26.6 KiB (runtime) [1m[32m[cached][39m[22m 52 modules
+[1m./assets/cadiphy_bloom_test.glb[39m[22m 49 bytes [1m[33m[built][39m[22m
+webpack 5.105.3 compiled [1m[32msuccessfully[39m[22m in 116 ms
+assets by status 50.4 MiB [1m[32m[cached][39m[22m 102 assets
+assets by path [1m[32m.[39m[22m 458 KiB
+  asset [1m[32mbundle.js[39m[22m 442 KiB [1m[32m[emitted][39m[22m (name: main)
+  asset [1m[32mmain.18a47e1dbfeee77e85d8.hot-update.js[39m[22m 16.2 KiB [1m[32m[emitted][39m[22m [1m[32m[immutable][39m[22m [1m[32m[hmr][39m[22m (name: main)
+  asset [1m[32mmain.18a47e1dbfeee77e85d8.hot-update.json[39m[22m 28 bytes [1m[32m[emitted][39m[22m [1m[32m[immutable][39m[22m [1m[32m[hmr][39m[22m
+Entrypoint [1mmain[39m[22m 458 KiB = [1m[32mbundle.js[39m[22m 442 KiB [1m[32mmain.18a47e1dbfeee77e85d8.hot-update.js[39m[22m 16.2 KiB
+cached modules 320 KiB [1m[32m[cached][39m[22m 41 modules
+runtime modules 26.6 KiB 11 modules
+[1m./bloom-demo.js[39m[22m 12.8 KiB [1m[33m[built][39m[22m [1m[33m[code generated][39m[22m
+webpack 5.105.3 compiled [1m[32msuccessfully[39m[22m in 219 ms
+assets by status 50.8 MiB [1m[32m[cached][39m[22m 103 assets
+cached modules 320 KiB (javascript) 26.6 KiB (runtime) [1m[32m[cached][39m[22m 52 modules
+[1m./bloom-demo.js[39m[22m 12.8 KiB [1m[33m[built][39m[22m
+webpack 5.105.3 compiled [1m[32msuccessfully[39m[22m in 102 ms
+assets by status 50.8 MiB [1m[32m[cached][39m[22m 103 assets
+cached modules 320 KiB (javascript) 26.6 KiB (runtime) [1m[32m[cached][39m[22m 52 modules
+[1m./bloom-demo.js[39m[22m 12.8 KiB [1m[33m[built][39m[22m
+webpack 5.105.3 compiled [1m[32msuccessfully[39m[22m in 120 ms
+assets by status 50.8 MiB [1m[32m[cached][39m[22m 103 assets
+cached modules 320 KiB (javascript) 26.6 KiB (runtime) [1m[32m[cached][39m[22m 52 modules
+[1m./bloom-demo.js[39m[22m 12.8 KiB [1m[33m[built][39m[22m
+webpack 5.105.3 compiled [1m[32msuccessfully[39m[22m in 114 ms
+assets by status 50.4 MiB [1m[32m[cached][39m[22m 102 assets
+assets by path [1m[32m.[39m[22m 458 KiB
+  asset [1m[32mbundle.js[39m[22m 442 KiB [1m[32m[emitted][39m[22m (name: main)
+  asset [1m[32mmain.126f19b3df24dd33a385.hot-update.js[39m[22m 16.2 KiB [1m[32m[emitted][39m[22m [1m[32m[immutable][39m[22m [1m[32m[hmr][39m[22m (name: main)
+  asset [1m[32mmain.126f19b3df24dd33a385.hot-update.json[39m[22m 28 bytes [1m[32m[emitted][39m[22m [1m[32m[immutable][39m[22m [1m[32m[hmr][39m[22m
+Entrypoint [1mmain[39m[22m 458 KiB = [1m[32mbundle.js[39m[22m 442 KiB [1m[32mmain.126f19b3df24dd33a385.hot-update.js[39m[22m 16.2 KiB
+cached modules 320 KiB [1m[32m[cached][39m[22m 41 modules
+runtime modules 26.6 KiB 11 modules
+[1m./bloom-demo.js[39m[22m 12.8 KiB [1m[33m[built][39m[22m [1m[33m[code generated][39m[22m
+webpack 5.105.3 compiled [1m[32msuccessfully[39m[22m in 121 ms
+assets by status 50.4 MiB [1m[32m[cached][39m[22m 102 assets
+assets by path [1m[32m.[39m[22m 459 KiB
+  asset [1m[32mbundle.js[39m[22m 442 KiB [1m[32m[emitted][39m[22m (name: main)
+  asset [1m[32mmain.7edfdd8cd38a77b5af65.hot-update.js[39m[22m 16.8 KiB [1m[32m[emitted][39m[22m [1m[32m[immutable][39m[22m [1m[32m[hmr][39m[22m (name: main)
+  asset [1m[32mmain.7edfdd8cd38a77b5af65.hot-update.json[39m[22m 28 bytes [1m[32m[emitted][39m[22m [1m[32m[immutable][39m[22m [1m[32m[hmr][39m[22m
+Entrypoint [1mmain[39m[22m 459 KiB = [1m[32mbundle.js[39m[22m 442 KiB [1m[32mmain.7edfdd8cd38a77b5af65.hot-update.js[39m[22m 16.8 KiB
+cached modules 320 KiB [1m[32m[cached][39m[22m 41 modules
+runtime modules 26.6 KiB 11 modules
+[1m./bloom-demo.js[39m[22m 13.4 KiB [1m[33m[built][39m[22m [1m[33m[code generated][39m[22m
+webpack 5.105.3 compiled [1m[32msuccessfully[39m[22m in 112 ms
+assets by status 50.4 MiB [1m[32m[cached][39m[22m 102 assets
+assets by path [1m[32m.[39m[22m 459 KiB
+  asset [1m[32mbundle.js[39m[22m 442 KiB [1m[32m[emitted][39m[22m (name: main)
+  asset [1m[32mmain.96b72a70878b93b47311.hot-update.js[39m[22m 16.8 KiB [1m[32m[emitted][39m[22m [1m[32m[immutable][39m[22m [1m[32m[hmr][39m[22m (name: main)
+  asset [1m[32mmain.96b72a70878b93b47311.hot-update.json[39m[22m 28 bytes [1m[32m[emitted][39m[22m [1m[32m[immutable][39m[22m [1m[32m[hmr][39m[22m
+Entrypoint [1mmain[39m[22m 459 KiB = [1m[32mbundle.js[39m[22m 442 KiB [1m[32mmain.96b72a70878b93b47311.hot-update.js[39m[22m 16.8 KiB
+cached modules 320 KiB [1m[32m[cached][39m[22m 41 modules
+runtime modules 26.6 KiB 11 modules
+[1m./bloom-demo.js[39m[22m 13.4 KiB [1m[33m[built][39m[22m [1m[33m[code generated][39m[22m
+webpack 5.105.3 compiled [1m[32msuccessfully[39m[22m in 204 ms
+assets by status 50.4 MiB [1m[32m[cached][39m[22m 102 assets
+assets by path [1m[32m.[39m[22m 459 KiB
+  asset [1m[32mbundle.js[39m[22m 442 KiB [1m[32m[emitted][39m[22m (name: main)
+  asset [1m[32mmain.49f79ac73836f6e520dc.hot-update.js[39m[22m 16.8 KiB [1m[32m[emitted][39m[22m [1m[32m[immutable][39m[22m [1m[32m[hmr][39m[22m (name: main)
+  asset [1m[32mmain.49f79ac73836f6e520dc.hot-update.json[39m[22m 28 bytes [1m[32m[emitted][39m[22m [1m[32m[immutable][39m[22m [1m[32m[hmr][39m[22m
+Entrypoint [1mmain[39m[22m 459 KiB = [1m[32mbundle.js[39m[22m 442 KiB [1m[32mmain.49f79ac73836f6e520dc.hot-update.js[39m[22m 16.8 KiB
+cached modules 320 KiB [1m[32m[cached][39m[22m 41 modules
+runtime modules 26.6 KiB 11 modules
+[1m./bloom-demo.js[39m[22m 13.4 KiB [1m[33m[built][39m[22m [1m[33m[code generated][39m[22m
+webpack 5.105.3 compiled [1m[32msuccessfully[39m[22m in 173 ms
+assets by status 50.8 MiB [1m[32m[cached][39m[22m 103 assets
+cached modules 320 KiB (javascript) 26.6 KiB (runtime) [1m[32m[cached][39m[22m 52 modules
+[1m./bloom-demo.js[39m[22m 13.4 KiB [1m[33m[built][39m[22m
+webpack 5.105.3 compiled [1m[32msuccessfully[39m[22m in 139 ms
+assets by status 50.4 MiB [1m[32m[cached][39m[22m 102 assets
+assets by path [1m[32m.[39m[22m 459 KiB
+  asset [1m[32mbundle.js[39m[22m 442 KiB [1m[32m[emitted][39m[22m (name: main)
+  asset [1m[32mmain.9ef5f80d06cfc2ff0b9b.hot-update.js[39m[22m 16.8 KiB [1m[32m[emitted][39m[22m [1m[32m[immutable][39m[22m [1m[32m[hmr][39m[22m (name: main)
+  asset [1m[32mmain.9ef5f80d06cfc2ff0b9b.hot-update.json[39m[22m 28 bytes [1m[32m[emitted][39m[22m [1m[32m[immutable][39m[22m [1m[32m[hmr][39m[22m
+Entrypoint [1mmain[39m[22m 459 KiB = [1m[32mbundle.js[39m[22m 442 KiB [1m[32mmain.9ef5f80d06cfc2ff0b9b.hot-update.js[39m[22m 16.8 KiB
+cached modules 320 KiB [1m[32m[cached][39m[22m 41 modules
+runtime modules 26.6 KiB 11 modules
+[1m./bloom-demo.js[39m[22m 13.4 KiB [1m[33m[built][39m[22m [1m[33m[code generated][39m[22m
+webpack 5.105.3 compiled [1m[32msuccessfully[39m[22m in 164 ms
+assets by status 50.4 MiB [1m[32m[cached][39m[22m 102 assets
+assets by path [1m[32m.[39m[22m 459 KiB
+  asset [1m[32mbundle.js[39m[22m 442 KiB [1m[32m[emitted][39m[22m (name: main)
+  asset [1m[32mmain.30d5a289c8f396facb5b.hot-update.js[39m[22m 16.8 KiB [1m[32m[emitted][39m[22m [1m[32m[immutable][39m[22m [1m[32m[hmr][39m[22m (name: main)
+  asset [1m[32mmain.30d5a289c8f396facb5b.hot-update.json[39m[22m 28 bytes [1m[32m[emitted][39m[22m [1m[32m[immutable][39m[22m [1m[32m[hmr][39m[22m
+Entrypoint [1mmain[39m[22m 459 KiB = [1m[32mbundle.js[39m[22m 442 KiB [1m[32mmain.30d5a289c8f396facb5b.hot-update.js[39m[22m 16.8 KiB
+cached modules 320 KiB [1m[32m[cached][39m[22m 41 modules
+runtime modules 26.6 KiB 11 modules
+[1m./bloom-demo.js[39m[22m 13.4 KiB [1m[33m[built][39m[22m [1m[33m[code generated][39m[22m
+webpack 5.105.3 compiled [1m[32msuccessfully[39m[22m in 186 ms
+assets by status 50.4 MiB [1m[32m[cached][39m[22m 102 assets
+assets by path [1m[32m.[39m[22m 459 KiB
+  asset [1m[32mbundle.js[39m[22m 443 KiB [1m[32m[emitted][39m[22m (name: main)
+  asset [1m[32mmain.f292bffee3ee98107a50.hot-update.js[39m[22m 16.8 KiB [1m[32m[emitted][39m[22m [1m[32m[immutable][39m[22m [1m[32m[hmr][39m[22m (name: main)
+  asset [1m[32mmain.f292bffee3ee98107a50.hot-update.json[39m[22m 28 bytes [1m[32m[emitted][39m[22m [1m[32m[immutable][39m[22m [1m[32m[hmr][39m[22m
+Entrypoint [1mmain[39m[22m 459 KiB = [1m[32mbundle.js[39m[22m 443 KiB [1m[32mmain.f292bffee3ee98107a50.hot-update.js[39m[22m 16.8 KiB
+cached modules 320 KiB [1m[32m[cached][39m[22m 41 modules
+runtime modules 26.6 KiB 11 modules
+[1m./bloom-demo.js[39m[22m 13.5 KiB [1m[33m[built][39m[22m [1m[33m[code generated][39m[22m
+webpack 5.105.3 compiled [1m[32msuccessfully[39m[22m in 234 ms
+assets by status 50.8 MiB [1m[32m[cached][39m[22m 102 assets
+asset [1m[32massets/cadiphy_bloom_test.glb[39m[22m 24.2 KiB [1m[32m[emitted][39m[22m [from: assets/cadiphy_bloom_test.glb] [1m[32m[copied][39m[22m
+cached modules 333 KiB (javascript) 26.6 KiB (runtime) [1m[32m[cached][39m[22m 52 modules
+[1m./assets/cadiphy_bloom_test.glb[39m[22m 49 bytes [1m[33m[built][39m[22m
+webpack 5.105.3 compiled [1m[32msuccessfully[39m[22m in 232 ms
+assets by status 50.8 MiB [1m[32m[cached][39m[22m 103 assets
+cached modules 333 KiB (javascript) 26.6 KiB (runtime) [1m[32m[cached][39m[22m 53 modules
+webpack 5.105.3 compiled [1m[32msuccessfully[39m[22m in 91 ms
+assets by status 50.4 MiB [1m[32m[cached][39m[22m 102 assets
+assets by path [1m[32m.[39m[22m 459 KiB
+  asset [1m[32mbundle.js[39m[22m 443 KiB [1m[32m[emitted][39m[22m (name: main)
+  asset [1m[32mmain.6317c2485895e86605fa.hot-update.js[39m[22m 16.8 KiB [1m[32m[emitted][39m[22m [1m[32m[immutable][39m[22m [1m[32m[hmr][39m[22m (name: main)
+  asset [1m[32mmain.6317c2485895e86605fa.hot-update.json[39m[22m 28 bytes [1m[32m[emitted][39m[22m [1m[32m[immutable][39m[22m [1m[32m[hmr][39m[22m
+Entrypoint [1mmain[39m[22m 459 KiB = [1m[32mbundle.js[39m[22m 443 KiB [1m[32mmain.6317c2485895e86605fa.hot-update.js[39m[22m 16.8 KiB
+cached modules 320 KiB [1m[32m[cached][39m[22m 41 modules
+runtime modules 26.6 KiB 11 modules
+[1m./bloom-demo.js[39m[22m 13.5 KiB [1m[33m[built][39m[22m [1m[33m[code generated][39m[22m
+webpack 5.105.3 compiled [1m[32msuccessfully[39m[22m in 175 ms
+assets by status 50.4 MiB [1m[32m[cached][39m[22m 102 assets
+assets by path [1m[32m.[39m[22m 459 KiB
+  asset [1m[32mbundle.js[39m[22m 443 KiB [1m[32m[emitted][39m[22m (name: main)
+  asset [1m[32mmain.ce7465d31fa18bd19163.hot-update.js[39m[22m 16.9 KiB [1m[32m[emitted][39m[22m [1m[32m[immutable][39m[22m [1m[32m[hmr][39m[22m (name: main)
+  asset [1m[32mmain.ce7465d31fa18bd19163.hot-update.json[39m[22m 28 bytes [1m[32m[emitted][39m[22m [1m[32m[immutable][39m[22m [1m[32m[hmr][39m[22m
+Entrypoint [1mmain[39m[22m 459 KiB = [1m[32mbundle.js[39m[22m 443 KiB [1m[32mmain.ce7465d31fa18bd19163.hot-update.js[39m[22m 16.9 KiB
+cached modules 320 KiB [1m[32m[cached][39m[22m 41 modules
+runtime modules 26.6 KiB 11 modules
+[1m./bloom-demo.js[39m[22m 13.5 KiB [1m[33m[built][39m[22m [1m[33m[code generated][39m[22m
+webpack 5.105.3 compiled [1m[32msuccessfully[39m[22m in 164 ms
+assets by status 50.8 MiB [1m[32m[cached][39m[22m 103 assets
+cached modules 320 KiB (javascript) 26.6 KiB (runtime) [1m[32m[cached][39m[22m 52 modules
+[1m./bloom-demo.js[39m[22m 13.5 KiB [1m[33m[built][39m[22m
+webpack 5.105.3 compiled [1m[32msuccessfully[39m[22m in 92 ms
+assets by status 50.8 MiB [1m[32m[cached][39m[22m 103 assets
+cached modules 320 KiB (javascript) 26.6 KiB (runtime) [1m[32m[cached][39m[22m 52 modules
+[1m./bloom-demo.js[39m[22m 13.5 KiB [1m[33m[built][39m[22m
+webpack 5.105.3 compiled [1m[32msuccessfully[39m[22m in 105 ms
+assets by status 50.4 MiB [1m[32m[cached][39m[22m 102 assets
+assets by path [1m[32m.[39m[22m 460 KiB
+  asset [1m[32mbundle.js[39m[22m 443 KiB [1m[32m[emitted][39m[22m (name: main)
+  asset [1m[32mmain.2f5eb70914dc2ae016ff.hot-update.js[39m[22m 16.9 KiB [1m[32m[emitted][39m[22m [1m[32m[immutable][39m[22m [1m[32m[hmr][39m[22m (name: main)
+  asset [1m[32mmain.2f5eb70914dc2ae016ff.hot-update.json[39m[22m 28 bytes [1m[32m[emitted][39m[22m [1m[32m[immutable][39m[22m [1m[32m[hmr][39m[22m
+Entrypoint [1mmain[39m[22m 460 KiB = [1m[32mbundle.js[39m[22m 443 KiB [1m[32mmain.2f5eb70914dc2ae016ff.hot-update.js[39m[22m 16.9 KiB
+cached modules 320 KiB [1m[32m[cached][39m[22m 41 modules
+runtime modules 26.6 KiB 11 modules
+[1m./bloom-demo.js[39m[22m 13.6 KiB [1m[33m[built][39m[22m [1m[33m[code generated][39m[22m
+webpack 5.105.3 compiled [1m[32msuccessfully[39m[22m in 169 ms
+assets by status 50.4 MiB [1m[32m[cached][39m[22m 102 assets
+assets by path [1m[32m.[39m[22m 460 KiB
+  asset [1m[32mbundle.js[39m[22m 443 KiB [1m[32m[emitted][39m[22m (name: main)
+  asset [1m[32mmain.f4e9f89a1a4423abf906.hot-update.js[39m[22m 17.1 KiB [1m[32m[emitted][39m[22m [1m[32m[immutable][39m[22m [1m[32m[hmr][39m[22m (name: main)
+  asset [1m[32mmain.f4e9f89a1a4423abf906.hot-update.json[39m[22m 28 bytes [1m[32m[emitted][39m[22m [1m[32m[immutable][39m[22m [1m[32m[hmr][39m[22m
+Entrypoint [1mmain[39m[22m 460 KiB = [1m[32mbundle.js[39m[22m 443 KiB [1m[32mmain.f4e9f89a1a4423abf906.hot-update.js[39m[22m 17.1 KiB
+cached modules 320 KiB [1m[32m[cached][39m[22m 41 modules
+runtime modules 26.6 KiB 11 modules
+[1m./bloom-demo.js[39m[22m 13.7 KiB [1m[33m[built][39m[22m [1m[33m[code generated][39m[22m
+webpack 5.105.3 compiled [1m[32msuccessfully[39m[22m in 211 ms
+assets by status 50.8 MiB [1m[32m[cached][39m[22m 103 assets
+cached modules 320 KiB (javascript) 26.6 KiB (runtime) [1m[32m[cached][39m[22m 52 modules
+[1m./bloom-demo.js[39m[22m 13.7 KiB [1m[33m[built][39m[22m
+webpack 5.105.3 compiled [1m[32msuccessfully[39m[22m in 159 ms
