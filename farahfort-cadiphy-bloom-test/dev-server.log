@@ -456,3 +456,50 @@ assets by status 50.8 MiB [1m[32m[cached][39m[22m 103 assets
 cached modules 320 KiB (javascript) 26.6 KiB (runtime) [1m[32m[cached][39m[22m 52 modules
 [1m./bloom-demo.js[39m[22m 13.7 KiB [1m[33m[built][39m[22m
 webpack 5.105.3 compiled [1m[32msuccessfully[39m[22m in 159 ms
+assets by status 50.8 MiB [1m[32m[cached][39m[22m 103 assets
+assets by path [1m[32m.[39m[22m 10.8 MiB
+  asset [1m[32massets/assets/grape_wine_insert.png[39m[22m 2.7 MiB [1m[32m[emitted][39m[22m [from: assets/assets/grape_wine_insert.png] [1m[32m[copied][39m[22m
+  asset [1m[32massets/assets/info_panel.png[39m[22m 2.22 MiB [1m[32m[emitted][39m[22m [from: assets/assets/info_panel.png] [1m[32m[copied][39m[22m
+  asset [1m[32massets/assets/label_base.png[39m[22m 2.1 MiB [1m[32m[emitted][39m[22m [from: assets/assets/label_base.png] [1m[32m[copied][39m[22m
+  asset [1m[32massets/assets/logo_glow.png[39m[22m 2.01 MiB [1m[32m[emitted][39m[22m [from: assets/assets/logo_glow.png] [1m[32m[copied][39m[22m
+  asset [1m[32massets/assets/barrel_bird_glow.png[39m[22m 1.5 MiB [1m[32m[emitted][39m[22m [from: assets/assets/barrel_bird_glow.png] [1m[32m[copied][39m[22m
+  asset [1m[32massets/assets/extract_cover_panel.png[39m[22m 168 KiB [1m[32m[emitted][39m[22m [from: assets/assets/extract_cover_panel.png] [1m[32m[copied][39m[22m
+  asset [1m[32massets/assets/source_trigger_label.png[39m[22m 121 KiB [1m[32m[emitted][39m[22m [from: assets/assets/source_trigger_label.png] [1m[32m[copied][39m[22m
+  asset [1m[32massets/assets/light_streaks.png[39m[22m 22.6 KiB [1m[32m[emitted][39m[22m [from: assets/assets/light_streaks.png] [1m[32m[copied][39m[22m
+  asset [1m[32massets/scripts/build_cadiphy_ar_glb.py[39m[22m 17.5 KiB [1m[32m[emitted][39m[22m [from: assets/scripts/build_cadiphy_ar_glb.py] [1m[32m[copied][39m[22m
+cached modules 334 KiB (javascript) 26.6 KiB (runtime) [1m[32m[cached][39m[22m 53 modules
+webpack 5.105.3 compiled [1m[32msuccessfully[39m[22m in 238 ms
+assets by status 61.7 MiB [1m[32m[cached][39m[22m 112 assets
+cached modules 334 KiB (javascript) 26.6 KiB (runtime) [1m[32m[cached][39m[22m 53 modules
+webpack 5.105.3 compiled [1m[32msuccessfully[39m[22m in 124 ms
+assets by status 50.8 MiB [1m[32m[cached][39m[22m 104 assets
+assets by path [1m[32m.[39m[22m 10.8 MiB
+  asset [1m[32massets/grape_wine_insert.png[39m[22m 2.7 MiB [1m[32m[emitted][39m[22m [from: assets/grape_wine_insert.png] [1m[32m[copied][39m[22m
+  asset [1m[32massets/info_panel.png[39m[22m 2.22 MiB [1m[32m[emitted][39m[22m [from: assets/info_panel.png] [1m[32m[copied][39m[22m
+  asset [1m[32massets/label_base.png[39m[22m 2.1 MiB [1m[32m[emitted][39m[22m [from: assets/label_base.png] [1m[32m[copied][39m[22m
+  asset [1m[32massets/logo_glow.png[39m[22m 2.01 MiB [1m[32m[emitted][39m[22m [from: assets/logo_glow.png] [1m[32m[copied][39m[22m
+  asset [1m[32massets/barrel_bird_glow.png[39m[22m 1.5 MiB [1m[32m[emitted][39m[22m [from: assets/barrel_bird_glow.png] [1m[32m[copied][39m[22m
+  asset [1m[32massets/extract_cover_panel.png[39m[22m 168 KiB [1m[32m[emitted][39m[22m [from: assets/extract_cover_panel.png] [1m[32m[copied][39m[22m
+  asset [1m[32massets/source_trigger_label.png[39m[22m 121 KiB [1m[32m[emitted][39m[22m [from: assets/source_trigger_label.png] [1m[32m[copied][39m[22m
+  asset [1m[32massets/light_streaks.png[39m[22m 22.6 KiB [1m[32m[emitted][39m[22m [from: assets/light_streaks.png] [1m[32m[copied][39m[22m
+cached modules 334 KiB (javascript) 26.6 KiB (runtime) [1m[32m[cached][39m[22m 53 modules
+webpack 5.105.3 compiled [1m[32msuccessfully[39m[22m in 142 ms
+assets by status 61.7 MiB [1m[32m[cached][39m[22m 112 assets
+cached modules 334 KiB (javascript) 26.6 KiB (runtime) [1m[32m[cached][39m[22m 53 modules
+webpack 5.105.3 compiled [1m[32msuccessfully[39m[22m in 113 ms
+assets by status 61.7 MiB [1m[32m[cached][39m[22m 112 assets
+cached modules 334 KiB (javascript) 26.6 KiB (runtime) [1m[32m[cached][39m[22m 53 modules
+webpack 5.105.3 compiled [1m[32msuccessfully[39m[22m in 95 ms
+assets by status 61.6 MiB [1m[32m[cached][39m[22m 111 assets
+asset [1m[32massets/build_cadiphy_ar_glb.py[39m[22m 17.5 KiB [1m[32m[emitted][39m[22m [from: assets/build_cadiphy_ar_glb.py] [1m[32m[copied][39m[22m
+cached modules 334 KiB (javascript) 26.6 KiB (runtime) [1m[32m[cached][39m[22m 53 modules
+webpack 5.105.3 compiled [1m[32msuccessfully[39m[22m in 81 ms
+assets by status 61.7 MiB [1m[32m[cached][39m[22m 112 assets
+cached modules 334 KiB (javascript) 26.6 KiB (runtime) [1m[32m[cached][39m[22m 53 modules
+webpack 5.105.3 compiled [1m[32msuccessfully[39m[22m in 78 ms
+assets by status 61.6 MiB [1m[32m[cached][39m[22m 111 assets
+cached modules 334 KiB (javascript) 26.6 KiB (runtime) [1m[32m[cached][39m[22m 53 modules
+webpack 5.105.3 compiled [1m[32msuccessfully[39m[22m in 79 ms
+assets by status 50.8 MiB [1m[32m[cached][39m[22m 102 assets
+cached modules 334 KiB (javascript) 26.6 KiB (runtime) [1m[32m[cached][39m[22m 53 modules
+webpack 5.105.3 compiled [1m[32msuccessfully[39m[22m in 84 ms

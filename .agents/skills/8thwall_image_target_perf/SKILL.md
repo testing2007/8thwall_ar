@@ -634,3 +634,110 @@ moov atom（视频元数据）默认在文件末尾，Safari 必须下载完整�
   - [experience-timeline-controller.ts](file:///d:/workspace/8thwall%20example/8thwall_ar/plant-grow-animation-introduce/src/ar/experience-timeline-controller.ts)
   - [video-menu-controller.ts](file:///d:/workspace/8thwall%20example/8thwall_ar/plant-grow-animation-introduce/src/ar/video-menu-controller.ts)
   - [video-player-controller.ts](file:///d:/workspace/8thwall%20example/8thwall_ar/plant-grow-animation-introduce/src/ar/video-player-controller.ts)
+
+---
+
+## G. Three.js 选择性 Bloom (Selective Bloom) 与 8th Wall 物理尺寸调优专项
+
+> 适用于 8th Wall + Three.js 手动注册 CameraPipelineModule 场景下的现代 AR 特效开发（如辉光、光晕、局部高光能量线段等）。
+
+---
+
+### G-1. 8th Wall 米制物理单位与 AR 视距透视换算
+
+**问题 1：模型被二次缩小 10 倍（变 12mm 极小点）**
+- **根因**：Blender mm 导出 / glTF 规范默认单位均是 **米（Metres）**（例如：90mm 模型在 glTF 中导出为 `0.09m`）。
+- `XR8` 的 `imagefound` 事件返回的 `detail.scale` 实际上代表摄像头在世界坐标中检测到的物理标签宽度（单位：米，如 `~0.11m`）。
+- 如果在代码中再执行 `model.scale.setScalar(detail.scale)`，相当于对原本就是米制尺寸的模型再乘一次 `0.11`，导致模型缩小近 10 倍（变成 12mm）。
+- **修复**：对物理米制模型，设置固定物理缩放（例如 `FIXED_MODEL_SCALE = 1.0` 或放大的 `4.0`），不要盲目将 `imagefound.scale` 传入 `setScalar()`。
+
+**问题 2：50cm 视距下模型看起来极小（~14mm）**
+- **根因**：物理透视现象。在 50cm 手持视距下，看 90mm 物理标签时，在手机屏幕上的表观像素大小只有 ~14mm，这属于真实 AR 透视。
+- **调优**：若需让特效具备较强视觉冲击力，可设置统一放大显示系数（如 `FIXED_MODEL_SCALE = 4.0`），使模型在 50cm 距离下占屏幕约 40%-50%。
+
+---
+
+### G-2. 选择性 Bloom (Selective Bloom) 双通道离屏合成架构
+
+为避免场景中所有物体（包含摄像头现实底图和普通暗色底板）均被全屏 `UnrealBloomPass` 触发泛光，必须采用基于 `THREE.Layers` 的选择性 Bloom：
+
+```
+┌────────────────────────────────────────────────────────┐
+│ Pass 1：bloomComposer                                  │
+│  bloomCamera（仅开启 BLOOM_LAYER = 1）                 │
+│  → 渲染选中的发光 Node 到黑色背景                      │
+│  → UnrealBloomPass 生成光晕 → 写入离屏 renderTarget2    │
+└────────────────────────────────────────────────────────┘
+          ↓ bloomComposer.renderTarget2.texture
+┌────────────────────────────────────────────────────────┐
+│ Pass 2：finalComposer                                  │
+│  主相机（BASE_LAYER = 0，全部场景）                    │
+│  → 正常渲染 AR 帧                                       │
+│  → AdditiveBlendShader 叠加光晕纹理 → 输出到屏幕       │
+└────────────────────────────────────────────────────────┘
+```
+
+#### 关键坑点：Render Target 交换机制与纹理引用
+`BloomComposer` 内执行 `RenderPass` 渲染完 Pass 0 后会触发缓冲区交换 (`needsSwap = true`)：
+- 交换前：`writeBuffer = bloomRT`, `readBuffer = renderTarget2`
+- 交换后：`writeBuffer = renderTarget2`, `readBuffer = bloomRT`
+
+随后的 `UnrealBloomPass` 从 `readBuffer`（`bloomRT`，含场景图）读取内容，并将处理后的**最终光晕结果写入 `writeBuffer`（`renderTarget2`）**。
+
+❌ **错误**：混合 Shader 中使用 `bloomRT.texture` → 拿到的是未后处理的原始图形，无 Bloom。  
+✅ **正确**：混合 Shader 中必须使用 **`bloomComposer.renderTarget2.texture`** 才能成功拿到后处理光晕！
+
+```js
+const blendPass = new ShaderPass(
+  new THREE.ShaderMaterial({
+    uniforms: {
+      baseTexture:  { value: null },
+      // 必须指向 renderTarget2，UnrealBloomPass 在 Buffer 交换后将输出写入 renderTarget2
+      bloomTexture: { value: bloomComposer.renderTarget2.texture },
+    },
+    vertexShader:   AdditiveBlendShader.vertexShader,
+    fragmentShader: AdditiveBlendShader.fragmentShader,
+  }),
+  'baseTexture'
+)
+```
+
+---
+
+### G-3. Bloom 节点多目标参数化与 Blender 材质解耦
+
+**设计原则**：
+1. **多节点数组配置**：允许配置 `BLOOM_NODE_NAMES = ['GLOW_Energy_Particle_L', 'GLOW_Energy_Particle_R']`，遍历匹配模型中指定的 Blender Object 名。
+2. **材质属性解耦**：不应在 JS 中强行用 `emissive.setHex()` 覆盖 Blender 设置。保留 Blender 导出的原生 `emissive` 颜色和 `emissiveIntensity`。
+3. **防止亮度压缩**：在遍历节点材质时，仅需将 Bloom 物件材质设置 `mat.toneMapped = false`，防止 Three.js 的 `ACESFilmicToneMapping` 将高亮发光压缩而导致 threshold 无法正常触发。
+
+```js
+// 示例：多节点选择性 Bloom 材质层配置
+const setupModelLayers = (model) => {
+  setLayerAll(model, BASE_LAYER) // 默认均加入 BASE_LAYER (0)
+
+  const targets = Array.isArray(BLOOM_NODE_NAMES) ? BLOOM_NODE_NAMES : [BLOOM_NODE_NAMES]
+  targets.forEach((nodeName) => {
+    const node = model.getObjectByName(nodeName)
+    if (node) {
+      node.traverse((o) => {
+        o.layers.enable(BLOOM_LAYER) // 开启 BLOOM_LAYER (1)
+        if (!o.isMesh) return
+        const mats = Array.isArray(o.material) ? o.material : [o.material]
+        mats.forEach((mat) => {
+          if (!mat) return
+          mat.toneMapped = false // 仅禁用 toneMapping，保持 Blender 原生发光材质与颜色
+          mat.needsUpdate = true
+        })
+      })
+    }
+  })
+}
+```
+
+---
+
+## 参考实现
+
+- [farahfort-cadiphy/src/bloom-demo.js](file:///d:/workspace/8thwall%20example/8thwall_ar/farahfort-cadiphy/src/bloom-demo.js)（选择性 Bloom + 8th Wall CameraPipelineModule 方案）
+
