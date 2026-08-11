@@ -1,26 +1,25 @@
-import {cadiphyBloomPipelineModule} from './bloom-demo.js'
+import { cadiphyBloomPipelineModule } from "./bloom.js";
 
-const IMAGE_TARGET_DATA = require('../image-targets/trigger-label.json')
+const IMAGE_TARGET_DATA = require("../image-targets/trigger-label.json");
 
 const getCameraCanvas = () => {
-  let canvas = document.getElementById('camerafeed')
+  let canvas = document.getElementById("camerafeed");
   if (!canvas) {
-    canvas = document.createElement('canvas')
-    canvas.id = 'camerafeed'
-    document.body.appendChild(canvas)
+    canvas = document.createElement("canvas");
+    canvas.id = "camerafeed";
+    document.body.appendChild(canvas);
   }
-  return canvas
-}
+  return canvas;
+};
 
-const optionalPipelineModule = (factory) => (
-  factory?.pipelineModule ? [factory.pipelineModule()] : []
-)
+const optionalPipelineModule = (factory) =>
+  factory?.pipelineModule ? [factory.pipelineModule()] : [];
 
 const onxrloaded = () => {
   XR8.XrController.configure({
     imageTargetData: [IMAGE_TARGET_DATA],
     disableWorldTracking: true,
-  })
+  });
 
   XR8.addCameraPipelineModules([
     XR8.GlTextureRenderer.pipelineModule(),
@@ -31,12 +30,12 @@ const onxrloaded = () => {
     ...optionalPipelineModule(window.XRExtras?.Loading),
     ...optionalPipelineModule(window.XRExtras?.RuntimeError),
     cadiphyBloomPipelineModule(),
-  ])
+  ]);
 
   XR8.run({
     canvas: getCameraCanvas(),
     allowedDevices: XR8.XrConfig.device().ANY,
-  })
-}
+  });
+};
 
-window.XR8 ? onxrloaded() : window.addEventListener('xrloaded', onxrloaded)
+window.XR8 ? onxrloaded() : window.addEventListener("xrloaded", onxrloaded);
