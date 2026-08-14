@@ -1,18 +1,17 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { createSantaParticleFx } from "./santa-particle-fx.js";
 import "./santa-wish-overlay.js";
 
 window.THREE = THREE;
 
 const IMAGE_TARGET_DATA = require("../image-targets/target.json");
 const MODEL_URL = require("./assets/christmas.glb");
+const PERFORMANCE_AUDIO_URL = require("./assets/html/christmas-bgm.mp3");
 const TARGET_NAME = "target";
 const MODEL_TARGET_WIDTH_RATIO = 1;
 const MODEL_SURFACE_OFFSET_METERS = 0.002;
-const DEFAULT_WISH_OVERLAY_DELAY_MS = 1500;
-const MIN_WISH_OVERLAY_DELAY_MS = 600;
-const MAX_WISH_OVERLAY_DELAY_MS = 1800;
-const WISH_OVERLAY_AFTER_ANIMATION_EXTRA_MS = 80;
+const PERFORMANCE_AUDIO_VOLUME = 0.3;
 
 const EXPERIENCE_STATE = {
   SCANNING: "SCANNING",
@@ -23,13 +22,18 @@ const EXPERIENCE_STATE = {
 let modelRoot = null;
 let mixer = null;
 let animationActions = [];
-let wishOverlayDelayMs = DEFAULT_WISH_OVERLAY_DELAY_MS;
+let santaFx = null;
 let normalizedModelScale = 1;
 let xrStarted = false;
 let animationStarted = false;
-let wishOverlayTimer = null;
 let experienceState = EXPERIENCE_STATE.SCANNING;
 const clock = new THREE.Clock();
+const performanceAudio = new Audio(PERFORMANCE_AUDIO_URL);
+
+performanceAudio.loop = true;
+performanceAudio.preload = "auto";
+performanceAudio.playsInline = true;
+performanceAudio.volume = PERFORMANCE_AUDIO_VOLUME;
 
 const getCameraCanvas = () => {
   let canvas = document.getElementById("camerafeed");
@@ -43,17 +47,6 @@ const getCameraCanvas = () => {
 
 const optionalPipelineModule = (factory) =>
   factory?.pipelineModule ? [factory.pipelineModule()] : [];
-
-const clearWishOverlayTimer = () => {
-  if (!wishOverlayTimer) return;
-  window.clearTimeout(wishOverlayTimer);
-  wishOverlayTimer = null;
-};
-
-const clampWishOverlayDelay = delayMs => Math.min(
-  Math.max(delayMs, MIN_WISH_OVERLAY_DELAY_MS),
-  MAX_WISH_OVERLAY_DELAY_MS,
-);
 
 const setExperienceState = (state) => {
   if (experienceState === state) return;
@@ -107,25 +100,54 @@ const hideImageTargetModel = ({ detail }) => {
   if (experienceState === EXPERIENCE_STATE.WISH_OVERLAY) return;
   modelRoot.visible = false;
   animationStarted = false;
-  clearWishOverlayTimer();
+  santaFx?.reset();
+  performanceAudio.pause();
+  performanceAudio.currentTime = 0;
   setExperienceState(EXPERIENCE_STATE.SCANNING);
 };
 
 const enterWishOverlay = () => {
   if (experienceState === EXPERIENCE_STATE.WISH_OVERLAY) return;
-  clearWishOverlayTimer();
   setExperienceState(EXPERIENCE_STATE.WISH_OVERLAY);
 
   if (modelRoot) modelRoot.visible = false;
   if (mixer) mixer.timeScale = 0;
+  santaFx?.reset();
 
-  window.SantaWishOverlay?.show({ from: "santa-gift" });
+  window.SantaWishOverlay?.show({ from: "santa-gift", playAudio: false });
 };
+
+const playPerformanceAudio = () => {
+  performanceAudio.currentTime = 0;
+  performanceAudio.volume = PERFORMANCE_AUDIO_VOLUME;
+  const playPromise = performanceAudio.play();
+  if (playPromise?.catch) playPromise.catch(() => undefined);
+};
+
+const unlockPerformanceAudio = () => {
+  if (experienceState === EXPERIENCE_STATE.AR_TRACKING) {
+    playPerformanceAudio();
+    return;
+  }
+
+  performanceAudio.volume = 0.001;
+  const playPromise = performanceAudio.play();
+  if (!playPromise?.then) return;
+  playPromise.then(() => {
+    performanceAudio.pause();
+    performanceAudio.currentTime = 0;
+    performanceAudio.volume = PERFORMANCE_AUDIO_VOLUME;
+  }).catch(() => undefined);
+};
+
+window.addEventListener("pointerdown", unlockPerformanceAudio, {
+  once: true,
+  passive: true,
+});
 
 const startModelAnimation = () => {
   if (animationStarted) return;
   animationStarted = true;
-  clearWishOverlayTimer();
 
   if (mixer) {
     mixer.timeScale = 1;
@@ -136,11 +158,8 @@ const startModelAnimation = () => {
     action.reset();
     action.play();
   });
-
-  wishOverlayTimer = window.setTimeout(
-    enterWishOverlay,
-    wishOverlayDelayMs + WISH_OVERLAY_AFTER_ANIMATION_EXTRA_MS,
-  );
+  santaFx?.play();
+  playPerformanceAudio();
 };
 
 const christmasImageTargetPipelineModule = () => ({
@@ -174,6 +193,13 @@ const christmasImageTargetPipelineModule = () => ({
         anchor.visible = false;
         anchor.add(gltf.scene);
 
+        const modelBounds = new THREE.Box3().setFromObject(gltf.scene);
+        santaFx = createSantaParticleFx({
+          bounds: modelBounds,
+          onComplete: enterWishOverlay,
+        });
+        anchor.add(santaFx.group);
+
         if (gltf.animations.length) {
           mixer = new THREE.AnimationMixer(gltf.scene);
           animationActions = gltf.animations.map((clip) => {
@@ -182,15 +208,8 @@ const christmasImageTargetPipelineModule = () => ({
             action.clampWhenFinished = true;
             return action;
           });
-          const animationDurationMs = Math.max(
-            ...gltf.animations.map(clip => clip.duration * 1000),
-          );
-          wishOverlayDelayMs = Number.isFinite(animationDurationMs)
-            ? clampWishOverlayDelay(animationDurationMs)
-            : DEFAULT_WISH_OVERLAY_DELAY_MS;
         } else {
           animationActions = [];
-          wishOverlayDelayMs = DEFAULT_WISH_OVERLAY_DELAY_MS;
         }
 
         scene.add(anchor);
@@ -205,8 +224,10 @@ const christmasImageTargetPipelineModule = () => ({
 
   onUpdate: () => {
     if (experienceState === EXPERIENCE_STATE.WISH_OVERLAY) return;
-    if (!mixer || !modelRoot?.visible) return;
-    mixer.update(Math.min(clock.getDelta(), 0.1));
+    if (!modelRoot?.visible) return;
+    const deltaSeconds = Math.min(clock.getDelta(), 0.1);
+    mixer?.update(deltaSeconds);
+    santaFx?.update(deltaSeconds);
   },
 });
 

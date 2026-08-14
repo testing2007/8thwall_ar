@@ -224,7 +224,7 @@ const styles = `
 
   .wish-field input,
   .wish-field textarea {
-    width: 100%;
+    width: calc(100% - 20px);
     border: 1px solid #e9d5b9;
     border-radius: 14px;
     background: rgba(255, 255, 255, 0.88);
@@ -233,6 +233,8 @@ const styles = `
     font-size: 16px;
     outline: none;
     padding: 13px 14px;
+    margin: 10px;
+
   }
 
   .wish-field textarea {
@@ -255,6 +257,7 @@ const styles = `
 
   .wish-button {
     min-height: 52px;
+    margin: 10px;
     border: 0;
     border-radius: 999px;
     background: linear-gradient(180deg, #e83b4f, #b9182d);
@@ -709,7 +712,7 @@ const clearIntroTimer = () => {
 };
 
 const clearSendTimers = () => {
-  sendTimers.forEach(timer => window.clearTimeout(timer));
+  sendTimers.forEach((timer) => window.clearTimeout(timer));
   sendTimers = [];
 };
 
@@ -720,7 +723,12 @@ const setSendStatus = (message) => {
 
 const resetSendClasses = () => {
   if (!root) return;
-  root.classList.remove("send-sealed", "send-snowing", "send-sleighing", "send-night");
+  root.classList.remove(
+    "send-sealed",
+    "send-snowing",
+    "send-sleighing",
+    "send-night",
+  );
 };
 
 const showReply = (data) => {
@@ -747,29 +755,39 @@ const startSendSequence = (data) => {
   root.classList.add("is-send");
   setSendStatus("信封正在合拢...");
 
-  sendTimers.push(window.setTimeout(() => {
-    root.classList.add("send-sealed");
-    setSendStatus("盖上北极火漆印章...");
-  }, 620));
+  sendTimers.push(
+    window.setTimeout(() => {
+      root.classList.add("send-sealed");
+      setSendStatus("盖上北极火漆印章...");
+    }, 620),
+  );
 
-  sendTimers.push(window.setTimeout(() => {
-    root.classList.add("send-snowing");
-    setSendStatus("风雪正在打开去北极的路...");
-  }, 1250));
+  sendTimers.push(
+    window.setTimeout(() => {
+      root.classList.add("send-snowing");
+      setSendStatus("风雪正在打开去北极的路...");
+    }, 1250),
+  );
 
-  sendTimers.push(window.setTimeout(() => {
-    root.classList.add("send-sleighing");
-    setSendStatus("雪橇已经接走信封...");
-  }, 2150));
+  sendTimers.push(
+    window.setTimeout(() => {
+      root.classList.add("send-sleighing");
+      setSendStatus("雪橇已经接走信封...");
+    }, 2150),
+  );
 
-  sendTimers.push(window.setTimeout(() => {
-    root.classList.add("send-night");
-    setSendStatus("夜空转场中...");
-  }, 3300));
+  sendTimers.push(
+    window.setTimeout(() => {
+      root.classList.add("send-night");
+      setSendStatus("夜空转场中...");
+    }, 3300),
+  );
 
-  sendTimers.push(window.setTimeout(() => {
-    showReply(data);
-  }, 4500));
+  sendTimers.push(
+    window.setTimeout(() => {
+      showReply(data);
+    }, 4500),
+  );
 };
 
 const makeReplyCardBlob = async () => {
@@ -778,12 +796,13 @@ const makeReplyCardBlob = async () => {
   canvas.height = 1920;
   const ctx = canvas.getContext("2d");
 
-  const loadImage = src => new Promise((resolve, reject) => {
-    const image = new Image();
-    image.onload = () => resolve(image);
-    image.onerror = reject;
-    image.src = src;
-  });
+  const loadImage = (src) =>
+    new Promise((resolve, reject) => {
+      const image = new Image();
+      image.onload = () => resolve(image);
+      image.onerror = reject;
+      image.src = src;
+    });
 
   const cover = (image, x, y, w, h) => {
     const ratio = Math.max(w / image.width, h / image.height);
@@ -838,7 +857,11 @@ const makeReplyCardBlob = async () => {
 
   ctx.fillStyle = "#7d3f28";
   ctx.font = "42px sans-serif";
-  ctx.fillText(`${lastWishData.name || "小宇"}，你的愿望我已经收到啦！`, 540, 440);
+  ctx.fillText(
+    `${lastWishData.name || "小宇"}，你的愿望我已经收到啦！`,
+    540,
+    440,
+  );
 
   ctx.fillStyle = "#164d7d";
   ctx.font = "700 54px sans-serif";
@@ -862,7 +885,7 @@ const makeReplyCardBlob = async () => {
     // Asset is optional for saving the card.
   }
 
-  return new Promise(resolve => canvas.toBlob(resolve, "image/png", 0.94));
+  return new Promise((resolve) => canvas.toBlob(resolve, "image/png", 0.94));
 };
 
 const saveReplyCard = async () => {
@@ -914,7 +937,9 @@ const ensureRoot = () => {
 
     error.textContent = "";
     startSendSequence({ name, text });
-    window.dispatchEvent(new CustomEvent("santa:wish-submitted", { detail: { name, text } }));
+    window.dispatchEvent(
+      new CustomEvent("santa:wish-submitted", { detail: { name, text } }),
+    );
   });
 
   bgm = new Audio(BGM_URL);
@@ -925,7 +950,7 @@ const ensureRoot = () => {
   return root;
 };
 
-const show = () => {
+const show = ({ playAudio = true } = {}) => {
   const element = ensureRoot();
   clearIntroTimer();
   clearSendTimers();
@@ -934,9 +959,11 @@ const show = () => {
   element.classList.remove("is-form", "is-send", "is-reply");
   element.classList.add("is-visible");
 
-  const playPromise = bgm?.play();
-  if (playPromise?.catch) {
-    playPromise.catch(() => undefined);
+  if (playAudio) {
+    const playPromise = bgm?.play();
+    if (playPromise?.catch) {
+      playPromise.catch(() => undefined);
+    }
   }
 
   introTimer = window.setTimeout(() => {
