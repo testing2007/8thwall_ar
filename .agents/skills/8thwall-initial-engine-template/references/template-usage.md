@@ -66,15 +66,27 @@ npm run build
 
 The `rg` command should have no project-source hits. `xrextras.js` may contain internal strings such as `xrextras-old-style`; do not treat those as project A-Frame usage unless the page loads A-Frame or 8frame.
 
-## Local Serve
+## Local Preview
 
-```powershell
-npm run serve -- --host 0.0.0.0
+8th Wall Desktop App exposes the active project at:
+
+```text
+http://localhost:58000/
 ```
 
-Use `http://localhost:8080/` unless that port is already occupied.
+Treat `58000` as the canonical preview URL for these local Engine Image Target projects. The underlying webpack/dev server may use another internal port, but do not present that internal port as the user-facing URL.
 
-8th Wall Desktop App may use `localhost:58000`; if it shows stale ECS errors, close and reopen the Desktop project so its internal dev server respawns with the current config.
+For phone testing, the user commonly runs ngrok to forward the Desktop App port:
+
+```text
+https://<ngrok-domain> -> http://localhost:58000
+```
+
+Use the current ngrok forwarding URL when the user provides one. Do not substitute `8080` for 8th Wall Desktop App testing.
+
+If `localhost:58000` shows stale ECS errors, close and reopen the Desktop project so its internal dev server respawns with the current config.
+
+If Chrome reports camera access is blocked even after the browser permission is set to Allow, reset the site permission for `http://localhost:58000`, make sure the selected camera is not in use by another app/tab, then reload the Desktop App preview or restart the Desktop App.
 
 After creating a new project from the template, run `npm install` inside the new project. This updates `package-lock.json` metadata for the new project name if needed.
 

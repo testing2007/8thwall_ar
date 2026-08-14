@@ -330,3 +330,112 @@ asset [1m[32massets/christmas.glb[39m[22m 1.28 MiB [1m[32m[emitted][39m[
 cached modules 2.28 MiB (javascript) 26.6 KiB (runtime) [1m[32m[cached][39m[22m 45 modules
 [1m./assets/christmas.glb[39m[22m 40 bytes [1m[33m[built][39m[22m
 webpack 5.105.3 compiled [1m[32msuccessfully[39m[22m in 270 ms
+assets by status 39 MiB [1m[32m[cached][39m[22m 61 assets
+cached modules 2.28 MiB (javascript) 26.6 KiB (runtime) [1m[32m[cached][39m[22m 46 modules
+webpack 5.105.3 compiled [1m[32msuccessfully[39m[22m in 143 ms
+assets by status 39 MiB [1m[32m[cached][39m[22m 61 assets
+cached modules 2.28 MiB (javascript) 26.6 KiB (runtime) [1m[32m[cached][39m[22m 46 modules
+webpack 5.105.3 compiled [1m[32msuccessfully[39m[22m in 130 ms
+assets by status 39 MiB [1m[32m[cached][39m[22m 61 assets
+assets by path [1m[32m.[39m[22m 1.67 MiB
+  assets by path [1m[32massets/html/*.png[39m[22m 1.29 MiB
+    asset [1m[32massets/html/wish-parchment.png[39m[22m 1.01 MiB [1m[32m[emitted][39m[22m [from: assets/html/wish-parchment.png] [1m[32m[copied][39m[22m
+    asset [1m[32massets/html/santa-waving.png[39m[22m 287 KiB [1m[32m[emitted][39m[22m [from: assets/html/santa-waving.png] [1m[32m[copied][39m[22m
+  asset [1m[32massets/html/north-pole-scene.jpg[39m[22m 248 KiB [1m[32m[emitted][39m[22m [from: assets/html/north-pole-scene.jpg] [1m[32m[copied][39m[22m
+  asset [1m[32massets/html/christmas-bgm.mp3[39m[22m 141 KiB [1m[32m[emitted][39m[22m [from: assets/html/christmas-bgm.mp3] [1m[32m[copied][39m[22m
+  asset [1m[32massets/html/asset-manifest.json[39m[22m 797 bytes [1m[32m[emitted][39m[22m [from: assets/html/asset-manifest.json] [1m[32m[copied][39m[22m
+  asset [1m[32massets/html/VOICE-README.txt[39m[22m 578 bytes [1m[32m[emitted][39m[22m [from: assets/html/VOICE-README.txt] [1m[32m[copied][39m[22m
+cached modules 2.28 MiB (javascript) 26.6 KiB (runtime) [1m[32m[cached][39m[22m 46 modules
+webpack 5.105.3 compiled [1m[32msuccessfully[39m[22m in 281 ms
+assets by status 40.6 MiB [1m[32m[cached][39m[22m 67 assets
+cached modules 2.28 MiB (javascript) 26.6 KiB (runtime) [1m[32m[cached][39m[22m 46 modules
+webpack 5.105.3 compiled [1m[32msuccessfully[39m[22m in 185 ms
+undefined Emit file change: D:\workspace\8thwall example\8thwall_ar\chuangmei-christmas\src\entry.js 1786688017421
+assets by status 38 MiB [1m[32m[cached][39m[22m 66 assets
+assets by path [1m[32m.[39m[22m 2.73 MiB
+  asset [1m[32mbundle.js[39m[22m 2.7 MiB [1m[32m[emitted][39m[22m (name: main)
+  asset [1m[32mmain.e1944e53bebd7c2db6bd.hot-update.js[39m[22m 31 KiB [1m[32m[emitted][39m[22m [1m[32m[immutable][39m[22m [1m[32m[hmr][39m[22m (name: main)
+  asset [1m[32mmain.e1944e53bebd7c2db6bd.hot-update.json[39m[22m 28 bytes [1m[32m[emitted][39m[22m [1m[32m[immutable][39m[22m [1m[32m[hmr][39m[22m
+Entrypoint [1mmain[39m[22m 2.73 MiB = [1m[32mbundle.js[39m[22m 2.7 MiB [1m[32mmain.e1944e53bebd7c2db6bd.hot-update.js[39m[22m 31 KiB
+cached modules 2.28 MiB [1m[32m[cached][39m[22m 34 modules
+runtime modules 26.6 KiB 11 modules
+javascript modules 28.5 KiB
+  [1m./entry.js[39m[22m 50 bytes [1m[33m[built][39m[22m [1m[33m[code generated][39m[22m
+  [1m./santa-wish-overlay.js[39m[22m 28.5 KiB [1m[33m[built][39m[22m [1m[33m[code generated][39m[22m
+webpack 5.105.3 compiled [1m[32msuccessfully[39m[22m in 55 ms
+assets by status 38 MiB [1m[32m[cached][39m[22m 66 assets
+assets by path [1m[32m.[39m[22m 2.69 MiB
+  asset [1m[32mbundle.js[39m[22m 2.68 MiB [1m[32m[emitted][39m[22m (name: main)
+  asset [1m[32mmain.cc8699c00e1114823fde.hot-update.js[39m[22m 13.6 KiB [1m[32m[emitted][39m[22m [1m[32m[immutable][39m[22m [1m[32m[hmr][39m[22m (name: main)
+  asset [1m[32mmain.cc8699c00e1114823fde.hot-update.json[39m[22m 28 bytes [1m[32m[emitted][39m[22m [1m[32m[immutable][39m[22m [1m[32m[hmr][39m[22m
+Entrypoint [1mmain[39m[22m 2.69 MiB = [1m[32mbundle.js[39m[22m 2.68 MiB [1m[32mmain.cc8699c00e1114823fde.hot-update.js[39m[22m 13.6 KiB
+cached modules 2.28 MiB [1m[32m[cached][39m[22m 35 modules
+runtime modules 26.6 KiB 11 modules
+javascript modules 10.7 KiB
+  modules by path [1m./assets/html/*.png[39m[22m 98 bytes
+    [1m./assets/html/santa-waving.png[39m[22m 48 bytes [1m[33m[built][39m[22m [1m[33m[code generated][39m[22m
+    [1m./assets/html/wish-parchment.png[39m[22m 50 bytes [1m[33m[built][39m[22m [1m[33m[code generated][39m[22m
+  [1m./santa-wish-overlay.js[39m[22m 10.5 KiB [1m[33m[built][39m[22m [1m[33m[code generated][39m[22m
+  [1m./assets/html/christmas-bgm.mp3[39m[22m 49 bytes [1m[33m[built][39m[22m [1m[33m[code generated][39m[22m
+  [1m./assets/html/north-pole-scene.jpg[39m[22m 52 bytes [1m[33m[built][39m[22m [1m[33m[code generated][39m[22m
+webpack 5.105.3 compiled [1m[32msuccessfully[39m[22m in 80 ms
+assets by status 38 MiB [1m[32m[cached][39m[22m 66 assets
+assets by path [1m[32m.[39m[22m 2.69 MiB
+  asset [1m[32mbundle.js[39m[22m 2.68 MiB [1m[32m[emitted][39m[22m (name: main)
+  asset [1m[32mmain.f2d42fa11b0151000fb8.hot-update.js[39m[22m 9.93 KiB [1m[32m[emitted][39m[22m [1m[32m[immutable][39m[22m [1m[32m[hmr][39m[22m (name: main)
+  asset [1m[32mmain.f2d42fa11b0151000fb8.hot-update.json[39m[22m 28 bytes [1m[32m[emitted][39m[22m [1m[32m[immutable][39m[22m [1m[32m[hmr][39m[22m
+Entrypoint [1mmain[39m[22m 2.69 MiB = [1m[32mbundle.js[39m[22m 2.68 MiB [1m[32mmain.f2d42fa11b0151000fb8.hot-update.js[39m[22m 9.93 KiB
+cached modules 2.29 MiB [1m[32m[cached][39m[22m 39 modules
+runtime modules 26.6 KiB 11 modules
+[1m./app.js[39m[22m 7.27 KiB [1m[33m[built][39m[22m [1m[33m[code generated][39m[22m
+webpack 5.105.3 compiled [1m[32msuccessfully[39m[22m in 51 ms
+assets by status 38 MiB [1m[32m[cached][39m[22m 66 assets
+assets by path [1m[32m.[39m[22m 2.71 MiB
+  asset [1m[32mbundle.js[39m[22m 2.69 MiB [1m[32m[emitted][39m[22m (name: main)
+  asset [1m[32mmain.01bd700b5dbf56138331.hot-update.js[39m[22m 20.9 KiB [1m[32m[emitted][39m[22m [1m[32m[immutable][39m[22m [1m[32m[hmr][39m[22m (name: main)
+  asset [1m[32mmain.01bd700b5dbf56138331.hot-update.json[39m[22m 28 bytes [1m[32m[emitted][39m[22m [1m[32m[immutable][39m[22m [1m[32m[hmr][39m[22m
+Entrypoint [1mmain[39m[22m 2.71 MiB = [1m[32mbundle.js[39m[22m 2.69 MiB [1m[32mmain.01bd700b5dbf56138331.hot-update.js[39m[22m 20.9 KiB
+cached modules 2.29 MiB [1m[32m[cached][39m[22m 39 modules
+runtime modules 26.6 KiB 11 modules
+[1m./santa-wish-overlay.js[39m[22m 18.7 KiB [1m[33m[built][39m[22m [1m[33m[code generated][39m[22m
+webpack 5.105.3 compiled [1m[32msuccessfully[39m[22m in 45 ms
+assets by status 38 MiB [1m[32m[cached][39m[22m 66 assets
+assets by path [1m[32m.[39m[22m 2.73 MiB
+  asset [1m[32mbundle.js[39m[22m 2.7 MiB [1m[32m[emitted][39m[22m (name: main)
+  asset [1m[32mmain.8b6a1a64c432d647f9ef.hot-update.js[39m[22m 27.6 KiB [1m[32m[emitted][39m[22m [1m[32m[immutable][39m[22m [1m[32m[hmr][39m[22m (name: main)
+  asset [1m[32mmain.8b6a1a64c432d647f9ef.hot-update.json[39m[22m 28 bytes [1m[32m[emitted][39m[22m [1m[32m[immutable][39m[22m [1m[32m[hmr][39m[22m
+Entrypoint [1mmain[39m[22m 2.73 MiB = [1m[32mbundle.js[39m[22m 2.7 MiB [1m[32mmain.8b6a1a64c432d647f9ef.hot-update.js[39m[22m 27.6 KiB
+cached modules 2.29 MiB [1m[32m[cached][39m[22m 39 modules
+runtime modules 26.6 KiB 11 modules
+[1m./santa-wish-overlay.js[39m[22m 25 KiB [1m[33m[built][39m[22m [1m[33m[code generated][39m[22m
+webpack 5.105.3 compiled [1m[32msuccessfully[39m[22m in 43 ms
+assets by status 38 MiB [1m[32m[cached][39m[22m 66 assets
+assets by path [1m[32m.[39m[22m 2.71 MiB
+  asset [1m[32mbundle.js[39m[22m 2.7 MiB [1m[32m[emitted][39m[22m (name: main)
+  asset [1m[32mmain.04e0791c0db9247d0f54.hot-update.js[39m[22m 10.3 KiB [1m[32m[emitted][39m[22m [1m[32m[immutable][39m[22m [1m[32m[hmr][39m[22m (name: main)
+  asset [1m[32mmain.04e0791c0db9247d0f54.hot-update.json[39m[22m 28 bytes [1m[32m[emitted][39m[22m [1m[32m[immutable][39m[22m [1m[32m[hmr][39m[22m
+Entrypoint [1mmain[39m[22m 2.71 MiB = [1m[32mbundle.js[39m[22m 2.7 MiB [1m[32mmain.04e0791c0db9247d0f54.hot-update.js[39m[22m 10.3 KiB
+cached modules 2.3 MiB [1m[32m[cached][39m[22m 39 modules
+runtime modules 26.6 KiB 11 modules
+[1m./app.js[39m[22m 7.63 KiB [1m[33m[built][39m[22m [1m[33m[code generated][39m[22m
+webpack 5.105.3 compiled [1m[32msuccessfully[39m[22m in 44 ms
+assets by status 38 MiB [1m[32m[cached][39m[22m 66 assets
+assets by path [1m[32m.[39m[22m 2.73 MiB
+  asset [1m[32mbundle.js[39m[22m 2.7 MiB [1m[32m[emitted][39m[22m (name: main)
+  asset [1m[32mmain.cd7e0449b8f27e8bcef2.hot-update.js[39m[22m 27.3 KiB [1m[32m[emitted][39m[22m [1m[32m[immutable][39m[22m [1m[32m[hmr][39m[22m (name: main)
+  asset [1m[32mmain.cd7e0449b8f27e8bcef2.hot-update.json[39m[22m 28 bytes [1m[32m[emitted][39m[22m [1m[32m[immutable][39m[22m [1m[32m[hmr][39m[22m
+Entrypoint [1mmain[39m[22m 2.73 MiB = [1m[32mbundle.js[39m[22m 2.7 MiB [1m[32mmain.cd7e0449b8f27e8bcef2.hot-update.js[39m[22m 27.3 KiB
+cached modules 2.29 MiB [1m[32m[cached][39m[22m 39 modules
+runtime modules 26.6 KiB 11 modules
+[1m./santa-wish-overlay.js[39m[22m 24.7 KiB [1m[33m[built][39m[22m [1m[33m[code generated][39m[22m
+webpack 5.105.3 compiled [1m[32msuccessfully[39m[22m in 43 ms
+assets by status 38 MiB [1m[32m[cached][39m[22m 66 assets
+assets by path [1m[32m.[39m[22m 2.72 MiB
+  asset [1m[32mbundle.js[39m[22m 2.7 MiB [1m[32m[emitted][39m[22m (name: main)
+  asset [1m[32mmain.38976d97bf50353a219f.hot-update.js[39m[22m 26.7 KiB [1m[32m[emitted][39m[22m [1m[32m[immutable][39m[22m [1m[32m[hmr][39m[22m (name: main)
+  asset [1m[32mmain.38976d97bf50353a219f.hot-update.json[39m[22m 28 bytes [1m[32m[emitted][39m[22m [1m[32m[immutable][39m[22m [1m[32m[hmr][39m[22m
+Entrypoint [1mmain[39m[22m 2.72 MiB = [1m[32mbundle.js[39m[22m 2.7 MiB [1m[32mmain.38976d97bf50353a219f.hot-update.js[39m[22m 26.7 KiB
+cached modules 2.29 MiB [1m[32m[cached][39m[22m 39 modules
+runtime modules 26.6 KiB 11 modules
+[1m./santa-wish-overlay.js[39m[22m 24.1 KiB [1m[33m[built][39m[22m [1m[33m[code generated][39m[22m
+webpack 5.105.3 compiled [1m[32msuccessfully[39m[22m in 56 ms

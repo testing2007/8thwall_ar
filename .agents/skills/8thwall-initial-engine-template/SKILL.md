@@ -17,7 +17,7 @@ Use the local template project at `D:\workspace\8thwall example\8thwall_ar\8thwa
 4. Verify that no ECS/A-Frame files or references were introduced.
 5. Run `npm install` if `node_modules` is missing.
 6. Run `npm run build`.
-7. For local testing, run `npm run serve -- --host 0.0.0.0` and report the localhost URL.
+7. For preview/testing with 8th Wall Desktop App, use `http://localhost:58000/` as the canonical local URL. If the user has ngrok running, use its forwarding URL to `http://localhost:58000` for phone testing. Do not report `8080` as the user-facing preview URL for these Desktop App projects.
 
 ## Template Path
 
