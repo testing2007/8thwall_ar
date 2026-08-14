@@ -1,0 +1,210 @@
+const DEFAULT_VOICE_TEXT = "快用魔法笔，写下愿望吧！";
+const LETTER_TRANSITION_MS = 500;
+const STYLE_ID = "santa-performance-sequence-style";
+const LETTER_ID = "santa-letter-transition";
+
+const installStyles = () => {
+  if (document.getElementById(STYLE_ID)) return;
+
+  const style = document.createElement("style");
+  style.id = STYLE_ID;
+  style.textContent = `
+    #${LETTER_ID} {
+      position: fixed;
+      inset: 0;
+      z-index: 998;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    #${LETTER_ID} .santa-letter-paper {
+      position: absolute;
+      left: 50%;
+      top: 58%;
+      width: min(32vw, 132px);
+      aspect-ratio: .72;
+      border: 2px solid rgba(137, 72, 24, .48);
+      border-radius: 8px;
+      opacity: 0;
+      background:
+        linear-gradient(135deg, transparent 48%, rgba(146, 91, 38, .16) 49% 51%, transparent 52%),
+        linear-gradient(45deg, transparent 48%, rgba(146, 91, 38, .13) 49% 51%, transparent 52%),
+        linear-gradient(155deg, #fff8d9, #eed39c);
+      box-shadow:
+        0 0 24px rgba(255, 203, 77, .95),
+        0 14px 34px rgba(40, 12, 0, .36);
+      transform: translate(-50%, -50%) scale(.12) rotate(-13deg);
+      transform-origin: center;
+      transition:
+        transform ${LETTER_TRANSITION_MS}ms cubic-bezier(.18, .86, .27, 1),
+        opacity 80ms linear;
+      will-change: transform, opacity;
+    }
+
+    #${LETTER_ID} .santa-letter-paper::before,
+    #${LETTER_ID} .santa-letter-paper::after {
+      content: "";
+      position: absolute;
+      left: 14%;
+      right: 14%;
+      height: 2px;
+      border-radius: 2px;
+      background: rgba(139, 76, 32, .32);
+      box-shadow:
+        0 10px rgba(139, 76, 32, .24),
+        0 20px rgba(139, 76, 32, .18);
+    }
+
+    #${LETTER_ID} .santa-letter-paper::before {
+      top: 30%;
+    }
+
+    #${LETTER_ID} .santa-letter-paper::after {
+      top: 62%;
+      right: 36%;
+    }
+
+    #${LETTER_ID}.is-flying .santa-letter-paper {
+      opacity: 1;
+      transform: translate(-50%, -50%) translate(7vw, -13vh) scale(1) rotate(2deg);
+    }
+
+    #${LETTER_ID}.is-handoff {
+      opacity: 0;
+      transition: opacity 160ms ease-out;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      #${LETTER_ID} .santa-letter-paper {
+        transition-duration: 1ms;
+      }
+    }
+  `;
+  document.head.appendChild(style);
+};
+
+const chooseChineseVoice = () => {
+  const voices = window.speechSynthesis?.getVoices?.() || [];
+  return voices.find(voice => /^zh(-|_)/i.test(voice.lang))
+    || voices.find(voice => /Chinese|中文|Mandarin/i.test(voice.name))
+    || null;
+};
+
+export const createSantaPerformanceSequence = ({
+  voiceText = DEFAULT_VOICE_TEXT,
+  voiceAssetUrl = null,
+} = {}) => {
+  installStyles();
+
+  let utterance = null;
+  let letterElement = null;
+  let voiceAudio = null;
+
+  if (voiceAssetUrl) {
+    voiceAudio = new Audio(voiceAssetUrl);
+    voiceAudio.preload = "auto";
+    voiceAudio.playsInline = true;
+  }
+
+  const speakWithBrowserVoice = () => {
+    if (!window.speechSynthesis || !window.SpeechSynthesisUtterance) {
+      console.warn("[Christmas AR] No Santa voice asset and speechSynthesis is unavailable.");
+      return;
+    }
+
+    window.speechSynthesis.cancel();
+    utterance = new SpeechSynthesisUtterance(voiceText);
+    utterance.lang = "zh-CN";
+    utterance.rate = 1.12;
+    utterance.pitch = 0.78;
+    utterance.volume = 1;
+    const selectedVoice = chooseChineseVoice();
+    if (selectedVoice) utterance.voice = selectedVoice;
+    window.speechSynthesis.speak(utterance);
+  };
+
+  const playVoice = () => {
+    window.dispatchEvent(new CustomEvent("christmas-ar:voice-start", {
+      detail: { text: voiceText },
+    }));
+
+    if (!voiceAudio) {
+      speakWithBrowserVoice();
+      return;
+    }
+
+    voiceAudio.currentTime = 0;
+    const playPromise = voiceAudio.play();
+    if (playPromise?.catch) {
+      playPromise.catch(() => speakWithBrowserVoice());
+    }
+  };
+
+  const unlockVoice = () => {
+    if (window.speechSynthesis && window.SpeechSynthesisUtterance) {
+      const primer = new SpeechSynthesisUtterance(" ");
+      primer.volume = 0;
+      window.speechSynthesis.speak(primer);
+      window.speechSynthesis.cancel();
+    }
+
+    if (!voiceAudio) return;
+    voiceAudio.volume = 0.001;
+    const playPromise = voiceAudio.play();
+    if (!playPromise?.then) return;
+    playPromise.then(() => {
+      voiceAudio.pause();
+      voiceAudio.currentTime = 0;
+      voiceAudio.volume = 1;
+    }).catch(() => undefined);
+  };
+
+  const removeLetter = () => {
+    letterElement?.remove();
+    letterElement = null;
+  };
+
+  const startLetterFlight = () => {
+    removeLetter();
+
+    letterElement = document.createElement("div");
+    letterElement.id = LETTER_ID;
+    letterElement.setAttribute("aria-hidden", "true");
+    letterElement.innerHTML = '<div class="santa-letter-paper"></div>';
+    document.body.appendChild(letterElement);
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => letterElement?.classList.add("is-flying"));
+    });
+
+    window.dispatchEvent(new CustomEvent("christmas-ar:letter-start"));
+  };
+
+  const finishLetterFlight = () => {
+    if (!letterElement) return;
+    letterElement.classList.add("is-handoff");
+    window.setTimeout(removeLetter, 180);
+  };
+
+  const reset = () => {
+    if (utterance && window.speechSynthesis?.speaking) {
+      window.speechSynthesis.cancel();
+    }
+    utterance = null;
+
+    if (voiceAudio) {
+      voiceAudio.pause();
+      voiceAudio.currentTime = 0;
+    }
+
+    removeLetter();
+  };
+
+  return {
+    playVoice,
+    unlockVoice,
+    startLetterFlight,
+    finishLetterFlight,
+    reset,
+  };
+};
