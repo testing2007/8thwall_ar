@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { createSantaParticleFx } from "./santa-particle-fx.js";
+import { createSantaPerformanceSequence } from "./santa-performance-sequence.js";
 import "./santa-wish-overlay.js";
 
 window.THREE = THREE;
@@ -23,6 +24,7 @@ let modelRoot = null;
 let mixer = null;
 let animationActions = [];
 let santaFx = null;
+let performanceSequence = null;
 let normalizedModelScale = 1;
 let xrStarted = false;
 let animationStarted = false;
@@ -30,7 +32,7 @@ let experienceState = EXPERIENCE_STATE.SCANNING;
 const clock = new THREE.Clock();
 const performanceAudio = new Audio(PERFORMANCE_AUDIO_URL);
 
-performanceAudio.loop = true;
+performanceAudio.loop = false;
 performanceAudio.preload = "auto";
 performanceAudio.playsInline = true;
 performanceAudio.volume = PERFORMANCE_AUDIO_VOLUME;
@@ -101,6 +103,7 @@ const hideImageTargetModel = ({ detail }) => {
   modelRoot.visible = false;
   animationStarted = false;
   santaFx?.reset();
+  performanceSequence?.reset();
   performanceAudio.pause();
   performanceAudio.currentTime = 0;
   setExperienceState(EXPERIENCE_STATE.SCANNING);
@@ -113,8 +116,20 @@ const enterWishOverlay = () => {
   if (modelRoot) modelRoot.visible = false;
   if (mixer) mixer.timeScale = 0;
   santaFx?.reset();
+  performanceSequence?.finishLetterFlight();
+  performanceAudio.pause();
 
   window.SantaWishOverlay?.show({ from: "santa-gift", playAudio: false });
+};
+
+const startSantaVoice = () => {
+  performanceAudio.volume = 0.1;
+  performanceSequence?.playVoice();
+};
+
+const startWishLetterFlight = () => {
+  performanceAudio.volume = 0.16;
+  performanceSequence?.startLetterFlight();
 };
 
 const playPerformanceAudio = () => {
@@ -125,6 +140,7 @@ const playPerformanceAudio = () => {
 };
 
 const unlockPerformanceAudio = () => {
+  performanceSequence?.unlockVoice();
   if (experienceState === EXPERIENCE_STATE.AR_TRACKING) {
     playPerformanceAudio();
     return;
@@ -158,6 +174,7 @@ const startModelAnimation = () => {
     action.reset();
     action.play();
   });
+  performanceSequence?.reset();
   santaFx?.play();
   playPerformanceAudio();
 };
@@ -174,6 +191,7 @@ const christmasImageTargetPipelineModule = () => ({
   onStart: () => {
     const { scene } = XR8.Threejs.xrScene();
     window.SantaWishOverlay?.init();
+    performanceSequence = createSantaPerformanceSequence();
 
     scene.add(new THREE.AmbientLight(0xffffff, 1.8));
 
@@ -196,6 +214,8 @@ const christmasImageTargetPipelineModule = () => ({
         const modelBounds = new THREE.Box3().setFromObject(gltf.scene);
         santaFx = createSantaParticleFx({
           bounds: modelBounds,
+          onVoiceStart: startSantaVoice,
+          onLetterStart: startWishLetterFlight,
           onComplete: enterWishOverlay,
         });
         anchor.add(santaFx.group);
