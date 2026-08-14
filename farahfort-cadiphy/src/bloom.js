@@ -1,253 +1,357 @@
-import * as THREE from 'three'
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
+import * as THREE from "three";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { WineryStoryController } from "./winery-story.js";
 
-window.THREE = THREE
+window.THREE = THREE;
 
-const MODEL_URL = require('./assets/farahfort-cadiphy.glb')
-const AUDIO_URL = require('./assets/cadiphy_fullmix_10s.mp3')
-const TARGET_NAME = 'trigger-label'
+const MODEL_URL = require("./assets/farahfort-cadiphy.glb");
+const AUDIO_URL = require("./assets/cadiphy_fullmix_10s.mp3");
+const TARGET_NAME = "trigger-label";
+const MODEL_RAW_WIDTH = 87.98;
+const STORY_REVEAL_TIME = 9.2;
 
-// 模型在 Blender 导出后的原始 X 轴宽度 (约 87.98 单位)
-const MODEL_RAW_WIDTH = 87.98
+const STATE = Object.freeze({
+  SCANNING: "SCANNING",
+  AR_PLAYING: "AR_PLAYING",
+  AR_COMPLETE: "AR_COMPLETE",
+  WINERY_VIDEO: "WINERY_VIDEO",
+});
 
-let modelRoot = null
-let mixer = null
-let actions = []
-const clock = new THREE.Clock()
+let modelRoot = null;
+let mixer = null;
+let actions = [];
+let animationDuration = 10;
+let story = null;
+let modelMaterials = [];
+let mediaUnlocked = false;
+let mediaUnlockPromise = null;
+let pendingMainAudioStart = false;
+let targetVisible = false;
+let experienceState = STATE.SCANNING;
+let fallbackTime = 0;
+const clock = new THREE.Clock();
 
-// ── 音频播放器 (iOS 必须在按钮 click 手势内解除静音) ─────────────────────────
-let audioEl = null
-let soundEnabled = false
-let targetVisible = false
-let soundButton = null
+const audioEl = new Audio(AUDIO_URL);
+audioEl.loop = false;
+audioEl.preload = "auto";
+audioEl.playsInline = true;
+audioEl.muted = true;
+audioEl.defaultMuted = true;
+audioEl.volume = 1;
 
-const updateSoundButton = () => {
-  if (!soundButton) return
-  soundButton.textContent = soundEnabled ? '声音：开' : '声音：关'
-  soundButton.setAttribute('aria-pressed', String(soundEnabled))
-  soundButton.classList.toggle('is-on', soundEnabled)
-  soundButton.style.background = soundEnabled
-    ? 'rgba(21, 105, 82, .88)'
-    : 'rgba(0, 0, 0, .72)'
-  soundButton.style.borderColor = soundEnabled
-    ? 'rgba(160, 255, 219, .9)'
-    : 'rgba(255, 255, 255, .72)'
-}
+const unlockMedia = () => {
+  if (mediaUnlocked) return Promise.resolve();
+  if (mediaUnlockPromise) return mediaUnlockPromise;
 
-const initAudio = () => {
-  if (audioEl) return
-  audioEl = new Audio(AUDIO_URL)
-  audioEl.loop = true
-  audioEl.volume = 1.0
-  audioEl.muted = true
-  audioEl.defaultMuted = true
-  audioEl.preload = 'auto'
-}
-
-const enableSound = () => {
-  initAudio()
-  soundEnabled = true
-  audioEl.muted = false
-  audioEl.defaultMuted = false
-  audioEl.volume = targetVisible ? 1 : 0
-  updateSoundButton()
-
-  // play() 在按钮 click 的同步调用栈内发起，满足 iOS Safari 的手势要求。
-  const promise = audioEl.play()
-  if (!promise) return
-
-  promise.then(() => {
-    audioEl.volume = 1
-    if (!targetVisible) {
-      audioEl.pause()
-      audioEl.currentTime = 0
-    }
-  }).catch((error) => {
-    console.warn('[CADIPHY Audio] Sound unlock failed:', error)
-    soundEnabled = false
-    audioEl.muted = true
-    audioEl.volume = 1
-    updateSoundButton()
-  })
-}
-
-const disableSound = () => {
-  soundEnabled = false
-  if (audioEl) {
-    audioEl.muted = true
-    audioEl.defaultMuted = true
-    audioEl.volume = 1
+  const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+  if (AudioContextClass) {
+    const context = new AudioContextClass();
+    const buffer = context.createBuffer(1, 1, 22050);
+    const source = context.createBufferSource();
+    source.buffer = buffer;
+    source.connect(context.destination);
+    source.start(0);
+    context
+      .resume()
+      .then(() => context.close())
+      .catch(() => undefined);
   }
-  updateSoundButton()
-}
 
-const addSoundButton = () => {
-  if (document.getElementById('cadiphy-sound-toggle')) return
+  audioEl.muted = false;
+  audioEl.defaultMuted = false;
+  audioEl.volume = 0;
+  audioEl.currentTime = 0;
+  const promise = audioEl.play();
+  if (!promise) {
+    audioEl.pause();
+    audioEl.currentTime = 0;
+    audioEl.volume = 1;
+    mediaUnlocked = true;
+    return Promise.resolve();
+  }
+  mediaUnlockPromise = promise
+    .then(() => {
+      audioEl.pause();
+      audioEl.currentTime = 0;
+      audioEl.volume = 1;
+      audioEl.muted = false;
+      audioEl.defaultMuted = false;
+      mediaUnlocked = true;
+      mediaUnlockPromise = null;
+      if (pendingMainAudioStart && experienceState === STATE.AR_PLAYING) {
+        pendingMainAudioStart = false;
+        playMainAudio({ fromStart: false });
+      }
+    })
+    .catch((error) => {
+      console.warn("[CADIPHY Audio] Initial media unlock failed:", error);
+      mediaUnlocked = false;
+      mediaUnlockPromise = null;
+      pendingMainAudioStart = false;
+      audioEl.pause();
+      audioEl.currentTime = 0;
+      audioEl.volume = 1;
+      audioEl.muted = true;
+      audioEl.defaultMuted = true;
+    });
 
-  soundButton = document.createElement('button')
-  soundButton.id = 'cadiphy-sound-toggle'
-  soundButton.type = 'button'
-  soundButton.setAttribute('aria-label', '开启或关闭声音')
-  soundButton.style.cssText = [
-    'position:fixed',
-    'left:50%',
-    'bottom:calc(env(safe-area-inset-bottom, 0px) + 18px)',
-    'transform:translateX(-50%)',
-    'z-index:10000',
-    'min-width:112px',
-    'height:44px',
-    'padding:0 18px',
-    'border:1px solid rgba(255,255,255,.72)',
-    'border-radius:8px',
-    'background:rgba(0,0,0,.72)',
-    'color:#fff',
-    'font:600 14px/1 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif',
-    'letter-spacing:0',
-    'box-shadow:0 4px 14px rgba(0,0,0,.28)',
-    'cursor:pointer',
-    '-webkit-tap-highlight-color:transparent',
-    'touch-action:manipulation',
-  ].join(';')
+  return mediaUnlockPromise;
+};
 
-  soundButton.addEventListener('click', () => {
-    if (soundEnabled) disableSound()
-    else enableSound()
-  })
+window.CADIPHY_UNLOCK_MEDIA = unlockMedia;
 
-  document.body.appendChild(soundButton)
-  updateSoundButton()
-}
+const applyModelOpacity = (opacity) => {
+  modelMaterials.forEach(({ material, opacity: baseOpacity, transparent }) => {
+    material.opacity = baseOpacity * opacity;
+    material.transparent =
+      transparent || baseOpacity < 0.999 || opacity < 0.999;
+    material.needsUpdate = true;
+  });
+};
 
-const playAudio = () => {
-  if (!audioEl) return
-  audioEl.currentTime = 0
-  audioEl.muted = !soundEnabled
-  audioEl.defaultMuted = !soundEnabled
-  audioEl.volume = 1
-  const promise = audioEl.play()
+const captureModelMaterials = (model) => {
+  modelMaterials = [];
+  model.traverse((object) => {
+    if (!object.isMesh || !object.material) return;
+    const materials = Array.isArray(object.material)
+      ? object.material
+      : [object.material];
+    materials.forEach((material) => {
+      modelMaterials.push({
+        material,
+        opacity: material.opacity ?? 1,
+        transparent: material.transparent,
+      });
+    });
+  });
+};
+
+const restoreModelVisibility = () => {
+  applyModelOpacity(1);
+};
+
+const pauseMainAudio = ({ reset = false } = {}) => {
+  pendingMainAudioStart = false;
+  audioEl.pause();
+  if (reset) audioEl.currentTime = 0;
+};
+
+const playMainAudio = ({ fromStart = true } = {}) => {
+  if (!mediaUnlocked && mediaUnlockPromise) {
+    pendingMainAudioStart = true;
+    return;
+  }
+  audioEl.currentTime = fromStart
+    ? 0
+    : Math.min(fallbackTime, Math.max(0, animationDuration - 0.03));
+  audioEl.muted = !mediaUnlocked;
+  audioEl.defaultMuted = !mediaUnlocked;
+  audioEl.volume = 1;
+  const promise = audioEl.play();
   if (promise) {
     promise.catch((error) => {
-      console.warn('[CADIPHY Audio] Playback failed:', error)
-    })
+      console.warn(
+        "[CADIPHY Audio] Playback failed; using animation clock fallback:",
+        error,
+      );
+    });
   }
-}
+};
 
-const pauseAudio = () => {
-  if (!audioEl) return
-  audioEl.pause()
-  audioEl.currentTime = 0
-}
+const resetAnimation = () => {
+  fallbackTime = 0;
+  story?.hide();
+  if (!mixer) return;
+  actions.forEach((action) => {
+    action.enabled = true;
+    action.paused = false;
+    action.reset();
+    action.setLoop(THREE.LoopOnce, 1);
+    action.clampWhenFinished = true;
+    action.play();
+  });
+  mixer.setTime(0);
+};
 
-// ── 重置并播放全部动画 Clip + 音频 ──────────────────────────────────────────
+const hardResetExperience = () => {
+  targetVisible = false;
+  experienceState = STATE.SCANNING;
+  pauseMainAudio({ reset: true });
+  if (modelRoot) {
+    applyModelOpacity(1);
+    modelRoot.visible = false;
+  }
+  resetAnimation();
+};
+
 const playAnimationFromStart = () => {
-  if (mixer && actions.length) {
-    mixer.setTime(0)
-    actions.forEach((action) => {
-      action.reset()
-      action.play()
-    })
-  }
-  playAudio()
-}
+  resetAnimation();
+  experienceState = STATE.AR_PLAYING;
+  playMainAudio();
+};
 
-// ── Image Target 识别与位置姿态同步 ─────────────────────────────────────────
+const completeAnimation = () => {
+  if (experienceState !== STATE.AR_PLAYING) return;
+  experienceState = STATE.AR_COMPLETE;
+  mixer?.setTime(animationDuration);
+  pauseMainAudio();
+  story?.show();
+};
+
 const applyImageTargetPose = ({ detail }) => {
-  if (!modelRoot || detail.name !== TARGET_NAME) return
-  const { position, rotation, scale = 0.11 } = detail
-  const wasVisible = modelRoot.visible
-
-  modelRoot.visible = true
-  targetVisible = true
-
-  // 自动根据识别图物理宽度换算 1:1 物理缩放比例
-  const finalScale = (scale > 0 ? scale : 0.11) / MODEL_RAW_WIDTH
-
-  modelRoot.position.set(position.x, position.y, position.z + 0.002)
-  modelRoot.quaternion.set(rotation.x, rotation.y, rotation.z, rotation.w)
-  modelRoot.scale.setScalar(finalScale)
-
-  // 当识别到酒标时，从头播放动画
-  if (!wasVisible) {
-    playAnimationFromStart()
+  if (!modelRoot || detail.name !== TARGET_NAME) return;
+  if (!window.CADIPHY_AR_STARTED) {
+    targetVisible = false;
+    if (modelRoot.visible) hardResetExperience();
+    return;
   }
-}
+  const { position, rotation, scale = 0.11 } = detail;
+  const shouldStart = experienceState === STATE.SCANNING;
+
+  modelRoot.visible = true;
+  targetVisible = true;
+  restoreModelVisibility();
+  const finalScale = (scale > 0 ? scale : 0.11) / MODEL_RAW_WIDTH;
+  modelRoot.position.set(position.x, position.y, position.z + 0.002);
+  modelRoot.quaternion.set(rotation.x, rotation.y, rotation.z, rotation.w);
+  modelRoot.scale.setScalar(finalScale);
+
+  if (shouldStart) playAnimationFromStart();
+};
 
 const hideImageTargetModel = ({ detail }) => {
-  if (!modelRoot || detail.name !== TARGET_NAME) return
-  modelRoot.visible = false
-  targetVisible = false
-  pauseAudio()
-}
+  if (!modelRoot || detail.name !== TARGET_NAME) return;
+  targetVisible = false;
+  if (!window.CADIPHY_AR_STARTED) {
+    if (modelRoot.visible) hardResetExperience();
+    return;
+  }
 
-// ── 导出 8th Wall Pipeline Module ───────────────────────────────────────────
+  // A winery video is screen-space content and must survive brief tracking loss.
+  if (experienceState === STATE.WINERY_VIDEO) return;
+
+  hardResetExperience();
+};
+
+const setupStory = (model, camera, canvas) => {
+  story = new WineryStoryController({
+    camera,
+    canvas,
+    onOpen: () => {
+      experienceState = STATE.WINERY_VIDEO;
+      pauseMainAudio();
+    },
+    onClose: () => {
+      experienceState = STATE.AR_COMPLETE;
+      modelRoot.visible = true;
+      mixer?.setTime(animationDuration);
+      story.show();
+    },
+  });
+
+  const arRoot = model.getObjectByName("AR_ROOT");
+  if (arRoot) {
+    story.root.position.set(0, 0, 51);
+    story.attachTo(arRoot);
+  } else {
+    story.root.position.set(0, 0, 51);
+    story.attachTo(model);
+    console.warn(
+      "[CADIPHY Story] AR_ROOT was not found; using model-root placement.",
+    );
+  }
+};
+
 export const cadiphyFormalPipelineModule = () => ({
-  name: 'cadiphy-formal-animated',
+  name: "cadiphy-formal-animated",
 
   listeners: [
-    { event: 'reality.imagefound', process: applyImageTargetPose },
-    { event: 'reality.imageupdated', process: applyImageTargetPose },
-    { event: 'reality.imagelost', process: hideImageTargetModel },
+    { event: "reality.imagefound", process: applyImageTargetPose },
+    { event: "reality.imageupdated", process: applyImageTargetPose },
+    { event: "reality.imagelost", process: hideImageTargetModel },
   ],
 
   onStart: () => {
-    const { scene } = XR8.Threejs.xrScene()
-    initAudio()
-    addSoundButton()
+    const { scene, camera } = XR8.Threejs.xrScene();
+    const canvas = document.getElementById("camerafeed");
 
-    // 1. 全方位多角度环境照明，保证所有部件清晰可见
-    const ambientLight = new THREE.AmbientLight(0xffffff, 2.2)
-    scene.add(ambientLight)
+    scene.add(new THREE.AmbientLight(0xffffff, 2.2));
 
-    const dirLightMain = new THREE.DirectionalLight(0xffffff, 2.5)
-    dirLightMain.position.set(2, 4, 3)
-    scene.add(dirLightMain)
+    const dirLightMain = new THREE.DirectionalLight(0xffffff, 2.5);
+    dirLightMain.position.set(2, 4, 3);
+    scene.add(dirLightMain);
 
-    const dirLightSub = new THREE.DirectionalLight(0xffe0b2, 1.8)
-    dirLightSub.position.set(-2, -2, 2)
-    scene.add(dirLightSub)
+    const dirLightSub = new THREE.DirectionalLight(0xffe0b2, 1.8);
+    dirLightSub.position.set(-2, -2, 2);
+    scene.add(dirLightSub);
+    scene.add(new THREE.HemisphereLight(0xffffff, 0x444444, 1.5));
 
-    const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 1.5)
-    scene.add(hemiLight)
+    new GLTFLoader().load(
+      MODEL_URL,
+      (gltf) => {
+        const model = gltf.scene;
+        model.name = "farahfort_cadiphy";
+        model.visible = false;
 
-    // 2. 加载模型并解析动画
-    new GLTFLoader().load(MODEL_URL, (gltf) => {
-      const model = gltf.scene
-      model.name = 'farahfort_cadiphy'
-      model.visible = false
+        model.traverse((object) => {
+          if (!object.isMesh || !object.material) return;
+          const materials = Array.isArray(object.material)
+            ? object.material
+            : [object.material];
+          materials.forEach((material) => {
+            material.side = THREE.DoubleSide;
+            material.needsUpdate = true;
+          });
+        });
+        captureModelMaterials(model);
 
-      model.traverse((o) => {
-        if (o.isMesh && o.material) {
-          const mats = Array.isArray(o.material) ? o.material : [o.material]
-          mats.forEach((m) => {
-            m.side = THREE.DoubleSide
-            m.needsUpdate = true
-          })
+        actions = [];
+        if (gltf.animations.length) {
+          mixer = new THREE.AnimationMixer(model);
+          animationDuration = Math.max(
+            ...gltf.animations.map((clip) => clip.duration),
+          );
+          gltf.animations.forEach((clip) => {
+            const action = mixer.clipAction(clip);
+            action.setLoop(THREE.LoopOnce, 1);
+            action.clampWhenFinished = true;
+            action.play();
+            actions.push(action);
+          });
+          mixer.setTime(0);
         }
-      })
 
-      actions = []
-      if (gltf.animations && gltf.animations.length > 0) {
-        mixer = new THREE.AnimationMixer(model)
-        gltf.animations.forEach((clip) => {
-          const action = mixer.clipAction(clip)
-          action.setLoop(THREE.LoopRepeat, Infinity)
-          action.play()
-          actions.push(action)
-        })
-      }
-
-      scene.add(model)
-      modelRoot = model
-    })
+        setupStory(model, camera, canvas);
+        scene.add(model);
+        modelRoot = model;
+      },
+      undefined,
+      (error) => {
+        console.error(
+          "[CADIPHY Model] Failed to load farahfort-cadiphy.glb:",
+          error,
+        );
+      },
+    );
   },
 
   onUpdate: () => {
-    if (mixer) {
-      const delta = clock.getDelta()
-      mixer.update(delta)
-    }
-  },
-})
+    const delta = Math.min(clock.getDelta(), 0.1);
+    story?.update(delta);
+    if (!mixer || experienceState !== STATE.AR_PLAYING) return;
 
-// 兼容导出别名
-export const cadiphyBloomPipelineModule = cadiphyFormalPipelineModule
+    if (!audioEl.paused) {
+      fallbackTime = Math.max(fallbackTime, audioEl.currentTime);
+    } else {
+      fallbackTime += delta;
+    }
+
+    const timelineTime = Math.min(fallbackTime, animationDuration);
+    mixer.setTime(timelineTime);
+    if (timelineTime >= STORY_REVEAL_TIME) story?.show();
+    if (timelineTime >= animationDuration - 0.03 || audioEl.ended)
+      completeAnimation();
+  },
+});
+
+export const cadiphyBloomPipelineModule = cadiphyFormalPipelineModule;

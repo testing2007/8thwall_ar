@@ -1,0 +1,47 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+
+  <title>8th Wall Engine Image Target</title>
+  <meta itemprop="name" content="8th Wall Engine Image Target">
+  <meta name="twitter:title" content="8th Wall Engine Image Target">
+  <meta property="og:title" content="8th Wall Engine Image Target">
+  <meta property="og:site_name" content="8th Wall Engine Image Target">
+  <meta name="description" content="Scan target.png to show christmas.glb.">
+  <meta itemprop="description" content="Scan target.png to show christmas.glb.">
+  <meta property="og:description" content="Scan target.png to show christmas.glb.">
+  <meta name="twitter:description" content="Scan target.png to show christmas.glb.">
+  <meta property="og:image" content="assets/target.png">
+
+  <style>
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: #000;
+    }
+
+    #camerafeed {
+      width: 100vw;
+      height: 100vh;
+      display: block;
+    }
+  </style>
+
+  <script src="./external/xrextras/xrextras.js"></script>
+  <script src="./external/landing-page/landing-page.js"></script>
+  <script async src="./external/xr/xr.js" data-preload-chunks="slam"></script>
+</head>
+
+<body>
+  <canvas id="camerafeed"></canvas>
+  <script src="bundle.js"></script>
+</body>
+
+</html>

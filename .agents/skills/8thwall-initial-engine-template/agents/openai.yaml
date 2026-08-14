@@ -1,0 +1,4 @@
+interface:
+  display_name: "8th Wall Initial Engine Template"
+  short_description: "Create basic 8th Wall Engine image-target projects."
+  default_prompt: "Use $8thwall-initial-engine-template to create a basic 8th Wall Engine image target project."

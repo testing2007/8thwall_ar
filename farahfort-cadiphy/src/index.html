@@ -11,12 +11,12 @@
   <meta name="twitter:title" content="farahfort_knight">
   <meta property="og:title" content="farahfort_knight">
   <meta property="og:site_name" content="farahfort_knight">
-  <meta name="description" content="Scan the trigger label to play ar.mp4.">
-  <meta itemprop="description" content="Scan the trigger label to play ar.mp4.">
-  <meta property="og:description" content="Scan the trigger label to play ar.mp4.">
-  <meta name="twitter:description" content="Scan the trigger label to play ar.mp4.">
+  <meta name="description" content="Scan the CADIPHY label to reveal its animated story.">
+  <meta itemprop="description" content="Scan the CADIPHY label to reveal its animated story.">
+  <meta property="og:description" content="Scan the CADIPHY label to reveal its animated story.">
+  <meta name="twitter:description" content="Scan the CADIPHY label to reveal its animated story.">
   <meta property="og:image" content="assets/trigger-label.png">
-  <link rel="stylesheet" href="assets/bloom-toggle.css">
+  <link rel="stylesheet" href="assets/cadiphy-ui.css">
 
   <script src="./external/scripts/8frame-1.5.0.min.js"></script>
   <script src="./external/xrextras/xrextras.js"></script>
@@ -39,9 +39,17 @@
 </head>
 
 <body>
+  <section id="cadiphy-start-screen" class="cadiphy-start-screen is-hidden" aria-label="CADIPHY AR start"
+    aria-hidden="true">
+    <img class="cadiphy-start-media" src="assets/video/1_poster.jpg" alt="CADIPHY winery story">
+    <div class="cadiphy-start-content">
+      <p class="cadiphy-start-kicker">CADIPHY</p>
+      <h1>酒标 AR 体验</h1>
+      <button id="cadiphy-ar-start" class="cadiphy-start-button" type="button">开启 AR 体验</button>
+    </div>
+  </section>
   <canvas id="camerafeed"></canvas>
   <script src="bundle.js"></script>
-  <script async src="./external/xr/xr.js" data-preload-chunks="slam"></script>
 
 </body>
 
