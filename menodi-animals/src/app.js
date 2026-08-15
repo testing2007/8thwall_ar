@@ -15,6 +15,7 @@ const SUBTITLE_CANVAS_HEIGHT = 256;
 
 let modelRoot = null;
 let mixer = null;
+let animationActions = [];
 let normalizedModelScale = 1;
 let subtitleMesh = null;
 let subtitleTexture = null;
@@ -74,7 +75,10 @@ const parseSrt = (source) =>
       const timingIndex = lines.findIndex((line) => line.includes("-->"));
       if (timingIndex < 0) return null;
       const [start, end] = lines[timingIndex].split("-->").map(parseSrtTime);
-      const text = lines.slice(timingIndex + 1).join(" ").trim();
+      const text = lines
+        .slice(timingIndex + 1)
+        .join(" ")
+        .trim();
       return Number.isFinite(start) && Number.isFinite(end) && text
         ? { start, end, text }
         : null;
@@ -250,6 +254,21 @@ const prepareModel = (model) => {
   model.scale.setScalar(normalizedModelScale);
 };
 
+const resumeModelAnimation = () => {
+  if (!mixer || !animationActions.length) return;
+  mixer.timeScale = 1;
+  if (storyAudioOffset <= 0.001) {
+    animationActions.forEach((action) => {
+      action.reset();
+      action.play();
+    });
+  }
+};
+
+const stopModelAnimation = () => {
+  if (mixer) mixer.timeScale = 0;
+};
+
 const playStory = () => {
   if (
     !audioUnlocked ||
@@ -272,7 +291,10 @@ const playStory = () => {
   const context = ensureStoryAudioContext();
   if (!context) return;
   if (context.state === "suspended") {
-    void context.resume().then(() => tryStartStory()).catch(() => undefined);
+    void context
+      .resume()
+      .then(() => tryStartStory())
+      .catch(() => undefined);
     return;
   }
 
@@ -284,7 +306,8 @@ const playStory = () => {
   source.connect(gain);
   gain.connect(context.destination);
   source.onended = () => {
-    if (playToken !== storyAudioPlayToken || storyAudioSource !== source) return;
+    if (playToken !== storyAudioPlayToken || storyAudioSource !== source)
+      return;
     storyAudioPlaying = false;
     storyAudioEnded = true;
     storyAudioOffset = storyAudioBuffer.duration;
@@ -292,6 +315,7 @@ const playStory = () => {
     storyAudioGain = null;
     source.disconnect();
     gain.disconnect();
+    stopModelAnimation();
     setSubtitle(-1);
   };
 
@@ -300,16 +324,15 @@ const playStory = () => {
   storyAudioPlaying = true;
   storyAudioEnded = false;
   storyAudioStartedAt = context.currentTime;
-  source.start(0, Math.min(storyAudioOffset, storyAudioBuffer.duration - 0.001));
+  resumeModelAnimation();
+  source.start(
+    0,
+    Math.min(storyAudioOffset, storyAudioBuffer.duration - 0.001),
+  );
 };
 
 function tryStartStory() {
-  if (
-    !experienceEnabled ||
-    !targetVisible ||
-    !modelRoot ||
-    !subtitlesReady
-  ) {
+  if (!experienceEnabled || !targetVisible || !modelRoot || !subtitlesReady) {
     return;
   }
   playStory();
@@ -433,10 +456,14 @@ const engineImageTargetPipelineModule = () => ({
 
         if (gltf.animations.length) {
           mixer = new THREE.AnimationMixer(gltf.scene);
-          gltf.animations.forEach((clip) => {
+          animationActions = gltf.animations.map((clip) => {
             const action = mixer.clipAction(clip);
-            action.play();
+            action.setLoop(THREE.LoopOnce, 1);
+            action.clampWhenFinished = true;
+            return action;
           });
+        } else {
+          animationActions = [];
         }
 
         scene.add(anchor);
@@ -551,7 +578,8 @@ const loadStoryAudioBuffer = () => {
   if (storyAudioLoadPromise) return storyAudioLoadPromise;
 
   const context = ensureStoryAudioContext();
-  if (!context) return Promise.reject(new Error("Web Audio API is unavailable."));
+  if (!context)
+    return Promise.reject(new Error("Web Audio API is unavailable."));
 
   storyAudioLoadPromise = fetch(AUDIO_URL, { cache: "force-cache" })
     .then((response) => {
@@ -597,7 +625,8 @@ const unlockStoryAudio = () => {
   if (audioUnlocking) return audioUnlocking;
 
   const context = ensureStoryAudioContext();
-  if (!context) return Promise.reject(new Error("Web Audio API is unavailable."));
+  if (!context)
+    return Promise.reject(new Error("Web Audio API is unavailable."));
 
   // Only unlock Web Audio here. The story MP3 is never played before imagefound.
   const resumePromise = context.resume();
