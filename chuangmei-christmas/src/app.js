@@ -36,23 +36,22 @@ let xrRuntimeLoading = null;
 let xrStarted = false;
 let animationStarted = false;
 let performanceAudioPlaying = false;
+let performanceAudioContext = null;
+let performanceAudioBuffer = null;
+let performanceAudioLoadPromise = null;
+let performanceAudioSource = null;
+let performanceAudioGain = null;
+let performanceAudioPlayToken = 0;
 let animStartTimer = null; // 600 ms stabilisation before starting the performance
-let performanceAudioUnlocked = false;
-let performanceAudioUnlockPending = null;
 let arStarting = false;
 let performanceTimer = null;
 let performanceRunId = 0;
 let startCoverDismissed = false;
 let startCoverRoot = null;
 let pendingTargetDetail = null;
+let targetFoundAfterStart = false;
 let experienceState = EXPERIENCE_STATE.SCANNING;
 const clock = new THREE.Clock();
-const performanceAudio = new Audio(PERFORMANCE_AUDIO_URL);
-
-performanceAudio.loop = false;
-performanceAudio.preload = "auto";
-performanceAudio.playsInline = true;
-performanceAudio.volume = 0;
 
 const getCameraCanvas = () => {
   let canvas = document.getElementById("camerafeed");
@@ -82,6 +81,65 @@ const clearPerformanceTimer = () => {
 const cancelPerformanceTimeline = () => {
   performanceRunId += 1;
   clearPerformanceTimer();
+};
+
+const ensurePerformanceAudioContext = () => {
+  if (performanceAudioContext) return performanceAudioContext;
+  const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+  if (!AudioContextClass) return null;
+  performanceAudioContext = new AudioContextClass();
+  return performanceAudioContext;
+};
+
+const loadPerformanceAudioBuffer = () => {
+  if (performanceAudioBuffer) return Promise.resolve(performanceAudioBuffer);
+  if (performanceAudioLoadPromise) return performanceAudioLoadPromise;
+
+  const context = ensurePerformanceAudioContext();
+  if (!context) return Promise.reject(new Error("Web Audio API is unavailable."));
+
+  performanceAudioLoadPromise = fetch(PERFORMANCE_AUDIO_URL, { cache: "force-cache" })
+    .then((response) => {
+      if (!response.ok) throw new Error(`Audio request failed: ${response.status}`);
+      return response.arrayBuffer();
+    })
+    .then((arrayBuffer) => new Promise((resolve, reject) => {
+      context.decodeAudioData(arrayBuffer.slice(0), resolve, reject);
+    }))
+    .then((audioBuffer) => {
+      performanceAudioBuffer = audioBuffer;
+      return audioBuffer;
+    })
+    .catch((error) => {
+      performanceAudioLoadPromise = null;
+      throw error;
+    });
+
+  return performanceAudioLoadPromise;
+};
+
+const unlockPerformanceAudio = () => {
+  const context = ensurePerformanceAudioContext();
+  if (!context) return;
+
+  // Resume Web Audio inside the trusted gesture without touching the MP3.
+  // The one-sample zero buffer is always silent, even on slow production hosts.
+  void context.resume().catch(() => undefined);
+  const silentSource = context.createBufferSource();
+  const silentGain = context.createGain();
+  silentSource.buffer = context.createBuffer(1, 1, 22050);
+  silentGain.gain.value = 0;
+  silentSource.connect(silentGain);
+  silentGain.connect(context.destination);
+  silentSource.onended = () => {
+    silentSource.disconnect();
+    silentGain.disconnect();
+  };
+  silentSource.start(0);
+
+  void loadPerformanceAudioBuffer().catch((error) => {
+    console.warn("[Christmas AR] Failed to preload performance audio:", error);
+  });
 };
 
 const installStartCoverStyles = () => {
@@ -160,6 +218,7 @@ const setStartCoverLoading = (loading) => {
 const finishStartCover = () => {
   startCoverDismissed = true;
   pendingTargetDetail = null;
+  targetFoundAfterStart = false;
   document.body.classList.remove("ar-camera-hidden");
   removeStartCover();
   window.dispatchEvent(new CustomEvent("christmas-ar:start-cover-dismissed"));
@@ -169,21 +228,7 @@ const startArFromCover = () => {
   if (arStarting || startCoverDismissed) return;
   arStarting = true;
   setStartCoverLoading(true);
-  // Unlock the single merged track inside the user gesture so iOS can play it
-  // later when the image target is found.
-  if (!performanceAudioUnlocked && !performanceAudioUnlockPending) {
-    performanceAudio.volume = 0;
-    performanceAudioUnlockPending = performanceAudio.play().then(() => {
-      performanceAudio.pause();
-      performanceAudio.currentTime = 0;
-      performanceAudio.volume = 0;
-      performanceAudioUnlocked = true;
-      performanceAudioUnlockPending = null;
-    }).catch(() => {
-      performanceAudioUnlocked = true;
-      performanceAudioUnlockPending = null;
-    });
-  }
+  unlockPerformanceAudio();
 
   finishStartCover();
   arStarting = false;
@@ -265,8 +310,25 @@ const applyImageTargetPose = ({ detail }) => {
   }
 };
 
+const handleImageTargetFound = (event) => {
+  if (event.detail.name !== TARGET_NAME) return;
+  if (!startCoverDismissed) {
+    targetFoundAfterStart = false;
+    if (modelRoot) modelRoot.visible = false;
+    return;
+  }
+  targetFoundAfterStart = true;
+  applyImageTargetPose(event);
+};
+
+const handleImageTargetUpdated = (event) => {
+  if (!targetFoundAfterStart) return;
+  applyImageTargetPose(event);
+};
+
 const hideImageTargetModel = ({ detail }) => {
   if (detail.name !== TARGET_NAME) return;
+  targetFoundAfterStart = false;
   pendingTargetDetail = null;
   // Cancel the stabilisation timer BEFORE the modelRoot guard so that a brief
   // detection that fires imagelost before the model even loads never leaks.
@@ -322,34 +384,66 @@ const watchModelAnimationEnd = (runId) => {
 
 /** Start the merged background-and-voice track from the beginning. */
 const startPerformanceAudio = () => {
-  if (performanceAudioPlaying) {
-    performanceAudio.volume = PERFORMANCE_AUDIO_VOLUME;
+  stopPerformanceAudio();
+  performanceAudioPlaying = true;
+  const playToken = performanceAudioPlayToken;
+  const context = ensurePerformanceAudioContext();
+  if (!context) {
+    performanceAudioPlaying = false;
     return;
   }
-  performanceAudioPlaying = true;
 
-  const doPlay = () => {
-    if (!performanceAudioPlaying) return;
-    performanceAudio.currentTime = 0;
-    performanceAudio.volume = PERFORMANCE_AUDIO_VOLUME;
-    performanceAudio.play().catch(() => {
+  const resumePromise = context.state === "suspended"
+    ? context.resume()
+    : Promise.resolve();
+
+  Promise.all([resumePromise, loadPerformanceAudioBuffer()]).then(([, audioBuffer]) => {
+    if (!performanceAudioPlaying || playToken !== performanceAudioPlayToken) return;
+    if (experienceState !== EXPERIENCE_STATE.AR_TRACKING) return;
+
+    const source = context.createBufferSource();
+    const gain = context.createGain();
+    source.buffer = audioBuffer;
+    gain.gain.value = PERFORMANCE_AUDIO_VOLUME;
+    source.connect(gain);
+    gain.connect(context.destination);
+    source.onended = () => {
+      if (performanceAudioSource !== source) return;
+      performanceAudioSource = null;
+      performanceAudioGain = null;
       performanceAudioPlaying = false;
-    });
-  };
-
-  if (performanceAudioUnlockPending) {
-    performanceAudioUnlockPending.then(doPlay);
-  } else {
-    doPlay();
-  }
+      source.disconnect();
+      gain.disconnect();
+    };
+    performanceAudioSource = source;
+    performanceAudioGain = gain;
+    source.start(0);
+  }).catch((error) => {
+    if (playToken !== performanceAudioPlayToken) return;
+    performanceAudioPlaying = false;
+    console.warn("[Christmas AR] Failed to play performance audio:", error);
+  });
 };
 
 /** Stop all experience audio when tracking ends or before the HTML overlay. */
 const stopPerformanceAudio = () => {
   performanceAudioPlaying = false;
-  performanceAudio.pause();
-  performanceAudio.currentTime = 0;
-  performanceAudio.volume = 0;
+  performanceAudioPlayToken += 1;
+
+  const source = performanceAudioSource;
+  const gain = performanceAudioGain;
+  performanceAudioSource = null;
+  performanceAudioGain = null;
+  if (source) {
+    source.onended = null;
+    try {
+      source.stop(0);
+    } catch {
+      // The source may already have ended.
+    }
+    source.disconnect();
+  }
+  gain?.disconnect();
 };
 
 const startModelAnimation = () => {
@@ -377,8 +471,8 @@ const christmasImageTargetPipelineModule = () => ({
   name: "chuangmei-christmas-image-target",
 
   listeners: [
-    { event: "reality.imagefound", process: applyImageTargetPose },
-    { event: "reality.imageupdated", process: applyImageTargetPose },
+    { event: "reality.imagefound", process: handleImageTargetFound },
+    { event: "reality.imageupdated", process: handleImageTargetUpdated },
     { event: "reality.imagelost", process: hideImageTargetModel },
   ],
 
