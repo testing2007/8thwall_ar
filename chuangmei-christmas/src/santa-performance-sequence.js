@@ -99,6 +99,7 @@ export const createSantaPerformanceSequence = ({
   let utterance = null;
   let letterElement = null;
   let voiceAudio = null;
+  let voiceUnlocked = false;
 
   if (voiceAssetUrl) {
     voiceAudio = new Audio(voiceAssetUrl);
@@ -133,6 +134,7 @@ export const createSantaPerformanceSequence = ({
       return;
     }
 
+    voiceAudio.volume = 1;
     voiceAudio.currentTime = 0;
     const playPromise = voiceAudio.play();
     if (playPromise?.catch) {
@@ -148,15 +150,18 @@ export const createSantaPerformanceSequence = ({
       window.speechSynthesis.cancel();
     }
 
-    if (!voiceAudio) return;
-    voiceAudio.volume = 0.001;
+    if (!voiceAudio || voiceUnlocked || !voiceAudio.paused) return;
+    voiceAudio.volume = 0;
     const playPromise = voiceAudio.play();
     if (!playPromise?.then) return;
     playPromise.then(() => {
       voiceAudio.pause();
       voiceAudio.currentTime = 0;
       voiceAudio.volume = 1;
-    }).catch(() => undefined);
+      voiceUnlocked = true;
+    }).catch(() => {
+      voiceAudio.volume = 1;
+    });
   };
 
   const removeLetter = () => {

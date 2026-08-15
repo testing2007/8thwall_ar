@@ -32,6 +32,10 @@
       height: 100vh;
       display: block;
     }
+
+    body.ar-camera-hidden #camerafeed {
+      visibility: hidden;
+    }
   </style>
 
   <script src="./external/xrextras/xrextras.js"></script>
@@ -39,7 +43,7 @@
   <script async src="./external/xr/xr.js" data-preload-chunks="slam"></script>
 </head>
 
-<body>
+<body class="ar-camera-hidden">
   <canvas id="camerafeed"></canvas>
   <script src="bundle.js"></script>
 </body>

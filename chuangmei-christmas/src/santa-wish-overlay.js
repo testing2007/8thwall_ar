@@ -4,6 +4,7 @@ const PAPER_URL = require("./assets/html/wish-parchment.png");
 const NORTH_POLE_URL = require("./assets/html/north-pole-scene.jpg");
 
 const OVERLAY_ACTIVE_CLASS = "santa-wish-overlay-active";
+const BGM_VOLUME = 0.28;
 
 const styles = `
   body.${OVERLAY_ACTIVE_CLASS} #camerafeed {
@@ -252,7 +253,8 @@ const styles = `
   .wish-actions {
     display: grid;
     gap: 10px;
-    margin-top: 4px;
+    margin: 4px 0 14px;
+    padding-bottom: 8px;
   }
 
   .wish-button {
@@ -271,10 +273,16 @@ const styles = `
   }
 
   .wish-error {
-    min-height: 20px;
+    display: none;
     color: #b5142b;
     font-size: 13px;
+    margin: 0 10px;
     text-align: center;
+  }
+
+  .wish-error:not(:empty) {
+    display: block;
+    margin: 6px 10px 0;
   }
 
   .wish-send {
@@ -700,9 +708,19 @@ let root = null;
 let introTimer = null;
 let sendTimers = [];
 let bgm = null;
+let bgmUnlocked = false;
 let lastWishData = { name: "", text: "" };
 
 const getRoot = () => root;
+
+const ensureBgm = () => {
+  if (bgm) return bgm;
+  bgm = new Audio(BGM_URL);
+  bgm.loop = true;
+  bgm.volume = BGM_VOLUME;
+  bgm.preload = "auto";
+  return bgm;
+};
 
 const clearIntroTimer = () => {
   if (introTimer) {
@@ -942,12 +960,32 @@ const ensureRoot = () => {
     );
   });
 
-  bgm = new Audio(BGM_URL);
-  bgm.loop = true;
-  bgm.volume = 0.28;
-  bgm.preload = "auto";
+  ensureBgm();
 
   return root;
+};
+
+const unlockAudio = () => {
+  const audio = ensureBgm();
+  if (bgmUnlocked) return;
+
+  const intendedVolume = audio.volume || BGM_VOLUME;
+  audio.volume = 0;
+  const playPromise = audio.play();
+  if (!playPromise?.then) {
+    audio.volume = intendedVolume;
+    bgmUnlocked = true;
+    return;
+  }
+
+  playPromise.then(() => {
+    audio.pause();
+    audio.currentTime = 0;
+    audio.volume = intendedVolume;
+    bgmUnlocked = true;
+  }).catch(() => {
+    audio.volume = intendedVolume;
+  });
 };
 
 const show = ({ playAudio = true } = {}) => {
@@ -960,7 +998,9 @@ const show = ({ playAudio = true } = {}) => {
   element.classList.add("is-visible");
 
   if (playAudio) {
-    const playPromise = bgm?.play();
+    const audio = ensureBgm();
+    audio.volume = BGM_VOLUME;
+    const playPromise = audio.play();
     if (playPromise?.catch) {
       playPromise.catch(() => undefined);
     }
@@ -989,6 +1029,7 @@ const hide = () => {
 
 window.SantaWishOverlay = {
   init: ensureRoot,
+  unlockAudio,
   show,
   hide,
   getRoot,
