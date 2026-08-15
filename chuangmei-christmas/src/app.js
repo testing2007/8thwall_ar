@@ -36,10 +36,12 @@ let performanceSequence = createSantaPerformanceSequence({
   voiceAssetUrl: SANTA_VOICE_URL,
 });
 let normalizedModelScale = 1;
+let xrRuntimeLoading = null;
 let xrStarted = false;
 let animationStarted = false;
 let performanceAudioUnlocked = false;
 let performanceAudioStarted = false;
+let arStarting = false;
 let voiceDuckTimer = null;
 let startCoverDismissed = false;
 let startCoverRoot = null;
@@ -51,7 +53,7 @@ const performanceAudio = new Audio(PERFORMANCE_AUDIO_URL);
 performanceAudio.loop = true;
 performanceAudio.preload = "auto";
 performanceAudio.playsInline = true;
-performanceAudio.volume = PERFORMANCE_AUDIO_VOLUME;
+performanceAudio.volume = 0;
 
 const getCameraCanvas = () => {
   let canvas = document.getElementById("camerafeed");
@@ -144,11 +146,15 @@ const removeStartCover = () => {
   window.setTimeout(() => cover.remove(), 240);
 };
 
-const dismissStartCover = () => {
-  if (startCoverDismissed) return;
+const setStartCoverLoading = (loading) => {
+  const button = startCoverRoot?.querySelector(".ar-start-button");
+  if (!button) return;
+  button.disabled = loading;
+  button.textContent = loading ? "正在启动..." : "开始AR体验";
+};
+
+const finishStartCover = () => {
   startCoverDismissed = true;
-  unlockExperienceAudio();
-  startPerformanceAudioSilently();
   document.body.classList.remove("ar-camera-hidden");
   removeStartCover();
   window.dispatchEvent(new CustomEvent("christmas-ar:start-cover-dismissed"));
@@ -158,6 +164,17 @@ const dismissStartCover = () => {
   }
 };
 
+const startArFromCover = () => {
+  if (arStarting || startCoverDismissed) return;
+  arStarting = true;
+  setStartCoverLoading(true);
+  unlockExperienceAudio();
+  startPerformanceAudioSilently();
+
+  finishStartCover();
+  arStarting = false;
+};
+
 const showStartCover = () => {
   if (startCoverDismissed || startCoverRoot) return;
   installStartCoverStyles();
@@ -165,10 +182,10 @@ const showStartCover = () => {
   const cover = document.createElement("div");
   cover.id = START_COVER_ID;
   cover.style.setProperty("--christmas-ar-poster", `url("${POSTER_URL}")`);
-  cover.innerHTML = '<button class="ar-start-button" type="button">开启AR体验</button>';
-  cover.querySelector(".ar-start-button")?.addEventListener("click", dismissStartCover, {
-    passive: true,
-  });
+  cover.innerHTML = '<button class="ar-start-button" type="button">开始AR体验</button>';
+  const button = cover.querySelector(".ar-start-button");
+  button?.addEventListener("touchend", startArFromCover, { passive: true });
+  button?.addEventListener("click", startArFromCover, { passive: true });
   document.body.appendChild(cover);
   startCoverRoot = cover;
   requestAnimationFrame(() => cover.classList.add("is-visible"));
@@ -308,7 +325,10 @@ const startPerformanceAudioSilently = () => {
     performanceAudioUnlocked = true;
     performanceAudioStarted = true;
   }).catch(() => {
-    performanceAudio.volume = PERFORMANCE_AUDIO_VOLUME;
+    performanceAudio.pause();
+    performanceAudio.currentTime = 0;
+    performanceAudio.volume = 0;
+    performanceAudioStarted = false;
   });
 };
 
@@ -354,7 +374,6 @@ const christmasImageTargetPipelineModule = () => ({
   onStart: () => {
     const { scene } = XR8.Threejs.xrScene();
     window.SantaWishOverlay?.init();
-    showStartCover();
 
     scene.add(new THREE.AmbientLight(0xffffff, 1.8));
 
@@ -417,17 +436,55 @@ const christmasImageTargetPipelineModule = () => ({
   },
 });
 
+const christmasStartGatePipelineModule = () => ({
+  name: "chuangmei-christmas-start-gate",
+  onCameraStatusChange: ({ status }) => {
+    if (status === "hasStream" || status === "hasVideo") showStartCover();
+  },
+});
+
 const ensureXrController = () => {
   if (window.XR8?.XrController) return Promise.resolve();
   if (window.XR8?.loadChunk) return window.XR8.loadChunk("slam");
   return Promise.reject(new Error("XR8.XrController is not available."));
 };
 
+const loadXrRuntime = () => {
+  if (window.XR8) {
+    return window.XR8.loadChunk ? window.XR8.loadChunk("slam") : Promise.resolve();
+  }
+  if (xrRuntimeLoading) return xrRuntimeLoading;
+
+  xrRuntimeLoading = new Promise((resolve, reject) => {
+    const existingScript = document.getElementById("xr-runtime-script");
+    if (existingScript) {
+      window.addEventListener("xrloaded", () => resolve(), { once: true });
+      existingScript.addEventListener("error", reject, { once: true });
+      return;
+    }
+
+    window.addEventListener("xrloaded", () => resolve(), { once: true });
+    const script = document.createElement("script");
+    script.id = "xr-runtime-script";
+    script.async = true;
+    script.crossOrigin = "anonymous";
+    script.src = "./external/xr/xr.js";
+    script.setAttribute("data-preload-chunks", "slam");
+    script.addEventListener("error", () => reject(new Error("XR runtime failed to load.")), {
+      once: true,
+    });
+    document.head.appendChild(script);
+  });
+
+  return xrRuntimeLoading;
+};
+
 const startEngine = () => {
-  if (xrStarted) return;
+  if (xrStarted) return Promise.resolve();
   xrStarted = true;
 
-  ensureXrController()
+  return loadXrRuntime()
+    .then(ensureXrController)
     .then(() => {
       XR8.XrController.configure({
         imageTargetData: [IMAGE_TARGET_DATA],
@@ -442,6 +499,7 @@ const startEngine = () => {
         ...optionalPipelineModule(window.XRExtras?.FullWindowCanvas),
         ...optionalPipelineModule(window.XRExtras?.Loading),
         ...optionalPipelineModule(window.XRExtras?.RuntimeError),
+        christmasStartGatePipelineModule(),
         christmasImageTargetPipelineModule(),
       ]);
 
@@ -453,11 +511,17 @@ const startEngine = () => {
     .catch((error) => {
       xrStarted = false;
       console.error("[Christmas AR] Failed to start 8th Wall Engine:", error);
+      throw error;
     });
 };
 
-if (window.XR8) {
-  startEngine();
+const bootExperience = () => {
+  window.SantaWishOverlay?.init();
+  startEngine().catch(() => undefined);
+};
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", bootExperience, { once: true });
 } else {
-  window.addEventListener("xrloaded", startEngine, { once: true });
+  bootExperience();
 }

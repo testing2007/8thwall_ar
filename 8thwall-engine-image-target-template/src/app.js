@@ -12,7 +12,9 @@ const MODEL_SURFACE_OFFSET_METERS = 0.002;
 let modelRoot = null;
 let mixer = null;
 let normalizedModelScale = 1;
+let xrRuntimeLoading = null;
 let xrStarted = false;
+let arStarting = false;
 const clock = new THREE.Clock();
 
 const getCameraCanvas = () => {
@@ -132,11 +134,42 @@ const ensureXrController = () => {
   return Promise.reject(new Error("XR8.XrController is not available."));
 };
 
+const loadXrRuntime = () => {
+  if (window.XR8) {
+    return window.XR8.loadChunk ? window.XR8.loadChunk("slam") : Promise.resolve();
+  }
+  if (xrRuntimeLoading) return xrRuntimeLoading;
+
+  xrRuntimeLoading = new Promise((resolve, reject) => {
+    const existingScript = document.getElementById("xr-runtime-script");
+    if (existingScript) {
+      window.addEventListener("xrloaded", () => resolve(), { once: true });
+      existingScript.addEventListener("error", reject, { once: true });
+      return;
+    }
+
+    window.addEventListener("xrloaded", () => resolve(), { once: true });
+    const script = document.createElement("script");
+    script.id = "xr-runtime-script";
+    script.async = true;
+    script.crossOrigin = "anonymous";
+    script.src = "./external/xr/xr.js";
+    script.setAttribute("data-preload-chunks", "slam");
+    script.addEventListener("error", () => reject(new Error("XR runtime failed to load.")), {
+      once: true,
+    });
+    document.head.appendChild(script);
+  });
+
+  return xrRuntimeLoading;
+};
+
 const startEngine = () => {
-  if (xrStarted) return;
+  if (xrStarted) return Promise.resolve();
   xrStarted = true;
 
-  ensureXrController()
+  return loadXrRuntime()
+    .then(ensureXrController)
     .then(() => {
       XR8.XrController.configure({
         imageTargetData: [IMAGE_TARGET_DATA],
@@ -165,11 +198,46 @@ const startEngine = () => {
         "[Image Target AR] Failed to start 8th Wall Engine:",
         error,
       );
+      throw error;
     });
 };
 
-if (window.XR8) {
-  startEngine();
+const setStartButtonLoading = (loading) => {
+  const button = document.getElementById("template-start-button");
+  if (!button) return;
+  button.disabled = loading;
+  button.textContent = loading ? "Starting..." : "Start AR";
+};
+
+const hideStartScreen = () => {
+  document.getElementById("template-start-screen")?.classList.add("is-hidden");
+};
+
+const startArFromButton = () => {
+  if (arStarting || xrStarted) return;
+  arStarting = true;
+  setStartButtonLoading(true);
+  startEngine()
+    .then(() => {
+      arStarting = false;
+      hideStartScreen();
+    })
+    .catch(() => {
+      arStarting = false;
+      setStartButtonLoading(false);
+    });
+};
+
+const installStartButton = () => {
+  const button = document.getElementById("template-start-button");
+  if (!button) return;
+
+  button.addEventListener("touchend", startArFromButton, { passive: true });
+  button.addEventListener("click", startArFromButton, { passive: true });
+};
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", installStartButton, { once: true });
 } else {
-  window.addEventListener("xrloaded", startEngine, { once: true });
+  installStartButton();
 }

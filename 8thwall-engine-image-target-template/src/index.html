@@ -32,14 +32,50 @@
       height: 100vh;
       display: block;
     }
+
+    #template-start-screen {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      display: grid;
+      place-items: center;
+      background: #101118;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    #template-start-screen.is-hidden {
+      display: none;
+    }
+
+    #template-start-button {
+      min-width: 180px;
+      min-height: 48px;
+      border: 0;
+      border-radius: 999px;
+      background: #f4c542;
+      color: #101118;
+      cursor: pointer;
+      font: inherit;
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: 0;
+      touch-action: manipulation;
+    }
+
+    #template-start-button:disabled {
+      cursor: progress;
+      opacity: 0.72;
+    }
   </style>
 
   <script src="./external/xrextras/xrextras.js"></script>
   <script src="./external/landing-page/landing-page.js"></script>
-  <script async src="./external/xr/xr.js" data-preload-chunks="slam"></script>
 </head>
 
 <body>
+  <div id="template-start-screen">
+    <button id="template-start-button" type="button">Start AR</button>
+  </div>
   <canvas id="camerafeed"></canvas>
   <script src="bundle.js"></script>
 </body>

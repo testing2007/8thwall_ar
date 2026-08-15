@@ -4,13 +4,14 @@
 
 The template is a minimal 8th Wall Engine Image Target project.
 
-- Runtime: `external/xr/xr.js`
-- Required preload: `data-preload-chunks="slam"`
+- Runtime: `external/xr/xr.js`, dynamically injected by `src/app.js`
+- Required preload: `data-preload-chunks="slam"` on the dynamic script element
 - Rendering: Three.js through `XR8.Threejs.pipelineModule()`
 - Tracking: `XR8.XrController.pipelineModule()`
 - Image target config: `image-targets/target.json`
 - Model: `src/assets/christmas.glb`
 - Canvas: `canvas#camerafeed`
+- Startup gate: `#template-start-screen` / `#template-start-button`
 
 The template intentionally avoids:
 
@@ -19,6 +20,8 @@ The template intentionally avoids:
 - A-Frame
 - `8frame-*.js`
 - `external/runtime/runtime.js`
+
+The template intentionally avoids static `xr.js` loading and avoids calling `XR8.run()` from a top-level `xrloaded` listener. This prevents a project from immediately claiming the 8th Wall Desktop/browser preview when it is opened.
 
 ## Replace The GLB
 
@@ -65,6 +68,25 @@ npm run build
 ```
 
 The `rg` command should have no project-source hits. `xrextras.js` may contain internal strings such as `xrextras-old-style`; do not treat those as project A-Frame usage unless the page loads A-Frame or 8frame.
+
+## Startup And Audio Gates
+
+Default template flow:
+
+1. Render a small start screen without loading `external/xr/xr.js`.
+2. On the user's click/touch, dynamically inject `external/xr/xr.js` with `data-preload-chunks="slam"`.
+3. Configure `XR8.XrController` and call `XR8.run()`.
+4. Hide the start screen after the Engine starts.
+
+For projects that need the native browser camera permission prompt before a branded poster/start gate:
+
+1. Boot XR from app code so the browser can request camera permission.
+2. Keep the camera canvas hidden while permission is being requested.
+3. Add a small pipeline module with `onCameraStatusChange`.
+4. Show the poster/start button only when status is `hasStream` or `hasVideo`.
+5. On the poster button's trusted `touchend`/`click`, unlock audio silently. Use `volume = 0` instead of `muted` for media that must later become audible on iOS.
+6. Start audible BGM only when the image target is recognized.
+7. Pause and reset BGM before entering any HTML overlay.
 
 ## Local Preview
 

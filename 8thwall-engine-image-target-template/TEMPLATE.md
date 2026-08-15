@@ -5,7 +5,7 @@ This is a minimal 8th Wall Engine image target project. It does not use ECS or A
 ## What It Does
 
 - Loads 8th Wall Engine from `external/xr/xr.js`.
-- Preloads the required `slam` chunk for `XR8.XrController`.
+- Loads `external/xr/xr.js` only after the user presses `Start AR`, with `data-preload-chunks="slam"`.
 - Registers `image-targets/target.json` through `XR8.XrController.configure({ imageTargetData })`.
 - Listens to `reality.imagefound`, `reality.imageupdated`, and `reality.imagelost`.
 - Shows `src/assets/christmas.glb` when the image target named `target` is detected.
@@ -59,8 +59,23 @@ npm run serve -- --host 0.0.0.0
 Open:
 
 ```text
-http://localhost:8080/
+http://localhost:58000/
 ```
+
+When using the 8th Wall Desktop App, treat `http://localhost:58000/` as the user-facing preview URL. The underlying webpack server may expose another internal port, but Desktop projects should be tested through `58000`.
+
+## Desktop Preview Startup
+
+This template intentionally avoids static `<script src="./external/xr/xr.js">` loading and avoids `xrloaded => XR8.run()` at module load time. That keeps the 8th Wall Desktop simulator/viewport/hierarchy UI from being claimed immediately when the project opens.
+
+Default flow:
+
+1. Page renders a small `Start AR` gate.
+2. User taps/clicks the button.
+3. `src/app.js` dynamically injects `external/xr/xr.js` with `data-preload-chunks="slam"`.
+4. After `XR8.XrController` is ready, the app configures image target tracking and calls `XR8.run()`.
+
+For projects that need the native camera permission prompt before a branded poster/start gate, boot XR from app code, keep the camera canvas hidden, and show the poster only from a pipeline module when `onCameraStatusChange` reports `hasStream` or `hasVideo`. The poster button should only unlock media silently; start audible BGM from `reality.imagefound`/`reality.imageupdated`, and pause/reset it before showing any HTML overlay.
 
 ## Build
 
@@ -73,5 +88,6 @@ npm run build
 - Do not add `@8thwall/ecs`.
 - Do not add `src/.expanse.json`.
 - Do not load `8frame` or A-Frame scripts.
-- Keep `data-preload-chunks="slam"` on the `xr.js` script tag.
+- Do not statically load `external/xr/xr.js` in `index.html` unless a project explicitly needs the native camera permission prompt before the start gate.
+- Keep `data-preload-chunks="slam"` when dynamically injecting `external/xr/xr.js`.
 - Keep `XR8.GlTextureRenderer.pipelineModule()`, `XR8.Threejs.pipelineModule()`, and `XR8.XrController.pipelineModule()` in the pipeline.
