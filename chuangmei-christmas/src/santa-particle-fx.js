@@ -1,8 +1,6 @@
 import * as THREE from "three";
 
 const PERFORMANCE_DURATION_SECONDS = 8;
-const VOICE_START_SECONDS = 5;
-const LETTER_START_SECONDS = 7.5;
 const GOLD_PARTICLE_COUNT = 150;
 const HELIX_POINT_COUNT = 96;
 const SNOWFLAKE_COUNT = 20;
@@ -95,12 +93,7 @@ const createPoints = (positions, material) => {
   return new THREE.Points(geometry, material);
 };
 
-export const createSantaParticleFx = ({
-  bounds,
-  onVoiceStart,
-  onLetterStart,
-  onComplete,
-}) => {
+export const createSantaParticleFx = ({ bounds }) => {
   const random = createRandom();
   const size = bounds.getSize(new THREE.Vector3());
   const center = bounds.getCenter(new THREE.Vector3());
@@ -224,16 +217,10 @@ export const createSantaParticleFx = ({
 
   let elapsed = 0;
   let playing = false;
-  let voiceStarted = false;
-  let letterStarted = false;
-  let completed = false;
 
   const reset = () => {
     elapsed = 0;
     playing = false;
-    voiceStarted = false;
-    letterStarted = false;
-    completed = false;
     group.visible = false;
     helix.geometry.setDrawRange(0, 0);
     helixMaterial.opacity = 0;
@@ -321,20 +308,8 @@ export const createSantaParticleFx = ({
     giftGlowMaterial.opacity = clamp01(giftPulse * 0.92);
     giftGlow.scale.setScalar(unit * (0.28 + (giftPulse * 0.2)));
 
-    if (elapsed >= VOICE_START_SECONDS && !voiceStarted) {
-      voiceStarted = true;
-      onVoiceStart?.();
-    }
-
-    if (elapsed >= LETTER_START_SECONDS && !letterStarted) {
-      letterStarted = true;
-      onLetterStart?.();
-    }
-
-    if (elapsed >= PERFORMANCE_DURATION_SECONDS && !completed) {
-      completed = true;
+    if (elapsed >= PERFORMANCE_DURATION_SECONDS) {
       playing = false;
-      onComplete?.();
     }
   };
 

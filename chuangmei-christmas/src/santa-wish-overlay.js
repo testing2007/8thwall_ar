@@ -1,10 +1,8 @@
-const BGM_URL = require("./assets/html/christmas-bgm.mp3");
 const SANTA_URL = require("./assets/html/santa-waving.png");
 const PAPER_URL = require("./assets/html/wish-parchment.png");
 const NORTH_POLE_URL = require("./assets/html/north-pole-scene.jpg");
 
 const OVERLAY_ACTIVE_CLASS = "santa-wish-overlay-active";
-const BGM_VOLUME = 0.28;
 
 const styles = `
   body.${OVERLAY_ACTIVE_CLASS} #camerafeed {
@@ -707,20 +705,9 @@ const markup = `
 let root = null;
 let introTimer = null;
 let sendTimers = [];
-let bgm = null;
-let bgmUnlocked = false;
 let lastWishData = { name: "", text: "" };
 
 const getRoot = () => root;
-
-const ensureBgm = () => {
-  if (bgm) return bgm;
-  bgm = new Audio(BGM_URL);
-  bgm.loop = true;
-  bgm.volume = BGM_VOLUME;
-  bgm.preload = "auto";
-  return bgm;
-};
 
 const clearIntroTimer = () => {
   if (introTimer) {
@@ -960,35 +947,10 @@ const ensureRoot = () => {
     );
   });
 
-  ensureBgm();
-
   return root;
 };
 
-const unlockAudio = () => {
-  const audio = ensureBgm();
-  if (bgmUnlocked) return;
-
-  const intendedVolume = audio.volume || BGM_VOLUME;
-  audio.volume = 0;
-  const playPromise = audio.play();
-  if (!playPromise?.then) {
-    audio.volume = intendedVolume;
-    bgmUnlocked = true;
-    return;
-  }
-
-  playPromise.then(() => {
-    audio.pause();
-    audio.currentTime = 0;
-    audio.volume = intendedVolume;
-    bgmUnlocked = true;
-  }).catch(() => {
-    audio.volume = intendedVolume;
-  });
-};
-
-const show = ({ playAudio = true } = {}) => {
+const show = () => {
   const element = ensureRoot();
   clearIntroTimer();
   clearSendTimers();
@@ -996,15 +958,6 @@ const show = ({ playAudio = true } = {}) => {
   document.body.classList.add(OVERLAY_ACTIVE_CLASS);
   element.classList.remove("is-form", "is-send", "is-reply");
   element.classList.add("is-visible");
-
-  if (playAudio) {
-    const audio = ensureBgm();
-    audio.volume = BGM_VOLUME;
-    const playPromise = audio.play();
-    if (playPromise?.catch) {
-      playPromise.catch(() => undefined);
-    }
-  }
 
   introTimer = window.setTimeout(() => {
     element.classList.add("is-form");
@@ -1024,12 +977,10 @@ const hide = () => {
   resetSendClasses();
   root.classList.remove("is-visible", "is-form", "is-send", "is-reply");
   document.body.classList.remove(OVERLAY_ACTIVE_CLASS);
-  if (bgm) bgm.pause();
 };
 
 window.SantaWishOverlay = {
   init: ensureRoot,
-  unlockAudio,
   show,
   hide,
   getRoot,

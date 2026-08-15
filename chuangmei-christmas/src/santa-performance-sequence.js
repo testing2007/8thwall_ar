@@ -1,4 +1,3 @@
-const DEFAULT_VOICE_TEXT = "快用魔法笔，写下愿望吧！";
 const LETTER_TRANSITION_MS = 500;
 const STYLE_ID = "santa-performance-sequence-style";
 const LETTER_ID = "santa-letter-transition";
@@ -83,87 +82,10 @@ const installStyles = () => {
   document.head.appendChild(style);
 };
 
-const chooseChineseVoice = () => {
-  const voices = window.speechSynthesis?.getVoices?.() || [];
-  return voices.find(voice => /^zh(-|_)/i.test(voice.lang))
-    || voices.find(voice => /Chinese|中文|Mandarin/i.test(voice.name))
-    || null;
-};
-
-export const createSantaPerformanceSequence = ({
-  voiceText = DEFAULT_VOICE_TEXT,
-  voiceAssetUrl = null,
-} = {}) => {
+export const createSantaPerformanceSequence = () => {
   installStyles();
 
-  let utterance = null;
   let letterElement = null;
-  let voiceAudio = null;
-  let voiceUnlocked = false;
-
-  if (voiceAssetUrl) {
-    voiceAudio = new Audio(voiceAssetUrl);
-    voiceAudio.preload = "auto";
-    voiceAudio.playsInline = true;
-  }
-
-  const speakWithBrowserVoice = () => {
-    if (!window.speechSynthesis || !window.SpeechSynthesisUtterance) {
-      console.warn("[Christmas AR] No Santa voice asset and speechSynthesis is unavailable.");
-      return;
-    }
-
-    window.speechSynthesis.cancel();
-    utterance = new SpeechSynthesisUtterance(voiceText);
-    utterance.lang = "zh-CN";
-    utterance.rate = 1.12;
-    utterance.pitch = 0.78;
-    utterance.volume = 1;
-    const selectedVoice = chooseChineseVoice();
-    if (selectedVoice) utterance.voice = selectedVoice;
-    window.speechSynthesis.speak(utterance);
-  };
-
-  const playVoice = () => {
-    window.dispatchEvent(new CustomEvent("christmas-ar:voice-start", {
-      detail: { text: voiceText },
-    }));
-
-    if (!voiceAudio) {
-      speakWithBrowserVoice();
-      return;
-    }
-
-    voiceAudio.volume = 1;
-    voiceAudio.currentTime = 0;
-    const playPromise = voiceAudio.play();
-    if (playPromise?.catch) {
-      playPromise.catch(() => speakWithBrowserVoice());
-    }
-  };
-
-  const unlockVoice = () => {
-    if (window.speechSynthesis && window.SpeechSynthesisUtterance) {
-      const primer = new SpeechSynthesisUtterance(" ");
-      primer.volume = 0;
-      window.speechSynthesis.speak(primer);
-      window.speechSynthesis.cancel();
-    }
-
-    if (!voiceAudio || voiceUnlocked || !voiceAudio.paused) return;
-    voiceAudio.volume = 0;
-    const playPromise = voiceAudio.play();
-    if (!playPromise?.then) return;
-    playPromise.then(() => {
-      voiceAudio.pause();
-      voiceAudio.currentTime = 0;
-      voiceAudio.volume = 1;
-      voiceUnlocked = true;
-    }).catch(() => {
-      voiceAudio.volume = 1;
-    });
-  };
-
   const removeLetter = () => {
     letterElement?.remove();
     letterElement = null;
@@ -192,22 +114,10 @@ export const createSantaPerformanceSequence = ({
   };
 
   const reset = () => {
-    if (utterance && window.speechSynthesis?.speaking) {
-      window.speechSynthesis.cancel();
-    }
-    utterance = null;
-
-    if (voiceAudio) {
-      voiceAudio.pause();
-      voiceAudio.currentTime = 0;
-    }
-
     removeLetter();
   };
 
   return {
-    playVoice,
-    unlockVoice,
     startLetterFlight,
     finishLetterFlight,
     reset,

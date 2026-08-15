@@ -8,16 +8,14 @@ window.THREE = THREE;
 
 const IMAGE_TARGET_DATA = require("../image-targets/target.json");
 const MODEL_URL = require("./assets/christmas.glb");
-const PERFORMANCE_AUDIO_URL = require("./assets/html/christmas-bgm.mp3");
-const SANTA_VOICE_URL = require("./assets/santa-voice.mp3");
+const PERFORMANCE_AUDIO_URL = require("./assets/santa-bg-and-voice.mp3");
 const POSTER_URL = require("./assets/poster.jpg");
 const TARGET_NAME = "target";
 const MODEL_TARGET_WIDTH_RATIO = 1;
 const MODEL_SURFACE_OFFSET_METERS = 0.002;
-const PERFORMANCE_AUDIO_VOLUME = 0.3;
-const PERFORMANCE_AUDIO_DUCKED_VOLUME = 0.1;
-const LETTER_FLIGHT_AUDIO_VOLUME = 0.16;
-const SANTA_VOICE_DUCK_MS = 2300;
+const PERFORMANCE_AUDIO_VOLUME = 1;
+const MODEL_ANIMATION_DURATION_MS = 5000;
+const LETTER_FLIGHT_DURATION_MS = 500;
 
 const EXPERIENCE_STATE = {
   SCANNING: "SCANNING",
@@ -32,17 +30,18 @@ let modelRoot = null;
 let mixer = null;
 let animationActions = [];
 let santaFx = null;
-let performanceSequence = createSantaPerformanceSequence({
-  voiceAssetUrl: SANTA_VOICE_URL,
-});
+const performanceSequence = createSantaPerformanceSequence();
 let normalizedModelScale = 1;
 let xrRuntimeLoading = null;
 let xrStarted = false;
 let animationStarted = false;
+let performanceAudioPlaying = false;
+let animStartTimer = null; // 600 ms stabilisation before starting the performance
 let performanceAudioUnlocked = false;
-let performanceAudioStarted = false;
+let performanceAudioUnlockPending = null;
 let arStarting = false;
-let voiceDuckTimer = null;
+let performanceTimer = null;
+let performanceRunId = 0;
 let startCoverDismissed = false;
 let startCoverRoot = null;
 let pendingTargetDetail = null;
@@ -50,7 +49,7 @@ let experienceState = EXPERIENCE_STATE.SCANNING;
 const clock = new THREE.Clock();
 const performanceAudio = new Audio(PERFORMANCE_AUDIO_URL);
 
-performanceAudio.loop = true;
+performanceAudio.loop = false;
 performanceAudio.preload = "auto";
 performanceAudio.playsInline = true;
 performanceAudio.volume = 0;
@@ -74,10 +73,15 @@ const setExperienceState = (state) => {
   window.dispatchEvent(new CustomEvent("christmas-ar:state", { detail: { state } }));
 };
 
-const clearVoiceDuckTimer = () => {
-  if (!voiceDuckTimer) return;
-  window.clearTimeout(voiceDuckTimer);
-  voiceDuckTimer = null;
+const clearPerformanceTimer = () => {
+  if (!performanceTimer) return;
+  window.clearTimeout(performanceTimer);
+  performanceTimer = null;
+};
+
+const cancelPerformanceTimeline = () => {
+  performanceRunId += 1;
+  clearPerformanceTimer();
 };
 
 const installStartCoverStyles = () => {
@@ -155,21 +159,31 @@ const setStartCoverLoading = (loading) => {
 
 const finishStartCover = () => {
   startCoverDismissed = true;
+  pendingTargetDetail = null;
   document.body.classList.remove("ar-camera-hidden");
   removeStartCover();
   window.dispatchEvent(new CustomEvent("christmas-ar:start-cover-dismissed"));
-
-  if (pendingTargetDetail) {
-    applyImageTargetPose({ detail: pendingTargetDetail });
-  }
 };
 
 const startArFromCover = () => {
   if (arStarting || startCoverDismissed) return;
   arStarting = true;
   setStartCoverLoading(true);
-  unlockExperienceAudio();
-  startPerformanceAudioSilently();
+  // Unlock the single merged track inside the user gesture so iOS can play it
+  // later when the image target is found.
+  if (!performanceAudioUnlocked && !performanceAudioUnlockPending) {
+    performanceAudio.volume = 0;
+    performanceAudioUnlockPending = performanceAudio.play().then(() => {
+      performanceAudio.pause();
+      performanceAudio.currentTime = 0;
+      performanceAudio.volume = 0;
+      performanceAudioUnlocked = true;
+      performanceAudioUnlockPending = null;
+    }).catch(() => {
+      performanceAudioUnlocked = true;
+      performanceAudioUnlockPending = null;
+    });
+  }
 
   finishStartCover();
   arStarting = false;
@@ -218,14 +232,14 @@ const prepareModel = (model) => {
 
 const applyImageTargetPose = ({ detail }) => {
   if (detail.name !== TARGET_NAME) return;
+  if (!startCoverDismissed) {
+    if (modelRoot) modelRoot.visible = false;
+    return;
+  }
+
   pendingTargetDetail = detail;
   if (!modelRoot) return;
   if (experienceState === EXPERIENCE_STATE.WISH_OVERLAY) return;
-
-  if (!startCoverDismissed) {
-    modelRoot.visible = false;
-    return;
-  }
 
   const { position, rotation, scale = 1 } = detail;
   modelRoot.visible = true;
@@ -235,22 +249,36 @@ const applyImageTargetPose = ({ detail }) => {
 
   if (experienceState !== EXPERIENCE_STATE.AR_TRACKING) {
     setExperienceState(EXPERIENCE_STATE.AR_TRACKING);
-    startModelAnimation();
+    // Require the target to be continuously tracked for 600 ms before starting
+    // the performance sequence (animation + merged audio). This filters out:
+    //   • 8th Wall's inertial tracking that keeps firing after the target leaves
+    //     the frame (the engine fires imagelost ~2 s later, not immediately)
+    //   • Accidental / brief detections when the camera sweeps past the target
+    if (!animStartTimer && !animationStarted) {
+      animStartTimer = window.setTimeout(() => {
+        animStartTimer = null;
+        if (experienceState === EXPERIENCE_STATE.AR_TRACKING && !animationStarted) {
+          startModelAnimation();
+        }
+      }, 600);
+    }
   }
 };
 
 const hideImageTargetModel = ({ detail }) => {
   if (detail.name !== TARGET_NAME) return;
   pendingTargetDetail = null;
+  // Cancel the stabilisation timer BEFORE the modelRoot guard so that a brief
+  // detection that fires imagelost before the model even loads never leaks.
+  if (animStartTimer) { clearTimeout(animStartTimer); animStartTimer = null; }
   if (!modelRoot) return;
   if (experienceState === EXPERIENCE_STATE.WISH_OVERLAY) return;
   modelRoot.visible = false;
   animationStarted = false;
+  cancelPerformanceTimeline();
   santaFx?.reset();
   performanceSequence?.reset();
-  performanceAudio.pause();
-  performanceAudio.currentTime = 0;
-  clearVoiceDuckTimer();
+  stopPerformanceAudio();
   setExperienceState(EXPERIENCE_STATE.SCANNING);
 };
 
@@ -260,93 +288,75 @@ const enterWishOverlay = () => {
 
   if (modelRoot) modelRoot.visible = false;
   if (mixer) mixer.timeScale = 0;
+  if (animStartTimer) { clearTimeout(animStartTimer); animStartTimer = null; }
+  cancelPerformanceTimeline();
   santaFx?.reset();
   performanceSequence?.finishLetterFlight();
-  clearVoiceDuckTimer();
-  performanceAudio.pause();
-  performanceAudio.currentTime = 0;
+  stopPerformanceAudio();
 
-  window.SantaWishOverlay?.show({ from: "santa-gift", playAudio: false });
+  window.SantaWishOverlay?.show();
 };
 
-const startSantaVoice = () => {
-  clearVoiceDuckTimer();
-  performanceAudio.volume = PERFORMANCE_AUDIO_DUCKED_VOLUME;
-  performanceSequence?.playVoice();
-  voiceDuckTimer = window.setTimeout(() => {
-    voiceDuckTimer = null;
-    if (experienceState === EXPERIENCE_STATE.AR_TRACKING) {
-      performanceAudio.volume = PERFORMANCE_AUDIO_VOLUME;
-    }
-  }, SANTA_VOICE_DUCK_MS);
-};
-
-const startWishLetterFlight = () => {
-  clearVoiceDuckTimer();
-  performanceAudio.volume = LETTER_FLIGHT_AUDIO_VOLUME;
+const startWishLetterFlight = (runId) => {
+  if (runId !== performanceRunId || experienceState !== EXPERIENCE_STATE.AR_TRACKING) return;
+  stopPerformanceAudio();
   performanceSequence?.startLetterFlight();
+  clearPerformanceTimer();
+  performanceTimer = window.setTimeout(() => {
+    performanceTimer = null;
+    if (runId === performanceRunId) enterWishOverlay();
+  }, LETTER_FLIGHT_DURATION_MS);
 };
 
-const playPerformanceAudio = () => {
-  clearVoiceDuckTimer();
-  performanceAudio.currentTime = 0;
-  performanceAudio.volume = PERFORMANCE_AUDIO_VOLUME;
-  if (performanceAudioStarted && !performanceAudio.paused) {
-    performanceAudioUnlocked = true;
-    return Promise.resolve();
-  }
-
-  const playPromise = performanceAudio.play();
-  if (playPromise?.then) {
-    playPromise.then(() => {
-      performanceAudioUnlocked = true;
-      performanceAudioStarted = true;
-    }).catch(() => undefined);
-  } else {
-    performanceAudioUnlocked = true;
-    performanceAudioStarted = true;
-  }
-  return playPromise;
+const watchModelAnimationEnd = (runId) => {
+  performanceTimer = window.setTimeout(() => {
+    performanceTimer = null;
+    if (runId !== performanceRunId) return;
+    if (mixer) {
+      mixer.setTime(MODEL_ANIMATION_DURATION_MS / 1000);
+      mixer.timeScale = 0;
+    }
+    startWishLetterFlight(runId);
+  }, MODEL_ANIMATION_DURATION_MS);
 };
 
-const startPerformanceAudioSilently = () => {
-  if (performanceAudioStarted && !performanceAudio.paused) return;
-
-  performanceAudio.currentTime = 0;
-  performanceAudio.volume = 0;
-  const playPromise = performanceAudio.play();
-  if (!playPromise?.then) {
-    performanceAudioUnlocked = true;
-    performanceAudioStarted = true;
+/** Start the merged background-and-voice track from the beginning. */
+const startPerformanceAudio = () => {
+  if (performanceAudioPlaying) {
+    performanceAudio.volume = PERFORMANCE_AUDIO_VOLUME;
     return;
   }
+  performanceAudioPlaying = true;
 
-  playPromise.then(() => {
-    performanceAudioUnlocked = true;
-    performanceAudioStarted = true;
-  }).catch(() => {
-    performanceAudio.pause();
+  const doPlay = () => {
+    if (!performanceAudioPlaying) return;
     performanceAudio.currentTime = 0;
-    performanceAudio.volume = 0;
-    performanceAudioStarted = false;
-  });
+    performanceAudio.volume = PERFORMANCE_AUDIO_VOLUME;
+    performanceAudio.play().catch(() => {
+      performanceAudioPlaying = false;
+    });
+  };
+
+  if (performanceAudioUnlockPending) {
+    performanceAudioUnlockPending.then(doPlay);
+  } else {
+    doPlay();
+  }
 };
 
-const unlockExperienceAudio = () => {
-  window.SantaWishOverlay?.unlockAudio?.();
-  performanceSequence?.unlockVoice();
+/** Stop all experience audio when tracking ends or before the HTML overlay. */
+const stopPerformanceAudio = () => {
+  performanceAudioPlaying = false;
+  performanceAudio.pause();
+  performanceAudio.currentTime = 0;
+  performanceAudio.volume = 0;
 };
-
-["touchstart", "pointerdown", "click"].forEach((eventName) => {
-  window.addEventListener(eventName, unlockExperienceAudio, {
-    capture: true,
-    passive: true,
-  });
-});
 
 const startModelAnimation = () => {
   if (animationStarted) return;
   animationStarted = true;
+  cancelPerformanceTimeline();
+  const runId = performanceRunId;
 
   if (mixer) {
     mixer.timeScale = 1;
@@ -359,7 +369,8 @@ const startModelAnimation = () => {
   });
   performanceSequence?.reset();
   santaFx?.play();
-  playPerformanceAudio();
+  startPerformanceAudio();
+  watchModelAnimationEnd(runId);
 };
 
 const christmasImageTargetPipelineModule = () => ({
@@ -394,12 +405,7 @@ const christmasImageTargetPipelineModule = () => ({
         anchor.add(gltf.scene);
 
         const modelBounds = new THREE.Box3().setFromObject(gltf.scene);
-        santaFx = createSantaParticleFx({
-          bounds: modelBounds,
-          onVoiceStart: startSantaVoice,
-          onLetterStart: startWishLetterFlight,
-          onComplete: enterWishOverlay,
-        });
+        santaFx = createSantaParticleFx({ bounds: modelBounds });
         anchor.add(santaFx.group);
 
         if (gltf.animations.length) {
