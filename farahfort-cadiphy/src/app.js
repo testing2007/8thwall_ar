@@ -1,10 +1,18 @@
 import { cadiphyBloomPipelineModule } from "./bloom.js";
+import {
+  createCameraDiagnosticsState,
+  fitCameraCanvasPipelineModule,
+  recordCameraLayout,
+  recordCameraRuntimeStatus,
+} from "./camera-runtime.js";
 
 const IMAGE_TARGET_DATA = require("../image-targets/trigger-label.json");
 const START_BUTTON_ID = "cadiphy-ar-start";
 const START_SCREEN_ID = "cadiphy-start-screen";
 const DIAGNOSTIC_OVERLAY_ID = "cadiphy-runtime-diagnostic";
+const CAMERA_DEBUG_BUTTON_ID = "cadiphy-camera-debug";
 const CAMERA_STREAM_TIMEOUT_MS = 14000;
+const CAMERA_DEBUG_ENABLED = new URLSearchParams(window.location.search).get("cameraDebug") === "1";
 
 let xrRuntimeLoading = null;
 let arStarted = false;
@@ -47,6 +55,7 @@ const getBrowserCapabilities = () => ({
 });
 
 const userAgent = navigator.userAgent || "";
+const cameraDiagnostics = createCameraDiagnosticsState();
 const runtimeDiagnostics = {
   pageLoadedAt: new Date().toISOString(),
   userAgent,
@@ -60,6 +69,7 @@ const runtimeDiagnostics = {
   startGateShownAt: null,
   startedByUserAt: null,
   diagnosticReason: null,
+  camera: cameraDiagnostics,
 };
 
 window.CADIPHY_RUNTIME_DIAGNOSTICS = runtimeDiagnostics;
@@ -100,29 +110,34 @@ const copyDiagnosticPayload = (button) => {
   const done = () => {
     if (button) button.textContent = "已复制";
   };
-  if (navigator.clipboard?.writeText) {
-    navigator.clipboard.writeText(payload).then(done).catch(() => undefined);
-    return;
-  }
+  const copyWithTextarea = () => {
+    const textarea = document.createElement("textarea");
+    textarea.value = payload;
+    textarea.setAttribute("readonly", "");
+    textarea.style.position = "fixed";
+    textarea.style.top = "-1000px";
+    document.body.append(textarea);
+    textarea.select();
+    try {
+      if (document.execCommand("copy")) done();
+    } catch {
+      // Keep the diagnostics panel open so the customer can retry.
+    }
+    textarea.remove();
+  };
 
-  const textarea = document.createElement("textarea");
-  textarea.value = payload;
-  textarea.setAttribute("readonly", "");
-  textarea.style.position = "fixed";
-  textarea.style.top = "-1000px";
-  document.body.append(textarea);
-  textarea.select();
-  try {
-    document.execCommand("copy");
-    done();
-  } catch {
-    // The diagnostic text remains visible in the panel if copy is blocked.
+  if (navigator.clipboard?.writeText) {
+    navigator.clipboard.writeText(payload).then(done).catch(copyWithTextarea);
+  } else {
+    copyWithTextarea();
   }
-  textarea.remove();
 };
 
 const getDiagnosticSummary = () => {
   const caps = runtimeDiagnostics.capabilities;
+  const camera = runtimeDiagnostics.camera;
+  const cameraSettings = camera.track?.settings || {};
+  const cameraLayout = camera.layout || {};
   const latestError = runtimeDiagnostics.errors[runtimeDiagnostics.errors.length - 1]?.error;
   return [
     `疑似华为/HarmonyOS：${formatBool(runtimeDiagnostics.isLikelyHuawei)}`,
@@ -130,6 +145,12 @@ const getDiagnosticSummary = () => {
     `WebAssembly：${formatBool(caps.webAssembly)}，WASM SIMD：${formatBool(caps.webAssemblySimd)}`,
     `DeviceOrientation：${formatBool(caps.deviceOrientation)}，振动 API：${formatBool(caps.vibrate)}`,
     `最近摄像机状态：${runtimeDiagnostics.lastCameraStatus}`,
+    `实际视频：${camera.video?.width || cameraSettings.width || "未知"} × ${camera.video?.height || cameraSettings.height || "未知"}`,
+    `摄像头：${camera.track?.label || "未知"}（序号：${camera.selectedCameraIndex ?? "未知"}）`,
+    `朝向：${cameraSettings.facingMode || "未知"}，zoom：${cameraSettings.zoom ?? "未知"}`,
+    `画布：${cameraLayout.bufferWidth || "未知"} × ${cameraLayout.bufferHeight || "未知"}，显示模式：${camera.layoutMode}`,
+    `旧版全屏预计裁切倍数：${cameraLayout.legacyCropScale || "未知"}`,
+    `相机告警：${camera.warnings.length ? camera.warnings.join(", ") : "无"}`,
     latestError ? `最近错误：${latestError.name || ""} ${latestError.message || ""}`.trim() : "最近错误：无",
     "",
     "如果当前是华为浏览器，可以先点“重新尝试”。若仍失败，建议用 Chrome、Edge 或 Firefox 打开同一链接。",
@@ -160,9 +181,11 @@ const ensureRuntimeDiagnosticOverlay = () => {
   shell.className = "cadiphy-diagnostic-shell";
 
   const title = document.createElement("h2");
+  title.className = "cadiphy-diagnostic-title";
   title.textContent = "AR 暂时无法启动";
 
   const message = document.createElement("p");
+  message.className = "cadiphy-diagnostic-message";
   message.textContent = "已记录当前浏览器和摄像机状态。华为浏览器兼容性不稳定，可以先重试。";
 
   const details = document.createElement("pre");
@@ -181,7 +204,12 @@ const ensureRuntimeDiagnosticOverlay = () => {
   copyButton.textContent = "复制诊断信息";
   copyButton.addEventListener("click", () => copyDiagnosticPayload(copyButton));
 
-  actions.append(retryButton, copyButton);
+  const closeButton = document.createElement("button");
+  closeButton.type = "button";
+  closeButton.textContent = "关闭";
+  closeButton.addEventListener("click", hideRuntimeDiagnostic);
+
+  actions.append(retryButton, copyButton, closeButton);
   shell.append(title, message, details, actions);
   overlay.append(shell);
   document.body.append(overlay);
@@ -192,10 +220,26 @@ const showRuntimeDiagnostic = (reason, error) => {
   runtimeDiagnostics.diagnosticReason = reason;
   if (error) recordError(reason, error);
   const overlay = ensureRuntimeDiagnosticOverlay();
+  const debugMode = reason === "camera-debug";
+  const title = overlay.querySelector(".cadiphy-diagnostic-title");
+  const message = overlay.querySelector(".cadiphy-diagnostic-message");
   const details = overlay.querySelector(".cadiphy-diagnostic-details");
+  if (title) title.textContent = debugMode ? "相机诊断" : "AR 暂时无法启动";
+  if (message) {
+    message.textContent = debugMode
+      ? "请等待相机启动完成后复制诊断信息，并将完整内容发给开发人员。"
+      : "已记录当前浏览器和摄像机状态。华为浏览器兼容性不稳定，可以先重试。";
+  }
   if (details) details.textContent = getDiagnosticSummary();
   overlay.hidden = false;
   requestAnimationFrame(() => overlay.classList.add("is-visible"));
+};
+
+const refreshVisibleDiagnostic = () => {
+  const overlay = document.getElementById(DIAGNOSTIC_OVERLAY_ID);
+  if (!overlay || overlay.hidden) return;
+  const details = overlay.querySelector(".cadiphy-diagnostic-details");
+  if (details) details.textContent = getDiagnosticSummary();
 };
 
 const clearCameraTimeout = () => {
@@ -211,7 +255,8 @@ const scheduleCameraTimeout = () => {
   }, CAMERA_STREAM_TIMEOUT_MS);
 };
 
-const recordCameraStatus = ({ status, reason } = {}) => {
+const recordCameraStatus = (event = {}) => {
+  const { status, reason } = event;
   runtimeDiagnostics.lastCameraStatus = status || "unknown";
   runtimeDiagnostics.cameraEvents.push({
     time: new Date().toISOString(),
@@ -226,6 +271,18 @@ const recordCameraStatus = ({ status, reason } = {}) => {
     clearCameraTimeout();
     hideRuntimeDiagnostic();
   }
+  recordCameraRuntimeStatus(cameraDiagnostics, event, refreshVisibleDiagnostic);
+};
+
+const installCameraDebugEntry = () => {
+  if (!CAMERA_DEBUG_ENABLED || document.getElementById(CAMERA_DEBUG_BUTTON_ID)) return;
+  const button = document.createElement("button");
+  button.id = CAMERA_DEBUG_BUTTON_ID;
+  button.className = "cadiphy-camera-debug-button";
+  button.type = "button";
+  button.textContent = "Camera Debug";
+  button.addEventListener("click", () => showRuntimeDiagnostic("camera-debug"));
+  document.body.append(button);
 };
 
 const getCameraCanvas = () => {
@@ -338,7 +395,11 @@ const onxrloaded = () => {
       XR8.GlTextureRenderer.pipelineModule(),
       XR8.Threejs.pipelineModule(),
       XR8.XrController.pipelineModule(),
-      ...optionalPipelineModule(window.XRExtras?.FullWindowCanvas),
+      fitCameraCanvasPipelineModule({
+        onLayout: (layout) => {
+          recordCameraLayout(cameraDiagnostics, layout, refreshVisibleDiagnostic);
+        },
+      }),
       ...optionalPipelineModule(window.XRExtras?.Loading),
       ...optionalPipelineModule(window.XRExtras?.RuntimeError),
       cadiphyRuntimeDiagnosticsPipelineModule(),
@@ -348,6 +409,9 @@ const onxrloaded = () => {
 
     XR8.run({
       canvas: getCameraCanvas(),
+      cameraConfig: {
+        direction: XR8.XrConfig.camera().BACK,
+      },
       allowedDevices: XR8.XrConfig.device().ANY,
     });
   });
@@ -390,6 +454,7 @@ const bootXr = () => {
 };
 
 const installStartScreen = () => {
+  installCameraDebugEntry();
   const button = document.getElementById(START_BUTTON_ID);
   if (button) {
     button.addEventListener("touchend", startAr, { passive: true });
