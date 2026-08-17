@@ -1,16 +1,22 @@
 ---
 name: 8thwall-image-target-perf
 description: >
-  8th Wall Image Target AR 项目在 Safari 移动端（无痕浏览）加载慢、
-  XrController null 报错、视频音频无法自动解锁、视频播放中途停止等问题的
-  诊断与修复模式。适用于：
+  8th Wall Image Target AR 项目的移动端兼容、性能和媒体诊断修复模式，覆盖
+  Safari 无痕加载慢、XrController null、音视频解锁、视频中途停止、
+  华为浏览器阻断、Android 多后摄主摄优选、镜头切换、画面放大模糊和本地诊断。
+  适用于：
   (1) A-Frame + xrextras + xrweb 的 Image Target 场景；
   (2) ECS + TypeScript + Three.js + GSAP 的自定义 AR 体验。
-  包含：ECS GltfModel 动画重播、iOS 音频解锁双重方案、
-  状态机点击灵敏度、Three.js 材质崩溃、视频编解码器兼容性等。
+  包含：ECS GltfModel 动画重播、iOS 音频解锁双重方案、Android/Huawei
+  相机兼容策略、状态机点击灵敏度、Three.js 材质崩溃和视频编解码器兼容性。
 ---
 
-# 8th Wall Image Target AR — Safari 性能与音频优化
+# 8th Wall Image Target AR — 移动端性能、媒体与相机兼容
+
+## 专项参考路由
+
+- 处理华为浏览器不兼容、Android 多后摄、主摄优选、相机切换、全屏裁切或现场诊断时，必须完整阅读 [Android/Huawei 相机兼容](references/android-huawei-camera.md)。
+- 相机专项中继续保留本文件的 XR8/SLAM 懒加载、Image Target 初始化和音频用户手势约束；不要为切换镜头修改第三方 `xr.js`。
 
 ## 适用场景
 - 8th Wall + A-Frame + xrextras 的 Image Target 识别视频项目

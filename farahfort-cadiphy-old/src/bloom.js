@@ -29,9 +29,6 @@ let pendingMainAudioStart = false;
 let targetVisible = false;
 let experienceState = STATE.SCANNING;
 let fallbackTime = 0;
-let audioContext = null;
-let audioGain = null;
-let audioSource = null;
 const clock = new THREE.Clock();
 
 const audioEl = new Audio(AUDIO_URL);
@@ -42,40 +39,27 @@ audioEl.muted = true;
 audioEl.defaultMuted = true;
 audioEl.volume = 1;
 
-const ensureAudioGraph = () => {
-  if (audioContext && audioGain) return true;
-  const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-  if (!AudioContextClass) return false;
-  try {
-    audioContext = new AudioContextClass();
-    audioSource = audioContext.createMediaElementSource(audioEl);
-    audioGain = audioContext.createGain();
-    audioGain.gain.value = 0;
-    audioSource.connect(audioGain);
-    audioGain.connect(audioContext.destination);
-    return true;
-  } catch (error) {
-    console.warn("[CADIPHY Audio] WebAudio graph setup failed:", error);
-    audioContext = null;
-    audioGain = null;
-    audioSource = null;
-    return false;
-  }
-};
-
 const unlockMedia = () => {
   if (mediaUnlocked) return Promise.resolve();
   if (mediaUnlockPromise) return mediaUnlockPromise;
 
-  const hasAudioGraph = ensureAudioGraph();
-  if (hasAudioGraph) {
-    audioGain.gain.value = 0;
-    audioContext.resume().catch(() => undefined);
+  const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+  if (AudioContextClass) {
+    const context = new AudioContextClass();
+    const buffer = context.createBuffer(1, 1, 22050);
+    const source = context.createBufferSource();
+    source.buffer = buffer;
+    source.connect(context.destination);
+    source.start(0);
+    context
+      .resume()
+      .then(() => context.close())
+      .catch(() => undefined);
   }
 
-  audioEl.muted = !hasAudioGraph;
-  audioEl.defaultMuted = !hasAudioGraph;
-  audioEl.volume = hasAudioGraph ? 1 : 0;
+  audioEl.muted = false;
+  audioEl.defaultMuted = false;
+  audioEl.volume = 0;
   audioEl.currentTime = 0;
   const promise = audioEl.play();
   if (!promise) {
@@ -89,13 +73,12 @@ const unlockMedia = () => {
     .then(() => {
       audioEl.pause();
       audioEl.currentTime = 0;
-      if (audioGain) audioGain.gain.value = 0;
       audioEl.volume = 1;
       audioEl.muted = false;
       audioEl.defaultMuted = false;
       mediaUnlocked = true;
       mediaUnlockPromise = null;
-      if (pendingMainAudioStart && targetVisible && experienceState === STATE.AR_PLAYING) {
+      if (pendingMainAudioStart && experienceState === STATE.AR_PLAYING) {
         pendingMainAudioStart = false;
         playMainAudio({ fromStart: false });
       }
@@ -107,7 +90,6 @@ const unlockMedia = () => {
       pendingMainAudioStart = false;
       audioEl.pause();
       audioEl.currentTime = 0;
-      if (audioGain) audioGain.gain.value = 0;
       audioEl.volume = 1;
       audioEl.muted = true;
       audioEl.defaultMuted = true;
@@ -151,12 +133,10 @@ const restoreModelVisibility = () => {
 const pauseMainAudio = ({ reset = false } = {}) => {
   pendingMainAudioStart = false;
   audioEl.pause();
-  if (audioGain) audioGain.gain.value = 0;
   if (reset) audioEl.currentTime = 0;
 };
 
 const playMainAudio = ({ fromStart = true } = {}) => {
-  if (!targetVisible || experienceState !== STATE.AR_PLAYING) return;
   if (!mediaUnlocked && mediaUnlockPromise) {
     pendingMainAudioStart = true;
     return;
@@ -167,10 +147,6 @@ const playMainAudio = ({ fromStart = true } = {}) => {
   audioEl.muted = !mediaUnlocked;
   audioEl.defaultMuted = !mediaUnlocked;
   audioEl.volume = 1;
-  if (audioGain) {
-    audioGain.gain.value = mediaUnlocked ? 1 : 0;
-    audioContext?.resume().catch(() => undefined);
-  }
   const promise = audioEl.play();
   if (promise) {
     promise.catch((error) => {
