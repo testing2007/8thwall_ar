@@ -1,0 +1,23 @@
+{
+  "type": "PLANAR",
+  "properties": {
+    "top": 0,
+    "left": 24,
+    "width": 591,
+    "height": 788,
+    "isRotated": true,
+    "originalWidth": 640,
+    "originalHeight": 788
+  },
+  "imagePath": "image-targets/bobo_luminance.jpg",
+  "metadata": null,
+  "name": "bobo",
+  "resources": {
+    "originalImage": "bobo_original.jpg",
+    "croppedImage": "bobo_cropped.jpg",
+    "thumbnailImage": "bobo_thumbnail.jpg",
+    "luminanceImage": "bobo_luminance.jpg"
+  },
+  "created": 1786862763907,
+  "updated": 1786862763907
+}

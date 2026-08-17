@@ -1,0 +1,23 @@
+{
+  "type": "PLANAR",
+  "properties": {
+    "top": 0,
+    "left": 14,
+    "width": 480,
+    "height": 640,
+    "isRotated": false,
+    "originalWidth": 508,
+    "originalHeight": 640
+  },
+  "imagePath": "image-targets/adult-santa_luminance.png",
+  "metadata": null,
+  "name": "adult-santa",
+  "resources": {
+    "originalImage": "adult-santa_original.png",
+    "croppedImage": "adult-santa_cropped.png",
+    "thumbnailImage": "adult-santa_thumbnail.png",
+    "luminanceImage": "adult-santa_luminance.png"
+  },
+  "created": 1786889925795,
+  "updated": 1786889925795
+}

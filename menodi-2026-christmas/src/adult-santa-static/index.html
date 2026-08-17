@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Santa - Static Story Page</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-badge"><img src="assets/icons/gift.svg" alt="gift" /></div>
+        <div>
+          <div class="brand-title">Santa's Christmas Journey</div>
+          <div class="brand-subtitle">Static mobile story page demo</div>
+        </div>
+      </div>
+      <div class="collection-pill">Collection: 1 / 3</div>
+    </header>
+
+    <section class="hero-card">
+      <img class="hero-cover" src="assets/middle-cover.png" alt="Santa middle-period cover" />
+      <div class="hero-overlay">
+        <div class="hero-chip-row">
+          <div class="chip">Santa</div>
+          <div class="chip green">Chapter 2 Unlocked</div>
+        </div>
+        <div class="story-summary">
+          <h1>The Busiest Night</h1>
+          <p>Now Santa has a mission: deliver joy to many children in one magical night, no matter how snowy the road becomes.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="section-title">
+        <h2>Character Intro</h2>
+        <span>Middle period</span>
+      </div>
+      <div class="intro-grid">
+        <div class="product-card">
+          <img src="assets/middle-product.png" alt="Santa pen" />
+        </div>
+        <div class="info-stack">
+          <div class="info-box">
+            <strong>Who is he?</strong>
+            <p>This is Santa in his busy middle period — experienced, dependable, and full of energy on Christmas Eve.</p>
+          </div>
+          <div class="info-box">
+            <strong>What is this chapter about?</strong>
+            <p>Chapter 2 focuses on responsibility. Santa has many gifts to prepare, many places to visit, and one promise to keep.</p>
+          </div>
+          <div class="badges">
+            <div class="badge"><img src="assets/icons/gift.svg" alt="" /> Promise</div>
+            <div class="badge"><img src="assets/icons/snow.svg" alt="" /> Busy Night</div>
+          </div>
+        </div>
+      </div>
+      <div class="cta-row">
+        <a class="button primary" href="#story"><img src="assets/icons/book.svg" alt="" />Read Story</a>
+        <a class="button secondary" href="#chapters"><img src="assets/icons/scan.svg" alt="" />Scan Again</a>
+      </div>
+    </section>
+
+    <section id="story" class="panel">
+      <div class="section-title">
+        <h2>Story Highlights</h2>
+        <span>Static cards</span>
+      </div>
+      <div class="timeline">
+        <article class="story-card">
+          <div class="story-icon"><img src="assets/icons/gift.svg" alt="gift" /></div>
+          <div>
+            <h3>1. A List Full of Promises</h3>
+            <p>Santa checks his Christmas list and packs present after present. Every gift means someone out there is waiting for joy.</p>
+          </div>
+        </article>
+        <article class="story-card">
+          <div class="story-icon"><img src="assets/icons/snow.svg" alt="snow" /></div>
+          <div>
+            <h3>2. Through the Snowy Night</h3>
+            <p>The wind gets stronger and the road gets longer, but Santa keeps moving forward because Christmas night is too important to stop.</p>
+          </div>
+        </article>
+        <article class="story-card">
+          <div class="story-icon"><img src="assets/icons/star.svg" alt="star" /></div>
+          <div>
+            <h3>3. One Promise Kept</h3>
+            <p>Before sunrise, Santa completes his magical journey. The busiest night becomes a story of care, effort, and promise.</p>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="section-title">
+        <h2>Reward Badge</h2>
+        <span>After reading</span>
+      </div>
+      <div class="reward-box">
+        <div class="reward-badge"><img src="assets/icons/gift.svg" alt="gift badge" /></div>
+        <div>
+          <h3>Busiest Night Hero</h3>
+          <p>Unlocked after scanning the middle-period Santa pen. This badge can appear in the user's collection record.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="chapters" class="panel">
+      <div class="section-title">
+        <h2>Other Chapters</h2>
+        <span>Locked by local record</span>
+      </div>
+      <div class="chapter-list">
+        <article class="chapter-item locked">
+          <div class="thumb"><img src="assets/icons/lock.svg" alt="Locked" /></div>
+          <div>
+            <h4>Young Santa</h4>
+            <p>Scan the young-period pen to unlock Chapter 1</p>
+          </div>
+          <div class="lock-bubble"><img src="assets/icons/lock.svg" alt="lock" /></div>
+        </article>
+        <article class="chapter-item">
+          <div class="thumb"><img src="assets/middle-product.png" alt="Santa" /></div>
+          <div>
+            <h4>Santa</h4>
+            <p>Unlocked · The Busiest Night</p>
+          </div>
+          <div class="chip green">Owned</div>
+        </article>
+        <article class="chapter-item locked">
+          <div class="thumb"><img src="assets/icons/lock.svg" alt="Locked" /></div>
+          <div>
+            <h4>Grandpa Santa</h4>
+            <p>Scan the old-period pen to unlock Chapter 3</p>
+          </div>
+          <div class="lock-bubble"><img src="assets/icons/lock.svg" alt="lock" /></div>
+        </article>
+      </div>
+    </section>
+
+    <nav class="bottom-nav">
+      <div class="nav-item active">Home</div>
+      <div class="nav-item">Story</div>
+      <div class="nav-item">Scan</div>
+      <div class="nav-item">Collection</div>
+    </nav>
+
+    <div class="footer-note">This is a static visual prototype for the middle-period Santa page.</div>
+  </main>
+</body>
+</html>

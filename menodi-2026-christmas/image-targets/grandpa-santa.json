@@ -1,0 +1,23 @@
+{
+  "type": "PLANAR",
+  "properties": {
+    "top": 0,
+    "left": 59,
+    "width": 521,
+    "height": 695,
+    "isRotated": true,
+    "originalWidth": 640,
+    "originalHeight": 695
+  },
+  "imagePath": "image-targets/grandpa-santa_luminance.png",
+  "metadata": null,
+  "name": "grandpa-santa",
+  "resources": {
+    "originalImage": "grandpa-santa_original.png",
+    "croppedImage": "grandpa-santa_cropped.png",
+    "thumbnailImage": "grandpa-santa_thumbnail.png",
+    "luminanceImage": "grandpa-santa_luminance.png"
+  },
+  "created": 1786889972000,
+  "updated": 1786889972000
+}

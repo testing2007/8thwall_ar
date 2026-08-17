@@ -1,0 +1,23 @@
+{
+  "type": "PLANAR",
+  "properties": {
+    "top": 0,
+    "left": 1,
+    "width": 480,
+    "height": 640,
+    "isRotated": false,
+    "originalWidth": 482,
+    "originalHeight": 640
+  },
+  "imagePath": "image-targets/young-santa_luminance.png",
+  "metadata": null,
+  "name": "young-santa",
+  "resources": {
+    "originalImage": "young-santa_original.png",
+    "croppedImage": "young-santa_cropped.png",
+    "thumbnailImage": "young-santa_thumbnail.png",
+    "luminanceImage": "young-santa_luminance.png"
+  },
+  "created": 1786889904565,
+  "updated": 1786889904565
+}

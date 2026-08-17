@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Grandpa Santa - Static Story Page</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<main class="app">
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-badge"><img src="assets/icons/star.svg" alt="star" /></div>
+      <div>
+        <div class="brand-title">Santa's Christmas Journey</div>
+        <div class="brand-subtitle">Static mobile story page demo</div>
+      </div>
+    </div>
+    <div class="collection-pill">Collection: 1 / 3</div>
+  </header>
+
+  <section class="hero-card">
+    <img class="hero-cover" src="assets/grandpa-cover.png" alt="Grandpa Santa cover" />
+    <div class="hero-overlay">
+      <div class="hero-chip-row">
+        <div class="chip">Grandpa Santa</div>
+        <div class="chip green">Chapter 3 Unlocked</div>
+      </div>
+      <div class="story-summary">
+        <h1>The Christmas Secret</h1>
+        <p>After a lifetime of delivering gifts, Grandpa Santa discovers that the most precious Christmas gift cannot always be wrapped in a box.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="section-title">
+      <h2>Character Intro</h2>
+      <span>Old period</span>
+    </div>
+    <div class="intro-grid">
+      <div class="product-card"><img src="assets/grandpa-product.png" alt="Grandpa Santa pen" /></div>
+      <div class="info-stack">
+        <div class="info-box">
+          <strong>Who is he?</strong>
+          <p>Grandpa Santa is the older, wiser Santa. He has delivered countless presents and carries a lifetime of Christmas memories.</p>
+        </div>
+        <div class="info-box">
+          <strong>What does he discover?</strong>
+          <p>The final chapter is about kindness and togetherness. Some of the best gifts are moments shared with the people we love.</p>
+        </div>
+        <div class="badges">
+          <div class="badge"><img src="assets/icons/star.svg" alt="" /> Wisdom</div>
+          <div class="badge"><img src="assets/icons/gift.svg" alt="" /> Kindness</div>
+        </div>
+      </div>
+    </div>
+    <div class="cta-row">
+      <a class="button primary" href="#story"><img src="assets/icons/book.svg" alt="" />Read Story</a>
+      <a class="button secondary" href="#chapters"><img src="assets/icons/scan.svg" alt="" />Scan Again</a>
+    </div>
+  </section>
+
+  <section id="story" class="panel">
+    <div class="section-title">
+      <h2>Story Highlights</h2>
+      <span>Static cards</span>
+    </div>
+    <div class="timeline">
+      <article class="story-card">
+        <div class="story-icon"><img src="assets/icons/book.svg" alt="book" /></div>
+        <div>
+          <h3>1. A Letter Without a Toy</h3>
+          <p>One snowy evening, Grandpa Santa receives a very unusual letter. The child is not asking for a toy at all.</p>
+        </div>
+      </article>
+      <article class="story-card">
+        <div class="story-icon"><img src="assets/icons/gift.svg" alt="gift" /></div>
+        <div>
+          <h3>2. A Gift That Cannot Be Wrapped</h3>
+          <p>The letter asks for something simple: one Christmas together with the people the child loves most.</p>
+        </div>
+      </article>
+      <article class="story-card">
+        <div class="story-icon"><img src="assets/icons/star.svg" alt="star" /></div>
+        <div>
+          <h3>3. Santa's Christmas Secret</h3>
+          <p>Grandpa Santa finally understands that kindness, time, and love can be more valuable than even the biggest present.</p>
+        </div>
+      </article>
+    </div>
+    <div class="quote-card">
+      <p class="quote">“The best Christmas gifts are the moments we share.”</p>
+      <div class="small">Grandpa Santa's Christmas Secret</div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="section-title">
+      <h2>Reward Badge</h2>
+      <span>After reading</span>
+    </div>
+    <div class="reward-box">
+      <div class="reward-badge"><img src="assets/icons/star.svg" alt="star badge" /></div>
+      <div>
+        <h3>Christmas Secret Keeper</h3>
+        <p>Unlocked after scanning the Grandpa Santa pen. The badge records that the final period of Santa's life story has been discovered.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="chapters" class="panel">
+    <div class="section-title">
+      <h2>Other Chapters</h2>
+      <span>Locked by local record</span>
+    </div>
+    <div class="chapter-list">
+      <article class="chapter-item locked">
+        <div class="thumb"><img src="assets/icons/lock.svg" alt="Locked" /></div>
+        <div>
+          <h4>Young Santa</h4>
+          <p>Scan the young-period pen to unlock Chapter 1</p>
+        </div>
+        <div class="lock-bubble"><img src="assets/icons/lock.svg" alt="lock" /></div>
+      </article>
+      <article class="chapter-item locked">
+        <div class="thumb"><img src="assets/icons/lock.svg" alt="Locked" /></div>
+        <div>
+          <h4>Adult Santa</h4>
+          <p>Scan the middle-period pen to unlock Chapter 2</p>
+        </div>
+        <div class="lock-bubble"><img src="assets/icons/lock.svg" alt="lock" /></div>
+      </article>
+      <article class="chapter-item">
+        <div class="thumb"><img src="assets/grandpa-product.png" alt="Grandpa Santa" /></div>
+        <div>
+          <h4>Grandpa Santa</h4>
+          <p>Unlocked · The Christmas Secret</p>
+        </div>
+        <div class="chip green">Owned</div>
+      </article>
+    </div>
+  </section>
+
+  <nav class="bottom-nav">
+    <div class="nav-item active">Home</div>
+    <div class="nav-item">Story</div>
+    <div class="nav-item">Scan</div>
+    <div class="nav-item">Collection</div>
+  </nav>
+
+  <div class="footer-note">This is a static visual prototype for the Grandpa Santa page.</div>
+</main>
+</body>
+</html>

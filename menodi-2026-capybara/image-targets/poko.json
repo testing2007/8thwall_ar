@@ -1,0 +1,23 @@
+{
+  "type": "PLANAR",
+  "properties": {
+    "top": 0,
+    "left": 35,
+    "width": 568,
+    "height": 758,
+    "isRotated": true,
+    "originalWidth": 640,
+    "originalHeight": 758
+  },
+  "imagePath": "image-targets/poko_luminance.jpg",
+  "metadata": null,
+  "name": "poko",
+  "resources": {
+    "originalImage": "poko_original.jpg",
+    "croppedImage": "poko_cropped.jpg",
+    "thumbnailImage": "poko_thumbnail.jpg",
+    "luminanceImage": "poko_luminance.jpg"
+  },
+  "created": 1786862772929,
+  "updated": 1786862772929
+}

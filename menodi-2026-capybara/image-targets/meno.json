@@ -1,0 +1,23 @@
+{
+  "type": "PLANAR",
+  "properties": {
+    "top": 0,
+    "left": 54,
+    "width": 531,
+    "height": 709,
+    "isRotated": true,
+    "originalWidth": 640,
+    "originalHeight": 709
+  },
+  "imagePath": "image-targets/meno_luminance.jpg",
+  "metadata": null,
+  "name": "meno",
+  "resources": {
+    "originalImage": "meno_original.jpg",
+    "croppedImage": "meno_cropped.jpg",
+    "thumbnailImage": "meno_thumbnail.jpg",
+    "luminanceImage": "meno_luminance.jpg"
+  },
+  "created": 1786862767926,
+  "updated": 1786862767926
+}

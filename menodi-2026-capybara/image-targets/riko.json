@@ -1,0 +1,23 @@
+{
+  "type": "PLANAR",
+  "properties": {
+    "top": 0,
+    "left": 54,
+    "width": 530,
+    "height": 707,
+    "isRotated": true,
+    "originalWidth": 640,
+    "originalHeight": 707
+  },
+  "imagePath": "image-targets/riko_luminance.jpg",
+  "metadata": null,
+  "name": "riko",
+  "resources": {
+    "originalImage": "riko_original.jpg",
+    "croppedImage": "riko_cropped.jpg",
+    "thumbnailImage": "riko_thumbnail.jpg",
+    "luminanceImage": "riko_luminance.jpg"
+  },
+  "created": 1786862777573,
+  "updated": 1786862777573
+}
