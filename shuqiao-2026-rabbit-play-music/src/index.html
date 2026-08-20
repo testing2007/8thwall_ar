@@ -1,141 +1,197 @@
 <!doctype html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
-  <title>Rabbit Melody AR</title>
-
+  <meta name="theme-color" content="#120d0a">
+  <title>Moon Rabbit Five Tones</title>
   <style>
     :root {
       color-scheme: dark;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --ink: #120d0a;
+      --paper: #fff5df;
+      --muted: rgba(255, 245, 223, .62);
+      --line: rgba(255, 238, 202, .17);
+      --gold: #e9b557;
+      --gold-bright: #ffd98a;
+      --app-width: 100%;
+      --app-height: 100svh;
+      --safe-top: max(18px, env(safe-area-inset-top));
+      --safe-bottom: max(18px, env(safe-area-inset-bottom));
+      --safe-left: max(12px, env(safe-area-inset-left));
+      --safe-right: max(12px, env(safe-area-inset-right));
     }
+    html { box-sizing: border-box !important; }
+    *, *::before, *::after { box-sizing: inherit !important; }
+    html, body { width: 100%; max-width: 100%; height: 100%; margin: 0; overflow: hidden; overscroll-behavior-x: none; background: var(--ink); color: var(--paper); font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; -webkit-font-smoothing: antialiased; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+    button { border: 0; color: inherit; font: inherit; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+    button:focus-visible { outline: 2px solid var(--gold-bright); outline-offset: 3px; }
+    button:disabled { cursor: progress; opacity: .48; }
+    .view { position: fixed; left: 0; top: 0; width: var(--app-width); max-width: 100%; height: var(--app-height); overflow-x: hidden; visibility: hidden; opacity: 0; pointer-events: none; transition: opacity .32s ease, visibility 0s linear .32s; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+    .view *, .view *::before, .view *::after { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+    .view img, .view canvas { -webkit-user-drag: none; user-drag: none; }
+    body[data-view="home"] #home-view, body[data-view="composer"] #composer-view, body[data-view="ar"] #ar-view { visibility: visible; opacity: 1; pointer-events: auto; transition-delay: 0s; }
+    #camerafeed { position: fixed; inset: 0; width: 100%; height: 100%; display: none; background: #000; }
+    body[data-view="ar"] #camerafeed { display: block; }
 
-    * {
-      box-sizing: border-box;
-    }
+    #home-view { z-index: 10; display: flex; align-items: flex-end; background-color: #3b2217; background-image: var(--poster-image); background-size: cover; background-position: center 38%; }
+    #home-view::before { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(17,10,7,.06) 0%, rgba(17,10,7,.18) 42%, rgba(17,10,7,.9) 82%, #110b08 100%), linear-gradient(90deg, rgba(16,9,6,.32), transparent 55%); }
+    .home-content { position: relative; width: min(100%, 720px); padding: var(--safe-top) clamp(22px, 7vw, 62px) calc(var(--safe-bottom) + 18px); animation: home-enter .8s cubic-bezier(.2,.75,.25,1) both; }
+    @keyframes home-enter { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: translateY(0); } }
+    .eyebrow { margin: 0 0 12px; color: var(--gold-bright); font-size: 11px; font-weight: 700; letter-spacing: .24em; text-transform: uppercase; }
+    .home-title { margin: 0; max-width: 600px; font-family: Georgia, "Times New Roman", serif; font-size: clamp(40px, 9.6vw, 78px); font-weight: 500; line-height: .96; letter-spacing: -.04em; text-wrap: balance; text-shadow: 0 4px 26px rgba(0,0,0,.42); }
+    .home-copy { max-width: 470px; margin: 16px 0 22px; color: rgba(255,245,223,.77); font-size: clamp(14px, 3.6vw, 17px); line-height: 1.55; }
+    .home-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+    .action-button { min-height: 52px; padding: 0 22px; border-radius: 999px; cursor: pointer; font-size: 13px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; transition: transform .16s ease, background .16s ease, border-color .16s ease; }
+    .action-button:active { transform: scale(.975); }
+    .action-button.primary { background: var(--gold-bright); color: #28170d; box-shadow: 0 12px 34px rgba(220,159,61,.22); }
+    .action-button.secondary { border: 1px solid rgba(255,240,212,.34); background: rgba(27,16,11,.48); backdrop-filter: blur(12px); }
+    .hidden { display: none !important; }
+    #home-save-note { min-height: 18px; margin: 14px 2px 0; color: rgba(255,245,223,.48); font-size: 11px; letter-spacing: .03em; }
 
-    html,
-    body {
-      width: 100%;
-      height: 100%;
-      margin: 0;
-      overflow: hidden;
-      background: #050505;
-    }
+    #composer-view { z-index: 20; overflow-x: hidden; overflow-y: hidden; overscroll-behavior: contain; background: radial-gradient(circle at 50% -10%, rgba(128,63,31,.22), transparent 40%), linear-gradient(180deg, #17100c, #0d0a08); }
+    .composer-shell { width: 100%; max-width: 720px; min-width: 0; height: 100%; margin: 0 auto; padding: var(--safe-top) var(--safe-right) var(--safe-bottom) var(--safe-left); overflow-x: hidden; }
+    .composer-grid { display: grid; grid-template-rows: minmax(180px, 1fr) auto; gap: 8px; width: 100%; max-width: 100%; min-width: 0; height: 100%; }
+    .preview-column { display: grid; grid-template-rows: minmax(0, 1fr) 58px; gap: 8px; min-width: 0; min-height: 0; }
+    .control-column { display: grid; grid-template-rows: auto auto auto; gap: 8px; min-width: 0; max-width: 100%; }
+    .stage-frame { position: relative; width: 100%; max-width: 100%; min-width: 0; height: 100%; min-height: 0; overflow: hidden; border-radius: clamp(12px, 2.4vw, 20px); background: #3b3028; box-shadow: 0 18px 50px rgba(0,0,0,.36), inset 0 0 0 1px rgba(255,255,255,.09); isolation: isolate; }
+    #composer-canvas { width: 100%; height: 100%; display: block; }
+    .stage-shade { position: absolute; inset: 0; pointer-events: none; box-shadow: inset 0 0 44px rgba(18,8,3,.28); }
+    .stage-status { position: absolute; top: 12px; left: 12px; display: flex; align-items: center; gap: 7px; padding: 8px 11px; border: 1px solid rgba(255,255,255,.15); border-radius: 999px; background: rgba(18,11,8,.58); backdrop-filter: blur(10px); font-size: 10px; font-weight: 800; letter-spacing: .12em; }
+    .record-dot { width: 7px; height: 7px; border-radius: 50%; background: #776d66; }
+    .record-dot.on { background: #ff5b45; box-shadow: 0 0 12px #ff4f38; animation: record-pulse .75s ease-in-out infinite alternate; }
+    @keyframes record-pulse { to { opacity: .38; } }
+    #tone-flash { position: absolute; left: 50%; top: 16%; opacity: 0; transform: translate(-50%, -50%); font-family: Georgia, "Songti SC", serif; font-size: clamp(42px, 9vw, 92px); font-weight: 700; pointer-events: none; mix-blend-mode: screen; text-shadow: 0 0 20px currentColor; }
+    .note-bank { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 5px; width: 100%; max-width: 100%; min-width: 0; }
+    .note-key { position: relative; min-width: 0; min-height: 58px; padding: 7px 2px 6px; overflow: hidden; border: 1px solid var(--line); border-radius: 11px; background: rgba(255,249,235,.055); cursor: pointer; transition: transform .1s ease, background .15s ease, border-color .15s ease; }
+    .note-key::after { content: ""; position: absolute; inset: auto 12% 0; height: 2px; background: var(--tone-color, var(--gold)); opacity: .7; box-shadow: 0 0 13px var(--tone-color, var(--gold)); }
+    .note-key:active, .note-key.active { transform: translateY(2px) scale(.98); background: rgba(255,255,255,.12); border-color: rgba(255,255,255,.3); }
+    .note-key .glyph { display: block; font-family: Georgia, "Songti SC", serif; font-size: clamp(23px, 7vw, 31px); line-height: 1; }
+    .note-key .roman { display: block; margin-top: 5px; overflow: hidden; text-overflow: ellipsis; color: var(--muted); font-size: 7px; letter-spacing: .05em; white-space: nowrap; }
+    .control-section { min-width: 0; padding: 0; border: 0; }
+    .section-label { display: flex; align-items: center; justify-content: space-between; min-width: 0; margin: 0 0 5px; color: var(--muted); font-size: 9px; font-weight: 800; letter-spacing: .13em; text-transform: uppercase; }
+    .takes-heading { min-height: 44px; margin-bottom: 2px; }
+    .takes-heading-copy { display: flex; align-items: baseline; gap: 8px; min-width: 0; }
+    .moon-start-over { min-width: 44px; min-height: 44px; padding: 0 8px; background: transparent; cursor: pointer; color: rgba(255,190,174,.66); font-size: 10px; font-weight: 800; letter-spacing: .04em; }
+    .transport { display: grid; grid-template-columns: 1.25fr 1fr; gap: 8px; }
+    .transport-button { min-width: 0; min-height: 44px; border: 1px solid var(--line); border-radius: 11px; background: rgba(255,255,255,.055); cursor: pointer; font-size: 10px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; }
+    .transport-button.record { background: linear-gradient(135deg, #783126, #4b211b); border-color: rgba(255,128,99,.24); }
+    .take-meta { display: flex; justify-content: space-between; margin-top: 4px; color: var(--muted); font: 9px/1.3 ui-monospace, SFMono-Regular, Menlo, monospace; }
+    #segment-list { display: flex; gap: 8px; width: 100%; max-width: 100%; min-width: 0; height: 112px; margin: 0; padding: 1px 0; overflow-x: auto; overflow-y: hidden; overscroll-behavior-x: contain; scroll-snap-type: x mandatory; scrollbar-width: none; touch-action: pan-x; -webkit-overflow-scrolling: touch; }
+    #segment-list::-webkit-scrollbar { display: none; }
+    .take-card { position: relative; flex: 0 0 154px; width: 154px; height: 110px; min-width: 0; overflow: hidden; border: 1px solid rgba(255,245,223,.12); border-radius: 14px; background: rgba(255,255,255,.035); scroll-snap-align: center; transition: transform .18s ease, border-color .18s ease, background .18s ease; }
+    .take-card.selected { border-color: rgba(255,217,138,.82); background: rgba(233,181,87,.13); box-shadow: inset 0 0 0 1px rgba(255,217,138,.12), 0 10px 26px rgba(0,0,0,.18); }
+    .take-card.current::after { content: ""; position: absolute; right: 12px; top: 12px; width: 7px; height: 7px; border-radius: 50%; background: var(--gold-bright); box-shadow: 0 0 10px rgba(255,217,138,.7); }
+    .take-card-select { position: absolute; inset: 0; z-index: 1; width: 100%; height: 100%; padding: 0; background: transparent; cursor: pointer; }
+    .take-card-copy { position: relative; z-index: 0; display: block; padding: 13px; pointer-events: none; }
+    .take-card-number { display: block; color: rgba(255,245,223,.48); font-size: 8px; font-weight: 800; letter-spacing: .13em; text-transform: uppercase; }
+    .take-card-state { display: block; margin-top: 12px; font-family: Georgia, serif; font-size: 17px; font-weight: 500; }
+    .take-card-meta { display: block; margin-top: 5px; color: var(--muted); font-size: 9px; white-space: nowrap; }
+    .take-card-actions { position: absolute; z-index: 3; left: 6px; right: 6px; bottom: 6px; display: none; grid-template-columns: 1fr 1fr; gap: 5px; }
+    .take-card.selected .take-card-copy { opacity: .58; transform: translateY(-5px); }
+    .take-card.selected .take-card-actions { display: grid; }
+    .take-inline-action { min-width: 0; min-height: 44px; padding: 0 5px; border-radius: 9px; background: rgba(24,15,10,.92); cursor: pointer; color: var(--paper); font-size: 9px; font-weight: 800; letter-spacing: .02em; }
+    .take-inline-action.danger { color: #ffc0ae; }
+    .take-inline-action:disabled { cursor: default; opacity: .38; }
+    .composer-footer { display: grid; grid-template-columns: .82fr 1.18fr; gap: 8px; min-width: 0; }
+    .composer-footer .action-button { width: 100%; min-width: 0; min-height: 48px; padding: 0 8px; border-radius: 12px; font-size: 9px; white-space: nowrap; }
+    .moon-floating-back { position: fixed; z-index: 70; left: 0; top: 0; width: 52px; height: 52px; padding: 0; border: 1px solid rgba(255,245,223,.22); border-radius: 50%; background: rgba(20,13,9,.76); box-shadow: 0 10px 28px rgba(0,0,0,.32); backdrop-filter: blur(12px); cursor: grab; touch-action: none; color: var(--gold-bright); will-change: transform; }
+    .moon-floating-back.dragging { cursor: grabbing; transform-origin: center; }
+    .moon-floating-back svg { display: block; width: 21px; height: 21px; margin: auto; pointer-events: none; }
+    #safe-area-probe { position: fixed; left: 0; top: 0; width: 0; height: 0; padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); visibility: hidden; pointer-events: none; }
 
-    #camerafeed {
-      width: 100vw;
-      height: 100vh;
-      display: block;
-    }
+    #ar-view { z-index: 8; }
+    .ar-edit-control { position: absolute; z-index: 3; top: var(--safe-top); right: var(--safe-right); }
+    .ar-button { min-width: 44px; min-height: 44px; padding: 0 15px; border: 1px solid rgba(255,255,255,.22); border-radius: 999px; background: rgba(14,9,7,.5); backdrop-filter: blur(10px); cursor: pointer; font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
 
-    #template-start-screen {
-      position: fixed;
-      inset: 0;
-      z-index: 1000;
-      display: grid;
-      place-items: end center;
-      padding: 0 24px max(64px, calc(env(safe-area-inset-bottom) + 40px));
-      background:
-        linear-gradient(180deg, rgba(5, 4, 2, 0.02) 48%, rgba(5, 4, 2, 0.72) 100%),
-        url("./assets/poster.jpg") center center / cover no-repeat;
-    }
+    #loading-layer { position: fixed; inset: 0; z-index: 1000; display: grid; place-items: center; background: rgba(15,9,6,.9); opacity: 0; visibility: hidden; transition: opacity .2s ease, visibility 0s linear .2s; }
+    #loading-layer.show { opacity: 1; visibility: visible; transition-delay: 0s; }
+    .loading-mark { text-align: center; }
+    .loading-orbit { width: 42px; height: 42px; margin: 0 auto 15px; border: 1px solid rgba(255,218,142,.22); border-top-color: var(--gold-bright); border-radius: 50%; animation: spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    #loading-text { color: var(--muted); font-size: 10px; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; }
+    #toast { position: fixed; left: 50%; bottom: calc(var(--safe-bottom) + 12px); z-index: 1200; max-width: calc(100vw - 28px); padding: 11px 16px; border: 1px solid rgba(255,255,255,.16); border-radius: 999px; background: rgba(18,11,8,.9); opacity: 0; pointer-events: none; color: var(--paper); font-size: 11px; transform: translate(-50%, 10px); transition: opacity .2s ease, transform .2s ease; }
+    #toast.show { opacity: 1; transform: translate(-50%, 0); }
 
-    #template-start-screen.is-hidden {
-      display: none;
+    @media (max-width: 760px) {
+      .stage-frame { border-radius: 14px; }
+      .home-actions { display: grid; grid-template-columns: 1fr; }
     }
-
-    #template-start-button {
-      min-width: min(260px, 82vw);
-      min-height: 56px;
-      padding: 14px 32px;
-      border: 1px solid rgba(255, 255, 255, 0.42);
-      border-radius: 999px;
-      background: linear-gradient(135deg, #ffe29a, #e8a72c);
-      box-shadow:
-        0 12px 30px rgba(0, 0, 0, 0.34),
-        inset 0 1px 0 rgba(255, 255, 255, 0.52);
-      color: #2b1905;
-      cursor: pointer;
-      font: inherit;
-      font-size: 18px;
-      font-weight: 800;
-      letter-spacing: 0.03em;
-      touch-action: manipulation;
-      -webkit-tap-highlight-color: transparent;
+    @media (max-height: 619px) {
+      #composer-view { overflow-y: auto; }
+      .composer-shell { height: auto; min-height: 620px; }
+      .composer-grid { height: 584px; grid-template-rows: minmax(180px, 1fr) auto; }
     }
-
-    #template-start-button:active {
-      transform: translateY(1px);
+    @media (max-height: 650px) and (orientation: landscape) {
+      .home-content { width: 58%; padding-bottom: calc(var(--safe-bottom) + 10px); }
+      .home-title { font-size: clamp(34px, 7vw, 56px); }
+      .home-copy { margin: 10px 0 14px; }
     }
-
-    #template-start-button:disabled {
-      cursor: progress;
-      opacity: 0.72;
-    }
-
-    #scan-status {
-      position: fixed;
-      top: max(20px, calc(env(safe-area-inset-top) + 12px));
-      left: 50%;
-      z-index: 100;
-      max-width: calc(100vw - 40px);
-      padding: 10px 16px;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: 999px;
-      background: rgba(5, 5, 5, 0.68);
-      color: #fff;
-      font-size: 14px;
-      font-weight: 600;
-      line-height: 1.3;
-      opacity: 0;
-      pointer-events: none;
-      text-align: center;
-      transform: translate(-50%, -10px);
-      transition: opacity 180ms ease, transform 180ms ease;
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-    }
-
-    #scan-status.is-visible {
-      opacity: 1;
-      transform: translate(-50%, 0);
-    }
-
-    #target-video {
-      position: fixed;
-      width: 1px;
-      height: 1px;
-      opacity: 0;
-      pointer-events: none;
-    }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; } }
   </style>
-
-  <script src="./external/xrextras/xrextras.js"></script>
-  <script src="./external/landing-page/landing-page.js"></script>
 </head>
-
-<body>
-  <div id="template-start-screen">
-    <button id="template-start-button" type="button" aria-label="Start augmented reality">Start AR</button>
-  </div>
-  <div id="scan-status" role="status" aria-live="polite">Point your camera at the artwork.</div>
-  <video
-    id="target-video"
-    muted
-    playsinline
-    webkit-playsinline
-    preload="none"
-    crossorigin="anonymous"
-    src="./assets/effect.mp4"
-  ></video>
+<body data-view="home">
   <canvas id="camerafeed"></canvas>
+  <main id="home-view" class="view" aria-label="Moon Rabbit Five Tones">
+    <div class="home-content">
+      <p class="eyebrow">An interactive pentatonic AR experience</p>
+      <h1 class="home-title">Play a melody.<br>Awaken the moon.</h1>
+      <p class="home-copy">Compose with the five ancient tones, then bring your music to life on the Moon Rabbit artwork.</p>
+      <div class="home-actions">
+        <button id="home-ar-button" class="action-button primary hidden" type="button">View in AR</button>
+        <button id="home-create-button" class="action-button secondary" type="button">Create Music</button>
+      </div>
+      <p id="home-save-note">Your music is saved on this device.</p>
+    </div>
+  </main>
+
+  <section id="composer-view" class="view" aria-label="Music composer">
+    <div class="composer-shell">
+      <div class="composer-grid">
+        <div class="preview-column">
+          <div class="stage-frame">
+            <canvas id="composer-canvas"></canvas><div class="stage-shade"></div>
+            <div class="stage-status"><span id="record-dot" class="record-dot"></span><span id="composer-status">READY</span></div>
+            <div id="tone-flash" aria-hidden="true"></div>
+          </div>
+          <div class="note-bank" aria-label="Five tone keyboard">
+            <button class="note-key" data-note="gong" style="--tone-color:#efb542" type="button"><span class="glyph">宫</span><span class="roman">GŌNG · DO</span></button>
+            <button class="note-key" data-note="shang" style="--tone-color:#f0f2db" type="button"><span class="glyph">商</span><span class="roman">SHĀNG · RE</span></button>
+            <button class="note-key" data-note="jue" style="--tone-color:#47e38c" type="button"><span class="glyph">角</span><span class="roman">JUÉ · MI</span></button>
+            <button class="note-key" data-note="zhi" style="--tone-color:#ff3d1f" type="button"><span class="glyph">徵</span><span class="roman">ZHǏ · SOL</span></button>
+            <button class="note-key" data-note="yu" style="--tone-color:#3db8ff" type="button"><span class="glyph">羽</span><span class="roman">YǓ · LA</span></button>
+          </div>
+        </div>
+        <div class="control-column">
+          <section class="control-section">
+            <p class="section-label"><span id="take-mode">Take 01</span><span id="event-count">0 events</span></p>
+            <div class="transport"><button id="record-button" class="transport-button record" type="button">Record</button><button id="save-segment-button" class="transport-button" type="button">Save take</button></div>
+            <div class="take-meta"><span id="take-time">00.0 / 30.0</span><span>FREE</span></div>
+          </section>
+          <section class="control-section">
+            <div class="section-label takes-heading"><span class="takes-heading-copy"><span>Takes</span><span><span id="segment-count">0</span> saved</span></span><button id="start-over-button" class="moon-start-over" type="button">Start over</button></div>
+            <div id="segment-list" role="listbox" aria-label="Recorded takes"></div>
+          </section>
+          <footer class="composer-footer">
+            <button id="play-all-button" class="action-button secondary" type="button">Play full song</button>
+            <button id="save-and-ar-button" class="action-button primary" type="button">Save &amp; View in AR</button>
+          </footer>
+        </div>
+      </div>
+    </div>
+    <button id="composer-back" class="moon-floating-back" type="button" aria-label="Back to home">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 5 7.5 12l7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+  </section>
+
+  <section id="ar-view" class="view" aria-label="Augmented reality view">
+    <div class="ar-edit-control"><button id="ar-edit-button" class="ar-button" type="button">Edit music</button></div>
+  </section>
+
+  <div id="loading-layer" role="status" aria-live="polite"><div class="loading-mark"><div class="loading-orbit"></div><div id="loading-text">Preparing the moon palace</div></div></div>
+  <div id="toast" role="status" aria-live="polite"></div>
+  <div id="safe-area-probe" aria-hidden="true"></div>
   <script src="bundle.js"></script>
 </body>
-
 </html>

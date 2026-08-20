@@ -62,7 +62,7 @@ const config = {
           to: path.join(distPath, 'assets'),
           noErrorOnMissing: true,
           globOptions: {
-            ignore: ['**/*.psd'],
+            ignore: ['**/*.psd', '**/*.zip'],
           },
         },
         {
