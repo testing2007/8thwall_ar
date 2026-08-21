@@ -66,9 +66,8 @@ export class StandaloneCalibrationPreview {
     this.camera.right = viewWidth * 0.5;
     this.camera.top = viewHeight * 0.5;
     this.camera.bottom = -viewHeight * 0.5;
-    const verticalShift = -viewHeight * 0.1;
-    this.camera.position.set(0, verticalShift, 1);
-    this.camera.lookAt(0, verticalShift, 0);
+    this.camera.position.set(0, 0, 1);
+    this.camera.lookAt(0, 0, 0);
     this.camera.updateProjectionMatrix();
   }
 
