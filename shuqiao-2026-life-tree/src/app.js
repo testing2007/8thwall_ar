@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { CONFIG } from "./config";
+import { StandaloneCalibrationPreview } from "./debug/standalone-calibration-preview";
 import { LifeTreeAr } from "./life-tree-ar";
 
 window.THREE = THREE;
@@ -9,6 +10,7 @@ let experience = null;
 let xrRuntimeLoading = null;
 let xrStarted = false;
 let arStarting = false;
+let debugPreview = null;
 const clock = new THREE.Clock(false);
 
 const getCameraCanvas = () => {
@@ -43,9 +45,11 @@ const lifeTreePipelineModule = () => ({
   ],
 
   onStart: () => {
-    const { scene } = XR8.Threejs.xrScene();
+    debugPreview?.dispose();
+    debugPreview = null;
+    const { scene, camera } = XR8.Threejs.xrScene();
     experience?.dispose();
-    experience = new LifeTreeAr(scene);
+    experience = new LifeTreeAr(scene, camera, getCameraCanvas());
     clock.start();
   },
 
@@ -172,10 +176,21 @@ const installStartButton = () => {
   button.addEventListener("click", startArFromButton, { passive: true });
 };
 
+const startStandaloneCalibration = () => {
+  if (!CONFIG.debug || debugPreview) return;
+  hideStartScreen();
+  debugPreview = new StandaloneCalibrationPreview(getCameraCanvas());
+};
+
+const bootstrap = () => {
+  installStartButton();
+  startStandaloneCalibration();
+};
+
 if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", installStartButton, {
+  document.addEventListener("DOMContentLoaded", bootstrap, {
     once: true,
   });
 } else {
-  installStartButton();
+  bootstrap();
 }

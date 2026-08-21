@@ -166,13 +166,28 @@ export class LifeParticlesEffect {
     const orders = new Float32Array(count);
     const shapes = new Float32Array(count);
     const highlights = new Float32Array(count);
+    this.zones = particleZones.map((zone) => ({
+      id: zone.id,
+      center: [...zone.center],
+      width: zone.width,
+      height: zone.height,
+      colors: zone.colors,
+    }));
+    this.zoneAssignments = new Uint8Array(count);
+    this.zoneOffsetX = new Float32Array(count);
+    this.zoneOffsetY = new Float32Array(count);
+    this.baseDepths = new Float32Array(count);
+    this.basePositions = bases;
 
     for (let index = 0; index < count; index += 1) {
-      const zone = particleZones[index % particleZones.length];
+      const zoneIndex = index % this.zones.length;
+      const zone = this.zones[zoneIndex];
       const angle = random() * Math.PI * 2;
       const radius = Math.sqrt(random()) * 0.5;
-      const imageX = zone.center[0] + Math.cos(angle) * zone.width * radius;
-      const imageY = zone.center[1] + Math.sin(angle) * zone.height * radius;
+      const offsetX = Math.cos(angle) * radius;
+      const offsetY = Math.sin(angle) * radius;
+      const imageX = zone.center[0] + offsetX * zone.width;
+      const imageY = zone.center[1] + offsetY * zone.height;
       const z = THREE.MathUtils.lerp(
         CONFIG.layers.particleMin,
         CONFIG.layers.particleMax,
@@ -184,6 +199,10 @@ export class LifeParticlesEffect {
       );
       const highlight = random() < CONFIG.particles.highlightRatio ? 1 : 0;
       const offset = index * 3;
+      this.zoneAssignments[index] = zoneIndex;
+      this.zoneOffsetX[index] = offsetX;
+      this.zoneOffsetY[index] = offsetY;
+      this.baseDepths[index] = z;
       bases.set([base.x, base.y, base.z], offset);
       motions.set(
         [
@@ -273,8 +292,29 @@ export class LifeParticlesEffect {
     this.mesh = new THREE.Mesh(this.geometry, this.material);
     this.mesh.name = "LifeParticleInstances";
     this.mesh.frustumCulled = false;
-    this.mesh.renderOrder = 4;
+    this.mesh.renderOrder = 5;
     this.group.add(this.mesh);
+  }
+
+  setParticleZone(id, zoneLayout) {
+    const zoneIndex = this.zones.findIndex((zone) => zone.id === id);
+    if (zoneIndex < 0) return;
+    const zone = this.zones[zoneIndex];
+    zone.center = [Number(zoneLayout.center[0]), Number(zoneLayout.center[1])];
+    zone.width = Number(zoneLayout.width);
+    zone.height = Number(zoneLayout.height);
+
+    for (let index = 0; index < this.zoneAssignments.length; index += 1) {
+      if (this.zoneAssignments[index] !== zoneIndex) continue;
+      const imageX = zone.center[0] + this.zoneOffsetX[index] * zone.width;
+      const imageY = zone.center[1] + this.zoneOffsetY[index] * zone.height;
+      const point = imagePointToWorld(imageX, imageY, this.baseDepths[index]);
+      const offset = index * 3;
+      this.basePositions[offset] = point.x;
+      this.basePositions[offset + 1] = point.y;
+      this.basePositions[offset + 2] = point.z;
+    }
+    this.geometry.getAttribute("aBase").needsUpdate = true;
   }
 
   update(elapsed, state) {

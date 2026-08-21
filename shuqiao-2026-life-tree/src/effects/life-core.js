@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { CONFIG } from "../config";
+import { coreLayouts } from "../data/energy-paths";
 import { EXPERIENCE_STATE } from "../experience-state";
 import {
   imagePointToWorld,
@@ -106,7 +107,7 @@ export class LifeCoreEffect {
     this.group = new THREE.Group();
     this.group.name = "LifeCoreGroup";
     this.geometry = new THREE.PlaneGeometry(1, 1);
-    this.entries = CONFIG.core.centers.map((definition) => {
+    this.entries = coreLayouts.map((definition) => {
       const material = new THREE.ShaderMaterial({
         uniforms: {
           uTime: { value: 0 },
@@ -146,8 +147,22 @@ export class LifeCoreEffect {
       );
       mesh.renderOrder = 2;
       this.group.add(mesh);
-      return { material, mesh };
+      return { id: definition.id, material, mesh };
     });
+    this.entryById = new Map(this.entries.map((entry) => [entry.id, entry]));
+  }
+
+  setCoreLayout(id, center, size) {
+    const entry = this.entryById.get(id);
+    if (!entry) return;
+    const position = imagePointToWorld(center[0], center[1], CONFIG.layers.core);
+    const worldSize = imageSizeToWorld(size[0], size[1]);
+    entry.mesh.position.copy(position);
+    entry.mesh.scale.set(
+      worldSize.width * CONFIG.core.sizeScale,
+      worldSize.height * CONFIG.core.sizeScale,
+      1,
+    );
   }
 
   update(elapsed, state) {
@@ -155,7 +170,10 @@ export class LifeCoreEffect {
     let intensity = CONFIG.core.intensity;
 
     if (state === EXPERIENCE_STATE.AWAKENING) {
-      const reveal = smooth01(elapsed / CONFIG.timeline.coreEnd);
+      const reveal = smooth01(
+        (elapsed - CONFIG.core.activationStart) /
+          (CONFIG.core.activationEnd - CONFIG.core.activationStart),
+      );
       opacity = CONFIG.core.opacity * reveal;
       intensity *= 0.72 + reveal * 0.28;
     } else if (state === EXPERIENCE_STATE.ALIVE) {

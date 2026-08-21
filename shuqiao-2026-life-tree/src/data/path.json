@@ -1,0 +1,280 @@
+{
+  "version": 3,
+  "paths": [
+    {
+      "id": "root-left",
+      "group": "root",
+      "delay": 0,
+      "colors": ["#f06848", "#f7ba50"],
+      "widthMm": 8,
+      "points": [
+        [16, 605],
+        [84, 596],
+        [128, 581],
+        [185, 524],
+        [180, 418],
+        [109, 373]
+      ]
+    },
+    {
+      "id": "root-center-left",
+      "group": "root",
+      "delay": 0.08,
+      "colors": ["#e98742", "#ffd05a"],
+      "widthMm": 8,
+      "points": [
+        [281, 573],
+        [232, 509],
+        [240, 408],
+        [309, 356]
+      ]
+    },
+    {
+      "id": "root-center-right",
+      "group": "root",
+      "delay": 0.16,
+      "colors": ["#f4b64a", "#e4d65a"],
+      "widthMm": 8,
+      "points": [
+        [417, 220],
+        [405, 168],
+        [396, 121],
+        [386, 52]
+      ]
+    },
+    {
+      "id": "root-right",
+      "group": "root",
+      "delay": 0.24,
+      "colors": ["#d3cb51", "#7fbe86"],
+      "widthMm": 8,
+      "points": [
+        [532, 206],
+        [507, 231],
+        [495, 269]
+      ]
+    },
+    {
+      "id": "trunk-left",
+      "group": "trunk",
+      "delay": 0,
+      "colors": ["#f1a145", "#f06a4b"],
+      "widthMm": 10.8,
+      "points": [
+        [51, 620],
+        [127, 597],
+        [194, 538],
+        [205, 509],
+        [211, 454],
+        [165, 350]
+      ]
+    },
+    {
+      "id": "trunk-center",
+      "group": "trunk",
+      "delay": 0.1,
+      "colors": ["#ffd057", "#f2a845"],
+      "widthMm": 10.8,
+      "points": [
+        [310, 583],
+        [377, 555],
+        [419, 467],
+        [426, 408],
+        [422, 355],
+        [418, 269],
+        [379, 214],
+        [319, 161],
+        [231, 135]
+      ]
+    },
+    {
+      "id": "trunk-right",
+      "group": "trunk",
+      "delay": 0.2,
+      "colors": ["#e4cf55", "#74b98e"],
+      "widthMm": 10.8,
+      "points": [
+        [423, 229],
+        [427, 172],
+        [452, 108],
+        [454, 82],
+        [454, 58]
+      ]
+    },
+    {
+      "id": "branch-center-left",
+      "group": "main-branch",
+      "delay": 0,
+      "colors": ["#f4ad49", "#ee6e52"],
+      "widthMm": 8.8,
+      "points": [
+        [418, 434],
+        [393, 386],
+        [376, 367],
+        [333, 341],
+        [257, 291],
+        [167, 234],
+        [149, 182]
+      ]
+    },
+    {
+      "id": "branch-center-upper-left",
+      "group": "main-branch",
+      "delay": 0.1,
+      "colors": ["#f2a647", "#f28a62"],
+      "widthMm": 8.8,
+      "points": [
+        [413, 363],
+        [396, 324],
+        [375, 297],
+        [323, 282],
+        [278, 286],
+        [252, 251],
+        [214, 204]
+      ]
+    },
+    {
+      "id": "branch-center-upper",
+      "group": "main-branch",
+      "delay": 0.18,
+      "colors": ["#f6bd4a", "#ffe57a"],
+      "widthMm": 8.8,
+      "points": [
+        [353, 164],
+        [353, 135],
+        [346, 107],
+        [334, 91]
+      ]
+    },
+    {
+      "id": "branch-center-right",
+      "group": "main-branch",
+      "delay": 0.26,
+      "colors": ["#f4c84d", "#c5d46a"],
+      "widthMm": 8.8,
+      "points": [
+        [371, 591],
+        [430, 494],
+        [422, 244],
+        [397, 219],
+        [319, 146],
+        [262, 105]
+      ]
+    },
+    {
+      "id": "branch-right-left",
+      "group": "main-branch",
+      "delay": 0.34,
+      "colors": ["#e2d354", "#8dc68c"],
+      "widthMm": 8.8,
+      "points": [
+        [501, 127],
+        [493, 162],
+        [468, 190],
+        [434, 238]
+      ]
+    },
+    {
+      "id": "branch-right-upper",
+      "group": "main-branch",
+      "delay": 0.42,
+      "colors": ["#c8d466", "#6db4a3"],
+      "widthMm": 8.8,
+      "points": [
+        [387, 308],
+        [359, 271],
+        [314, 234]
+      ]
+    },
+    {
+      "id": "branch-left-canopy",
+      "group": "side-branch",
+      "delay": 0,
+      "colors": ["#e96d55", "#d75f7f"],
+      "widthMm": 6.4,
+      "points": [
+        [272, 583],
+        [227, 537],
+        [216, 432],
+        [199, 336]
+      ]
+    },
+    {
+      "id": "branch-mid-left-canopy",
+      "group": "side-branch",
+      "delay": 0.13,
+      "colors": ["#ef8755", "#e57374"],
+      "widthMm": 6.4,
+      "points": [
+        [419, 398],
+        [387, 371],
+        [341, 323],
+        [323, 294]
+      ]
+    },
+    {
+      "id": "branch-upper-right-canopy",
+      "group": "side-branch",
+      "delay": 0.26,
+      "colors": ["#ddd55d", "#67b6a4"],
+      "widthMm": 6.4,
+      "points": [
+        [428, 585],
+        [455, 429],
+        [456, 329],
+        [475, 302],
+        [499, 268],
+        [543, 244],
+        [608, 165],
+        [662, 123]
+      ]
+    }
+  ],
+  "cores": [
+    {
+      "id": "core-left",
+      "center": [320, 469],
+      "size": [111, 89]
+    },
+    {
+      "id": "core-center",
+      "center": [553, 465],
+      "size": [127, 118]
+    },
+    {
+      "id": "core-right",
+      "center": [797, 467],
+      "size": [100, 98]
+    }
+  ],
+  "particleZones": [
+    {
+      "id": "left-canopy",
+      "center": [226, 198],
+      "width": 164,
+      "height": 160
+    },
+    {
+      "id": "center-canopy",
+      "center": [538, 189],
+      "width": 154,
+      "height": 156
+    },
+    {
+      "id": "right-canopy",
+      "center": [674, 207],
+      "width": 134,
+      "height": 182
+    },
+    {
+      "id": "upper-canopy",
+      "center": [391, 173],
+      "width": 142,
+      "height": 158
+    }
+  ],
+  "layers": {
+    "energyZMm": 0.05,
+    "barkZMm": 0.15000000000000002
+  }
+}

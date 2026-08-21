@@ -1,9 +1,8 @@
 import * as THREE from "three";
 import { CONFIG } from "./config";
-import {
-  createDebugOverlay,
-  disposeDebugOverlay,
-} from "./effects/debug-overlay";
+import { calibrationLayers } from "./data/energy-paths";
+import { CalibrationEditor } from "./debug/calibration-editor";
+import { BarkOcclusionEffect } from "./effects/bark-occlusion";
 import { EnergyTreeEffect } from "./effects/energy-tree";
 import { LifeCoreEffect } from "./effects/life-core";
 import { LifeParticlesEffect } from "./effects/life-particles";
@@ -11,27 +10,57 @@ import { EXPERIENCE_STATE } from "./experience-state";
 import { applyImageTargetPose } from "./utils/coordinate";
 
 export class LifeTreeAr {
-  constructor(scene) {
+  constructor(scene, camera, canvas, { standaloneDebug = false } = {}) {
     this.scene = scene;
+    this.camera = camera;
+    this.canvas = canvas;
     this.root = new THREE.Group();
     this.root.name = "LifeTreeArRoot";
     this.root.visible = false;
 
     this.core = new LifeCoreEffect();
     this.energy = new EnergyTreeEffect();
+    this.barkOcclusion = new BarkOcclusionEffect();
     this.particles = new LifeParticlesEffect();
-    this.effects = [this.core, this.energy, this.particles];
+    this.energy.setLayerZ(calibrationLayers.energyZMm / 1000);
+    this.barkOcclusion.setLayerZ(calibrationLayers.barkZMm / 1000);
+    this.effects = [
+      this.core,
+      this.energy,
+      this.barkOcclusion,
+      this.particles,
+    ];
     this.effects.forEach((effect) => this.root.add(effect.group));
 
-    this.debugOverlay = CONFIG.debug ? createDebugOverlay() : null;
-    if (this.debugOverlay) this.root.add(this.debugOverlay);
+    this.calibrationEditor =
+      CONFIG.debug && camera && canvas
+        ? new CalibrationEditor({
+            root: this.root,
+            camera,
+            canvas,
+            energy: this.energy,
+            barkOcclusion: this.barkOcclusion,
+            core: this.core,
+            particles: this.particles,
+          })
+        : null;
 
     this.state = EXPERIENCE_STATE.IDLE;
     this.elapsed = 0;
     this.targetVisible = false;
     this.lostAt = null;
     this.disposed = false;
+    this.standaloneDebug = standaloneDebug;
     scene.add(this.root);
+
+    if (standaloneDebug) {
+      this.root.visible = true;
+      this.targetVisible = true;
+      this.state = EXPERIENCE_STATE.ALIVE;
+      this.elapsed = CONFIG.timeline.awakeningEnd;
+      this.effects.forEach((effect) => effect.update(this.elapsed, this.state));
+      this.calibrationEditor?.setTargetVisible(true);
+    }
   }
 
   isExpectedTarget(detail) {
@@ -56,6 +85,7 @@ export class LifeTreeAr {
     this.targetVisible = true;
     this.lostAt = null;
     this.root.visible = true;
+    this.calibrationEditor?.setTargetVisible(true);
 
     if (this.state === EXPERIENCE_STATE.IDLE) this.beginAwakening();
   }
@@ -78,6 +108,7 @@ export class LifeTreeAr {
       return;
     }
     this.targetVisible = false;
+    this.calibrationEditor?.setTargetVisible(false);
     this.root.visible = false;
     this.lostAt = performance.now();
   }
@@ -112,6 +143,7 @@ export class LifeTreeAr {
     this.elapsed = 0;
     this.targetVisible = false;
     this.lostAt = null;
+    this.calibrationEditor?.setTargetVisible(false);
     this.root.visible = false;
     this.effects.forEach((effect) => effect.reset());
   }
@@ -119,10 +151,12 @@ export class LifeTreeAr {
   dispose() {
     if (this.disposed) return;
     this.disposed = true;
+    this.calibrationEditor?.dispose();
+    this.calibrationEditor = null;
     this.effects.forEach((effect) => effect.dispose());
-    if (this.debugOverlay) disposeDebugOverlay(this.debugOverlay);
     this.root.removeFromParent();
     this.scene = null;
+    this.camera = null;
+    this.canvas = null;
   }
 }
-

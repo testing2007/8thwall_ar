@@ -5,12 +5,7 @@ import { EXPERIENCE_STATE } from "../experience-state";
 import { imagePointToWorld, smooth01 } from "../utils/coordinate";
 import { createPlanarRibbonGeometry } from "../utils/ribbon-geometry";
 
-const groupTimings = Object.freeze({
-  root: { start: 1.5, duration: 0.8 },
-  trunk: { start: 1.95, duration: 1.0 },
-  "main-branch": { start: 2.55, duration: 1.25 },
-  "side-branch": { start: 3.25, duration: 1.25 },
-});
+const groupTimings = CONFIG.energy.sequence;
 
 const vertexShader = `
   attribute float aSide;
@@ -160,16 +155,44 @@ export class EnergyTreeEffect {
   constructor() {
     this.group = new THREE.Group();
     this.group.name = "EnergyTreeGroup";
-    this.entries = energyPaths.map((definition, index) => {
-      const points = definition.points.map(([x, y]) =>
-        imagePointToWorld(x, y, CONFIG.layers.energy),
-      );
-      const curve = new THREE.CatmullRomCurve3(points, false, "centripetal", 0.4);
-      const widthScale = CONFIG.energy.groupWidthScale[definition.group] || 1;
-      const outerWidth = CONFIG.energy.outerWidth * widthScale;
-      const segments = THREE.MathUtils.clamp(points.length * 10, 40, 72);
-      const geometry = createPlanarRibbonGeometry(curve, outerWidth, segments);
-      const material = new THREE.ShaderMaterial({
+    this.group.position.z = CONFIG.layers.energy;
+    this.entries = [];
+    this.entryById = new Map();
+    this.entrySeedCounter = 0;
+    energyPaths.forEach((definition) => this.addPath(definition));
+    this.rebuildMainEntryIndices();
+    this.pendingPathUpdates = new Map();
+    this.pathUpdateFrame = null;
+    this.pulseCounter = 0;
+    this.pulseIndex = -1;
+    this.pulseStartedAt = -Infinity;
+    this.nextPulseAt = null;
+  }
+
+  getOuterWidth(definition) {
+    const configured = Number(definition.widthMm);
+    if (Number.isFinite(configured) && configured > 0) return configured / 1000;
+    const widthScale = CONFIG.energy.groupWidthScale[definition.group] || 1;
+    return CONFIG.energy.outerWidth * widthScale;
+  }
+
+  createEntry(sourceDefinition) {
+    const definition = {
+      ...sourceDefinition,
+      id: String(sourceDefinition.id),
+      points: sourceDefinition.points.map(([x, y]) => [Number(x), Number(y)]),
+      colors: Array.isArray(sourceDefinition.colors)
+        ? [...sourceDefinition.colors]
+        : ["#ffd05a", "#f2a845"],
+    };
+    const index = this.entrySeedCounter;
+    this.entrySeedCounter += 1;
+    const points = definition.points.map(([x, y]) => imagePointToWorld(x, y, 0));
+    const curve = new THREE.CatmullRomCurve3(points, false, "centripetal", 0.4);
+    const outerWidth = this.getOuterWidth(definition);
+    const segments = THREE.MathUtils.clamp(points.length * 10, 24, 96);
+    const geometry = createPlanarRibbonGeometry(curve, outerWidth, segments);
+    const material = new THREE.ShaderMaterial({
         uniforms: {
           uTime: { value: 0 },
           uReveal: { value: 0 },
@@ -198,14 +221,67 @@ export class EnergyTreeEffect {
         side: THREE.DoubleSide,
         toneMapped: false,
         extensions: { derivatives: true },
-      });
-      const mesh = new THREE.Mesh(geometry, material);
-      mesh.name = definition.id;
-      mesh.renderOrder = 3;
-      this.group.add(mesh);
-      return { definition, curve, geometry, material, mesh };
     });
+    const mesh = new THREE.Mesh(geometry, material);
+    mesh.name = definition.id;
+    mesh.renderOrder = 3;
+    this.group.add(mesh);
+    return { definition, curve, geometry, material, mesh };
+  }
 
+  addPath(definition) {
+    if (
+      !definition?.id ||
+      !Array.isArray(definition.points) ||
+      definition.points.length < 2
+    ) {
+      return null;
+    }
+    const existing = this.entryById.get(String(definition.id));
+    if (existing) {
+      existing.definition = {
+        ...existing.definition,
+        ...definition,
+        points: definition.points.map(([x, y]) => [Number(x), Number(y)]),
+      };
+      if (Array.isArray(existing.definition.colors)) {
+        existing.material.uniforms.uColorA.value.set(existing.definition.colors[0]);
+        existing.material.uniforms.uColorB.value.set(existing.definition.colors[1]);
+      }
+      this.setPathWidth(existing.definition.id, existing.definition.widthMm);
+      this.setPathPoints(existing.definition.id, existing.definition.points);
+      this.rebuildMainEntryIndices();
+      return existing;
+    }
+    const entry = this.createEntry(definition);
+    this.entries.push(entry);
+    this.entryById.set(entry.definition.id, entry);
+    this.rebuildMainEntryIndices();
+    return entry;
+  }
+
+  removePath(id) {
+    const entry = this.entryById.get(id);
+    if (!entry) return;
+    this.pendingPathUpdates.delete(id);
+    entry.mesh.removeFromParent();
+    entry.geometry.dispose();
+    entry.material.dispose();
+    this.entryById.delete(id);
+    this.entries = this.entries.filter((candidate) => candidate !== entry);
+    this.pulseIndex = -1;
+    this.rebuildMainEntryIndices();
+  }
+
+  syncPaths(paths) {
+    const ids = new Set(paths.map((path) => String(path.id)));
+    [...this.entryById.keys()].forEach((id) => {
+      if (!ids.has(id)) this.removePath(id);
+    });
+    paths.forEach((path) => this.addPath(path));
+  }
+
+  rebuildMainEntryIndices() {
     this.mainEntryIndices = this.entries
       .map(({ definition }, index) =>
         definition.group === "trunk" || definition.group === "main-branch"
@@ -213,13 +289,76 @@ export class EnergyTreeEffect {
           : -1,
       )
       .filter((index) => index >= 0);
-    this.pulseCounter = 0;
-    this.pulseIndex = -1;
-    this.pulseStartedAt = -Infinity;
-    this.nextPulseAt = null;
+  }
+
+  setPathPoints(id, points) {
+    if (!this.entryById.has(id) || !Array.isArray(points) || points.length < 2) {
+      return;
+    }
+    this.entryById.get(id).definition.points = points.map(([x, y]) => [Number(x), Number(y)]);
+    this.pendingPathUpdates.set(
+      id,
+      points.map(([x, y]) => [Number(x), Number(y)]),
+    );
+    if (this.pathUpdateFrame !== null) return;
+    const schedule = globalThis.requestAnimationFrame || ((callback) => {
+      callback();
+      return null;
+    });
+    this.pathUpdateFrame = schedule(() => this.flushPathUpdates());
+  }
+
+  flushPathUpdates() {
+    this.pathUpdateFrame = null;
+    this.pendingPathUpdates.forEach((pixelPoints, id) => {
+      const entry = this.entryById.get(id);
+      if (!entry) return;
+      const points = pixelPoints.map(([x, y]) =>
+        imagePointToWorld(x, y, 0),
+      );
+      const curve = new THREE.CatmullRomCurve3(points, false, "centripetal", 0.4);
+      const outerWidth = this.getOuterWidth(entry.definition);
+      const segments = THREE.MathUtils.clamp(points.length * 10, 24, 96);
+      const geometry = createPlanarRibbonGeometry(curve, outerWidth, segments);
+      const previousGeometry = entry.geometry;
+      entry.curve = curve;
+      entry.geometry = geometry;
+      entry.mesh.geometry = geometry;
+      previousGeometry.dispose();
+    });
+    this.pendingPathUpdates.clear();
+  }
+
+  setPathWidth(id, widthMm) {
+    const entry = this.entryById.get(id);
+    const width = Number(widthMm);
+    if (!entry || !Number.isFinite(width) || width <= 0) return;
+    entry.definition.widthMm = width;
+    entry.material.uniforms.uCoreRatio.value = THREE.MathUtils.clamp(
+      CONFIG.energy.coreWidth / (width / 1000),
+      0.04,
+      0.48,
+    );
+    this.setPathPoints(id, entry.definition.points);
+  }
+
+  setPathGroup(id, group) {
+    const entry = this.entryById.get(id);
+    if (!entry || !groupTimings[group]) return;
+    entry.definition.group = group;
+    this.rebuildMainEntryIndices();
+  }
+
+  setLayerZ(zMetres) {
+    if (!Number.isFinite(zMetres)) return;
+    this.group.position.z = zMetres;
   }
 
   schedulePulse(elapsed) {
+    if (!this.mainEntryIndices.length) {
+      this.nextPulseAt = elapsed + CONFIG.energy.pulseMaxSeconds;
+      return;
+    }
     const random = seededValue(this.pulseCounter + 101);
     const mainIndex = Math.floor(random * this.mainEntryIndices.length)
       % this.mainEntryIndices.length;
@@ -285,6 +424,11 @@ export class EnergyTreeEffect {
   }
 
   dispose() {
+    if (this.pathUpdateFrame !== null && globalThis.cancelAnimationFrame) {
+      globalThis.cancelAnimationFrame(this.pathUpdateFrame);
+    }
+    this.pathUpdateFrame = null;
+    this.pendingPathUpdates.clear();
     this.entries.forEach(({ geometry, material }) => {
       geometry.dispose();
       material.dispose();

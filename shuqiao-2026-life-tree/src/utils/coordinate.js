@@ -16,37 +16,43 @@ export const imageSizeToWorld = (width, height) => ({
   height: (height / puzzle.imageHeight) * puzzle.height,
 });
 
+/** Convert a puzzle-local metre position back to editable source pixels. */
+export const worldPointToImage = (point) => ({
+  x: (point.x / puzzle.width + 0.5) * puzzle.imageWidth,
+  y: (0.5 - point.y / puzzle.height) * puzzle.imageHeight,
+});
+
+const positiveNumber = (value) =>
+  Number.isFinite(value) && value > 0 ? value : null;
+
+const cropWidthMetres =
+  (puzzle.crop.width / puzzle.imageWidth) * puzzle.width;
+const cropHeightMetres =
+  (puzzle.crop.height / puzzle.imageHeight) * puzzle.height;
 const cropCenter = imagePointToWorld(
   puzzle.crop.x + puzzle.crop.width * 0.5,
   puzzle.crop.y + puzzle.crop.height * 0.5,
 );
 
-// The effects use the full artwork centre, while XR8 tracks its cropped centre.
-const fullArtworkOriginFromCrop = cropCenter.multiplyScalar(-1);
-const cropWidthMetres =
-  (puzzle.crop.width / puzzle.imageWidth) * puzzle.width;
-const cropHeightMetres =
-  (puzzle.crop.height / puzzle.imageHeight) * puzzle.height;
-
-const positiveNumber = (value) =>
-  Number.isFinite(value) && value > 0 ? value : null;
-
+/**
+ * XR8's flat-target dimensions describe the compiled crop before detail.scale
+ * is applied. Map that crop to the matching portion of the editable full image
+ * independently on X/Y; averaging the axes causes device-dependent drift.
+ */
 export const getTargetPoseScale = (detail) => {
-  const widthScale = positiveNumber(detail?.scaledWidth)
-    ? detail.scaledWidth / cropWidthMetres
-    : null;
-  const heightScale = positiveNumber(detail?.scaledHeight)
-    ? detail.scaledHeight / cropHeightMetres
-    : null;
-  if (widthScale && heightScale) return (widthScale + heightScale) * 0.5;
-  if (widthScale) return widthScale;
-  if (heightScale) return heightScale;
-
-  const detectedScale = positiveNumber(detail?.scale);
-  return detectedScale ? detectedScale / cropWidthMetres : 1;
+  const detectedScale = positiveNumber(detail?.scale) || 1;
+  const scaledWidth = positiveNumber(detail?.scaledWidth);
+  const scaledHeight = positiveNumber(detail?.scaledHeight);
+  const x = scaledWidth
+    ? (scaledWidth * detectedScale) / cropWidthMetres
+    : detectedScale;
+  const y = scaledHeight
+    ? (scaledHeight * detectedScale) / cropHeightMetres
+    : detectedScale;
+  return { x, y, z: (x + y) * 0.5 };
 };
 
-/** Apply XR8 pose while preserving the full-image coordinate origin. */
+/** Apply the XR8 crop-centre pose to content authored on the full source image. */
 export const applyImageTargetPose = (root, detail) => {
   const { position, rotation } = detail;
   const scale = getTargetPoseScale(detail);
@@ -56,16 +62,15 @@ export const applyImageTargetPose = (root, detail) => {
     rotation.z,
     rotation.w,
   );
-  const originCorrection = fullArtworkOriginFromCrop
+  const cropOffset = cropCenter
     .clone()
-    .multiplyScalar(scale)
+    .multiply(new THREE.Vector3(scale.x, scale.y, scale.z))
     .applyQuaternion(quaternion);
-
   root.position
     .set(position.x, position.y, position.z)
-    .add(originCorrection);
+    .sub(cropOffset);
   root.quaternion.copy(quaternion);
-  root.scale.setScalar(scale);
+  root.scale.set(scale.x, scale.y, scale.z);
 };
 
 export const smooth01 = (value) => {
