@@ -178,6 +178,7 @@ export class LifeParticlesEffect {
     this.zoneOffsetY = new Float32Array(count);
     this.baseDepths = new Float32Array(count);
     this.basePositions = bases;
+    this.activationStart = null;
 
     for (let index = 0; index < count; index += 1) {
       const zoneIndex = index % this.zones.length;
@@ -317,12 +318,20 @@ export class LifeParticlesEffect {
     this.geometry.getAttribute("aBase").needsUpdate = true;
   }
 
+  wake(startAt = 3.5) {
+    this.activationStart = Math.max(0, Number(startAt) || 0);
+  }
+
   update(elapsed, state) {
     let reveal = 0;
     let opacity = 0;
-    if (state === EXPERIENCE_STATE.AWAKENING) {
+    if (
+      state === EXPERIENCE_STATE.AWAKENING &&
+      this.activationStart !== null
+    ) {
       reveal = smooth01(
-        (elapsed - 3.5) / (CONFIG.timeline.particlesEnd - 3.5),
+        (elapsed - this.activationStart) /
+          Math.max(0.001, CONFIG.timeline.particlesEnd - this.activationStart),
       );
       opacity = CONFIG.particles.opacity * reveal;
     } else if (state === EXPERIENCE_STATE.ALIVE) {
@@ -336,6 +345,7 @@ export class LifeParticlesEffect {
   }
 
   reset() {
+    this.activationStart = null;
     this.update(0, EXPERIENCE_STATE.IDLE);
   }
 

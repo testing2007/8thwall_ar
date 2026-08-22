@@ -14,7 +14,7 @@ const STORAGE_KEYS = [
   "life-tree-calibration-v1",
 ];
 const STYLE_ID = "life-tree-calibration-style";
-const PANEL_POSITION_KEY = "life-tree-calibration-panel-position-v1";
+const PANEL_POSITION_KEY = "life-tree-calibration-panel-position-v2";
 const MIN_SIZE = 8;
 
 const clamp = (value, max) =>
@@ -31,9 +31,8 @@ const createStyle = () => {
   style.id = STYLE_ID;
   style.textContent = `
     #life-tree-calibration {
-      position: fixed; z-index: 1200; left: 8px; right: 8px;
-      bottom: max(8px, env(safe-area-inset-bottom));
-      width: min(760px, calc(100vw - 16px)); max-height: min(48vh, 430px);
+      position: fixed; z-index: 1200; left: 8px; top: 8px;
+      width: min(348px, calc(100vw - 16px)); max-height: calc(100vh - 16px);
       overflow: auto; margin: 0 auto; box-sizing: border-box; padding: 10px;
       border: 1px solid rgba(91, 226, 255, .72); border-radius: 12px;
       background: rgba(5, 10, 18, .92); color: #f3f7fb;
@@ -68,8 +67,14 @@ const createStyle = () => {
     #life-tree-calibration .lt-value { min-width:58px; color:#ffe977; font-variant-numeric:tabular-nums; }
     #life-tree-calibration .lt-spacer { flex:1 1 auto; }
     #life-tree-calibration.is-previewing .lt-edit-controls { display:none; }
+    @media (max-width:900px) {
+      #life-tree-calibration {
+        top: 8px; left: 8px; right: 8px; bottom: auto;
+        width: min(760px, calc(100vw - 16px)); max-height: min(34vh, 320px);
+      }
+    }
     @media (max-width:480px) {
-      #life-tree-calibration { padding:8px; max-height:52vh; }
+      #life-tree-calibration { padding:8px; max-height:34vh; }
       #life-tree-calibration button { padding-inline:8px; }
       #life-tree-calibration .lt-secondary { display:none; }
     }

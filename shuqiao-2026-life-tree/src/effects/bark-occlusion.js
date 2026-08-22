@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
-import treeModelUrl from "../assets/tree.glb";
+import { GlbAnimationManager } from "../animation/glb-animation-manager";
 import { CONFIG } from "../config";
 import { energyPaths } from "../data/energy-paths";
 import { EXPERIENCE_STATE } from "../experience-state";
@@ -145,21 +145,37 @@ const disposeMaterial = (material, retainedTextures = new Set()) => {
   material.dispose();
 };
 
+const createUnlitModelMaterial = (source) => new THREE.MeshBasicMaterial({
+  name: source?.name || "LifeTreeAnimalMaterial",
+  color: source?.color?.clone() || new THREE.Color(0xffffff),
+  map: source?.map || null,
+  opacity: source?.opacity ?? 1,
+  transparent: source?.transparent || (source?.opacity ?? 1) < 1,
+  alphaTest: source?.alphaTest || 0,
+  side: source?.side ?? THREE.FrontSide,
+  vertexColors: source?.vertexColors || false,
+  toneMapped: false,
+});
+
 /**
  * Packed flow texture: R = arrival time, G = bark corridor, B = nutrient vein.
  * The GLB relief acts as a real shell over the lower Ribbon energy layer.
  */
 export class BarkOcclusionEffect {
-  constructor() {
+  constructor({ modelUrl = "" } = {}) {
     this.group = new THREE.Group();
     this.group.name = "TreeReliefOcclusionGroup";
     this.group.position.z = CONFIG.layers.bark;
-    this.paths = new Map(
-      energyPaths.map((path) => [path.id, clonePath(path)]),
-    );
+    this.paths = new Map(energyPaths.map((path) => [path.id, clonePath(path)]));
     this.materials = [];
     this.geometries = new Set();
     this.artworkTextures = new Set();
+    this.modelMaterials = new Set();
+    this.animationManager = null;
+    this.modelUrl = modelUrl;
+    this.loadStatus = modelUrl ? "loading" : "error";
+    this.loadError = modelUrl ? null : "Missing life-tree-relief resource URL";
+    this.pendingAnimationCommands = [];
     this.lastRebuildAt = -Infinity;
     this.rebuildTimer = null;
     this.disposed = false;
@@ -168,7 +184,7 @@ export class BarkOcclusionEffect {
 
     const width = CONFIG.internalFlow.textureWidth;
     const height = Math.round(
-      width * CONFIG.puzzle.imageHeight / CONFIG.puzzle.imageWidth,
+      (width * CONFIG.puzzle.imageHeight) / CONFIG.puzzle.imageWidth,
     );
     this.flowCanvas = createCanvas(width, height);
     this.arrivalCanvas = createCanvas(width, height);
@@ -188,19 +204,22 @@ export class BarkOcclusionEffect {
   }
 
   loadModel() {
+    if (!this.modelUrl) return;
     this.loader = new GLTFLoader();
     this.loader.load(
-      treeModelUrl,
-      (gltf) => this.installModel(gltf.scene),
+      this.modelUrl,
+      (gltf) => this.installModel(gltf.scene, gltf.animations),
       undefined,
       (error) => {
         if (this.disposed) return;
+        this.loadStatus = "error";
+        this.loadError = error?.message || String(error);
         console.warn("[Life Tree] Relief GLB failed to load:", error);
       },
     );
   }
 
-  installModel(model) {
+  installModel(model, animations = []) {
     if (this.disposed) {
       model.traverse((child) => {
         if (!child.isMesh) return;
@@ -214,30 +233,126 @@ export class BarkOcclusionEffect {
     }
 
     model.name = "LifeTreeReliefModel";
+    const convertedMaterials = new Map();
+    const sourceMaterialsToDispose = new Set();
     model.traverse((child) => {
       if (!child.isMesh) return;
+      this.geometries.add(child.geometry);
       const sourceMaterials = Array.isArray(child.material)
         ? child.material
         : [child.material];
       const sourceMaterial = sourceMaterials[0];
+      const isTreeRelief =
+        CONFIG.model.treeMeshNames.includes(child.name) ||
+        Boolean(sourceMaterial?.map && child.geometry?.getAttribute("uv"));
+
+      if (!isTreeRelief) {
+        const materials = sourceMaterials.map((source) => {
+          if (!convertedMaterials.has(source)) {
+            if (source?.map) this.artworkTextures.add(source.map);
+            convertedMaterials.set(source, createUnlitModelMaterial(source));
+            sourceMaterialsToDispose.add(source);
+          }
+          const material = convertedMaterials.get(source);
+          this.modelMaterials.add(material);
+          return material;
+        });
+        child.material = Array.isArray(child.material) ? materials : materials[0];
+        child.renderOrder = 5;
+        return;
+      }
+
       const artwork = sourceMaterial?.map;
       if (!artwork) {
         child.visible = false;
-        console.warn("[Life Tree] Relief mesh has no artwork texture:", child.name);
+        console.warn("[Life Tree] Tree relief mesh has no artwork texture:", child.name);
         return;
       }
       artwork.colorSpace = THREE.SRGBColorSpace;
       this.artworkTextures.add(artwork);
       const material = this.createReliefMaterial(artwork);
-      sourceMaterials.forEach((item) => disposeMaterial(item, this.artworkTextures));
+      sourceMaterials.forEach((item) => sourceMaterialsToDispose.add(item));
       child.material = material;
       child.renderOrder = 4;
       this.materials.push(material);
-      this.geometries.add(child.geometry);
     });
+    sourceMaterialsToDispose.forEach((material) =>
+      disposeMaterial(material, this.artworkTextures),
+    );
     this.model = model;
+    this.loadStatus = "ready";
+    this.loadError = null;
     this.group.add(model);
+    this.animationManager = new GlbAnimationManager(model, animations);
+    this.flushPendingAnimationCommands();
     this.update(this.elapsed, this.state);
+  }
+
+  flushPendingAnimationCommands() {
+    if (!this.animationManager) return;
+    this.pendingAnimationCommands.forEach((command) => {
+      if (command.type === "play") {
+        const [name, options = {}] = command.args;
+        this.animationManager.playAnimation(name, {
+          ...options,
+          startTime:
+            (Number(options.startTime) || 0) +
+            Math.max(0, this.elapsed - command.issuedAt) *
+              (Number(options.timeScale) || 1),
+        });
+      } else {
+        this.animationManager[command.type]?.(...command.args);
+      }
+    });
+    this.pendingAnimationCommands.length = 0;
+  }
+
+  playAnimation(name, options = {}) {
+    if (this.animationManager) {
+      return this.animationManager.playAnimation(name, options);
+    }
+    this.pendingAnimationCommands.push({
+      type: "play",
+      args: [name, options],
+      issuedAt: this.elapsed,
+    });
+    return null;
+  }
+
+  get animationNames() {
+    return this.animationManager?.animationNames || [];
+  }
+
+  get animationMetadata() {
+    return this.animationManager?.animationMetadata || [];
+  }
+
+  get resourceMetadata() {
+    return {
+      status: this.loadStatus,
+      error: this.loadError,
+      animations: this.animationMetadata,
+    };
+  }
+
+  stopAnimation(name = null, options = {}) {
+    if (this.animationManager) {
+      this.animationManager.stopAnimation(name, options);
+    } else {
+      this.pendingAnimationCommands.length = 0;
+    }
+  }
+
+  fadeAnimation(name = null, duration = 0.35, options = {}) {
+    if (this.animationManager) {
+      return this.animationManager.fadeAnimation(name, duration, options);
+    }
+    this.pendingAnimationCommands.push({
+      type: "fadeAnimation",
+      args: [name, duration, options],
+      issuedAt: this.elapsed,
+    });
+    return null;
   }
 
   createReliefMaterial(artwork) {
@@ -280,7 +395,11 @@ export class BarkOcclusionEffect {
   }
 
   addPath(definition) {
-    if (!definition?.id || !Array.isArray(definition.points) || definition.points.length < 2) {
+    if (
+      !definition?.id ||
+      !Array.isArray(definition.points) ||
+      definition.points.length < 2
+    ) {
       return;
     }
     const path = clonePath(definition);
@@ -363,10 +482,12 @@ export class BarkOcclusionEffect {
         : 1;
       const corridor =
         (CONFIG.internalFlow.corridorWidths[path.group] || 22) *
-        customScale * widthScale;
+        customScale *
+        widthScale;
       const vein =
         (CONFIG.internalFlow.veinWidths[path.group] || 6) *
-        Math.sqrt(customScale) * widthScale;
+        Math.sqrt(customScale) *
+        widthScale;
       const feather = CONFIG.internalFlow.featherPixels * widthScale;
       strokeCurve(coverageContext, curve, corridor + feather * 2, 0.18);
       strokeCurve(coverageContext, curve, corridor + feather, 0.48);
@@ -395,7 +516,7 @@ export class BarkOcclusionEffect {
         Math.min(
           255,
           Math.round(
-            segment.arrival / CONFIG.internalFlow.maxArrivalSeconds * 255,
+            (segment.arrival / CONFIG.internalFlow.maxArrivalSeconds) * 255,
           ),
         ),
       );
@@ -408,7 +529,12 @@ export class BarkOcclusionEffect {
     });
 
     const arrivalPixels = arrivalContext.getImageData(0, 0, width, height).data;
-    const coveragePixels = coverageContext.getImageData(0, 0, width, height).data;
+    const coveragePixels = coverageContext.getImageData(
+      0,
+      0,
+      width,
+      height,
+    ).data;
     const veinPixels = veinContext.getImageData(0, 0, width, height).data;
     const flowContext = this.flowCanvas.getContext("2d");
     const packed = flowContext.createImageData(width, height);
@@ -425,14 +551,16 @@ export class BarkOcclusionEffect {
     this.lastRebuildAt = performance.now();
   }
 
-  update(elapsed, state) {
+  update(elapsed, state, deltaSeconds = 0) {
     this.elapsed = elapsed;
     this.state = state;
-    const stateValue = state === EXPERIENCE_STATE.AWAKENING
-      ? 1
-      : state === EXPERIENCE_STATE.ALIVE
-        ? 2
-        : 0;
+    this.animationManager?.update(deltaSeconds);
+    const stateValue =
+      state === EXPERIENCE_STATE.AWAKENING
+        ? 1
+        : state === EXPERIENCE_STATE.ALIVE
+          ? 2
+          : 0;
     this.materials.forEach((material) => {
       material.uniforms.uElapsed.value = elapsed;
       material.uniforms.uState.value = stateValue;
@@ -440,6 +568,8 @@ export class BarkOcclusionEffect {
   }
 
   reset() {
+    this.pendingAnimationCommands.length = 0;
+    this.animationManager?.reset();
     this.update(0, EXPERIENCE_STATE.IDLE);
   }
 
@@ -447,12 +577,17 @@ export class BarkOcclusionEffect {
     this.disposed = true;
     if (this.rebuildTimer !== null) clearTimeout(this.rebuildTimer);
     this.rebuildTimer = null;
+    this.animationManager?.dispose();
+    this.animationManager = null;
+    this.pendingAnimationCommands.length = 0;
     this.materials.forEach((material) => material.dispose());
+    this.modelMaterials.forEach((material) => material.dispose());
     this.geometries.forEach((geometry) => geometry.dispose());
     this.artworkTextures.forEach((texture) => texture.dispose());
     this.flowTexture.dispose();
     this.group.removeFromParent();
     this.materials.length = 0;
+    this.modelMaterials.clear();
     this.geometries.clear();
     this.artworkTextures.clear();
     this.model = null;

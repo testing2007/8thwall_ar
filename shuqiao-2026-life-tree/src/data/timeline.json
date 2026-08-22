@@ -1,0 +1,86 @@
+{
+  "version": 3,
+  "duration": 15,
+  "resources": [
+    {
+      "id": "tree-and-animals",
+      "type": "glb",
+      "label": "生命树与动物",
+      "src": "assets/tree-and-animals.glb",
+      "preload": "auto",
+      "adapter": "life-tree-relief"
+    },
+    {
+      "id": "bgm",
+      "type": "audio",
+      "label": "BGM",
+      "src": "assets/bgm.mp3",
+      "preload": "metadata"
+    }
+  ],
+  "channels": [
+    { "id": "shader", "type": "shader", "label": "生命能量", "enabled": true },
+    { "id": "glb", "type": "glb", "label": "GLB 动画", "enabled": true },
+    { "id": "audio", "type": "audio", "label": "声音", "enabled": true },
+    { "id": "particles", "type": "particles", "label": "粒子", "enabled": true }
+  ],
+  "tracks": [
+    {
+      "id": "core-and-energy-wake",
+      "type": "shader",
+      "channel": "shader",
+      "label": "核心 / 能量觉醒",
+      "enabled": true,
+      "start": 0,
+      "end": 8,
+      "action": "wake"
+    },
+    {
+      "id": "energy-alive-loop",
+      "type": "shader",
+      "channel": "shader",
+      "label": "能量循环",
+      "enabled": true,
+      "start": 8,
+      "end": 15,
+      "action": "enterAlive"
+    },
+    {
+      "id": "spring-main-animation",
+      "type": "glb",
+      "channel": "glb",
+      "resource": "tree-and-animals",
+      "label": "鸟与蝴蝶",
+      "clip": "SPRING_MAIN_15S",
+      "enabled": true,
+      "start": 0,
+      "end": 15,
+      "loop": "repeat",
+      "fadeIn": 0.35
+    },
+    {
+      "id": "bgm-audio",
+      "type": "audio",
+      "channel": "audio",
+      "resource": "bgm",
+      "label": "BGM",
+      "enabled": true,
+      "start": 0,
+      "end": 15,
+      "volume": 0.45,
+      "loop": true,
+      "fadeIn": 0.8,
+      "fadeOut": 0.5
+    },
+    {
+      "id": "particles-wake",
+      "type": "particles",
+      "channel": "particles",
+      "label": "树冠粒子",
+      "enabled": true,
+      "start": 3.5,
+      "end": 15,
+      "action": "wake"
+    }
+  ]
+}

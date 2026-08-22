@@ -1,4 +1,5 @@
 const path = require('path')
+const webpack = require('webpack')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
 
@@ -62,7 +63,7 @@ const config = {
           to: path.join(distPath, 'assets'),
           noErrorOnMissing: true,
           globOptions: {
-            ignore: ['**/*.psd'],
+            ignore: ['**/*.psd', '**/*_old.*'],
           },
         },
         {
@@ -105,4 +106,18 @@ const config = {
   },
 }
 
-module.exports = () => config
+module.exports = (_env = {}, argv = {}) => {
+  const mode = argv.mode || config.mode || 'production'
+  const assetBaseUrl = process.env.ASSET_BASE_URL || ''
+  return {
+    ...config,
+    mode,
+    plugins: [
+      ...config.plugins,
+      new webpack.DefinePlugin({
+        __ASSET_BASE_URL__: JSON.stringify(assetBaseUrl),
+        __BUILD_MODE__: JSON.stringify(mode),
+      }),
+    ],
+  }
+}

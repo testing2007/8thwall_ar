@@ -8,7 +8,7 @@
 - 渲染方式：Three.js。
 - 正式坐标源：`src/data/path.json`。
 - 当前数据：25 条能量路径、3 个生命核心、4 个粒子发射区。
-- 树体：`src/assets/tree.glb`，保留少量真实厚度。
+- 模型：`src/assets/tree-and-animals.glb`，包含树体、2 只鸟、3 只蝴蝶和动画。
 - 底图：`src/assets/target.jpg`，尺寸为 `894 × 640 px`。
 - Target 物理设计尺寸：`0.7 × 0.5 m`。
 - 不使用 Bloom、后处理、视频、序列帧或额外运行时依赖。
@@ -29,6 +29,7 @@
 | `src/life-tree-ar.js` | 状态机、Target 生命周期、统一更新和销毁效果 |
 | `src/config.js` | 时间、视觉、尺寸、性能和调试参数的统一入口 |
 | `src/data/path.json` | 正式路径、核心、粒子区和 Z 层级数据 |
+| `src/data/timeline.json` | 正式 GLB、音频、Shader 和粒子时间轴数据 |
 | `src/data/energy-paths.js` | 读取 `path.json`，补全颜色、阶段等缺省字段 |
 | `src/data/calibration-layout.js` | V1/V2/V3 校准数据兼容、校验和合并 |
 | `src/utils/coordinate.js` | 图片像素与 Target 局部坐标互转、XR8 姿态映射 |
@@ -39,7 +40,13 @@
 | `src/effects/life-particles.js` | 单 draw call 的 GPU 实例化粒子 |
 | `src/debug/standalone-calibration-preview.js` | 无需识别 Target 的本地校准预览 |
 | `src/debug/calibration-editor.js` | 路径、核心、粒子区和 Z 层编辑器 |
+| `src/debug/timeline-editor.js` | V3 多通道时间轴、动态资源库、缩放和区间预览 |
 | `src/effects/debug-overlay.js` | 调试边界、控制点和辅助线 |
+| `src/animation/glb-animation-manager.js` | 可复用 GLB AnimationMixer 管理器 |
+| `src/animation/glb-resource-manager.js` | 动态加载并管理多个普通 GLB 资源 |
+| `src/audio/audio-manager.js` | 音频解锁、播放、淡入淡出、暂停和恢复 |
+| `src/timeline/experience-timeline.js` | 统一调度 GLB、音频、Shader、粒子和可注册适配器 |
+| `src/utils/resource-url.js` | 根据开发/生产环境解析资源 URL |
 
 ## 3. 启动与生命周期
 
@@ -71,6 +78,124 @@ update(elapsed, state)
 reset()
 dispose()
 ```
+
+### 3.1 Experience Timeline
+
+当前 `timeline.json` 为 V3，分为三层：
+
+- `resources[]`：音频和 GLB 的 ID、类型、相对路径、预加载策略及特殊适配器。
+- `channels[]`：正式环境启用状态和显示/执行顺序。
+- `tracks[]`：资源引用、所属通道、正式启用状态、时间范围和媒体参数。
+
+V2 数据仍可导入，读取时会自动补建资源和 `shader/particles/glb/audio` 通道；编辑器下载时统一导出 V3。
+
+`ExperienceTimeline` 同时管理两类内容：
+
+- 离散 Cue：在指定秒数调用某个 channel 的 action。
+- 连续 Track：每帧把统一的 `elapsed/delta` 传给 Shader、粒子或音频控制器。
+
+正式时间轴数据来自 `src/data/timeline.json`，运行时会自动编译为 Cue：
+
+| 时间 | Channel | Action | 当前行为 |
+| ---: | --- | --- | --- |
+| 0 s | `shader` | `wake` | 启动核心和能量觉醒 |
+| 0 s | `glb` | `playAnimation` | 循环播放 `SPRING_MAIN_15S` |
+| 0 s | `audio` | `playAudio` | 播放 8 秒生命树觉醒声 |
+| 0 s | `audio` | `playAudio` | 以 18% 音量播放森林背景循环 |
+| 3.5 s | `particles` | `wake` | 开始揭示粒子 |
+| 5 s | `audio` | `playAudio` | 开始飞鸟鸟鸣 |
+| 5 s | `audio` | `fadeAudio` | 森林背景音压低到 4% |
+| 7 s | `audio` | `stopAudio` | 停止鸟鸣 |
+| 7 s | `audio` | `fadeAudio` | 森林背景音恢复到 18% |
+| 8 s | `shader` | `enterAlive` | 进入 ALIVE 和能量循环 |
+| 15 s | `glb/audio` | `stop` | 当前 15 秒时间轴结束 |
+
+新 GLB 实际只有一个 Clip：`SPRING_MAIN_15S`。这个 15 秒 Clip 内部已经编排了动物节奏：第一只鸟约 3 秒出现，第二只鸟和部分蝴蝶约 6 秒出现，最后一组约 10 秒出现。因此时间轴从 0 秒启动总 Clip，不应调用 GLB 中不存在的 `SPRING_BIRD`。
+
+以后 GLB 如果真的导出了 `SPRING_BIRD`，可在 `timeline.json` 增加：
+
+```js
+{
+  "id": "spring-bird",
+  "type": "glb",
+  "channel": "glb",
+  "resource": "tree-and-animals",
+  "label": "春日飞鸟",
+  "clip": "SPRING_BIRD",
+  "enabled": true,
+  "start": 3,
+  "end": 10,
+  "loop": "repeat",
+  "fadeIn": 0.35,
+  "fadeOut": 0.25
+}
+```
+
+`LifeTreeAr` 对外提供：
+
+```js
+playAnimation(name, options)
+stopAnimation(name, options)
+fadeAnimation(name, duration, options)
+registerTimelineChannel(name, channel)
+registerTimelineAdapter(name, adapter)
+registerResource(definition)
+unregisterResource(id)
+setChannelEnabled(id, enabled)
+setTrackEnabled(id, enabled)
+previewChannel(id, range)
+previewTrack(id)
+```
+
+动画管理器支持 `once/repeat/ping-pong`、循环次数、播放速度、起播时间、分层播放和淡入淡出。GLB 晚于时间轴加载时，会按已经过去的体验时间补偿动画进度。
+
+现有 `AudioManager` 已作为 `audio` channel 注入。它在用户点击 `Start AR` 的同步调用栈内解锁浏览器音频权限，并提供：
+
+```js
+playAudio(name, options)
+stopAudio(name, options)
+fadeAudio(name, duration, targetVolume)
+pauseAll()
+resumeAll()
+```
+
+当前音频素材：
+
+| 名称 | 文件 | 时长 | 用途 |
+| --- | --- | ---: | --- |
+| `life-tree-awaken` | `life-tree-awaken.mp3` | 8 s | 觉醒全过程 |
+| `bird-event` | `bird-event.mp3` | 5 s | 时间轴当前只播放 5–7 秒区间 |
+| `forest-spring-loop` | `forest-spring-loop.mp3` | 60 s | 全程背景音，鸟鸣时自动压低 |
+
+以后其他项目的音频控制器也可实现相应 action 和可选的 `update/reset`，再注册为：
+
+```js
+experience.registerTimelineChannel("audio", audioController)
+```
+
+Target 短暂丢失时统一时间停止，因此 GLB、Shader、粒子和音频会一起暂停；超过 3 秒重置时所有轨道从头开始。
+
+时间轴轨道类型：
+
+| `type` | 用途 |
+| --- | --- |
+| `glb` | 播放 GLB AnimationClip |
+| `audio` | 在 start/end 之间播放一段声音 |
+| `audio-volume` | 在指定区间降低、静音或恢复另一条音频 |
+| `shader` | 启动 Shader 觉醒阶段 |
+| `particles` | 启动粒子揭示 |
+| `experience` | 切换 ALIVE 等体验状态 |
+
+`audio-volume.volume` 设置为 `0` 即为该时段完全静音；设置为 `0.04` 表示压低到 4%。`restoreVolume` 控制区间结束后的恢复音量。
+
+动态资源的 JSON 始终推荐保存 `assets/example.mp3` 这类相对路径。URL 解析规则为：
+
+- `npm run serve`：使用当前页面的 Origin，因此 localhost、局域网地址和 ngrok 会自动匹配；相对资源会附加当前页面会话的开发缓存版本，替换同名 MP3/GLB 后刷新即可读取新文件。
+- `npm run build`：默认使用 `https://qphong.cn/`。
+- 构建前设置 `ASSET_BASE_URL` 可覆盖以上默认值。
+- `http(s)`、Blob 和 Data URL 保持原样，不再拼接前缀。
+
+现有 `tree-and-animals` 使用 `life-tree-relief` 特殊适配器，继续承担树皮内部透光和动物动画。编辑器动态加入的普通 GLB 则直接使用 Blender 导出的米制坐标、原点、旋转和缩放。`registerTimelineAdapter()` 是统一扩展入口；适配器可实现 `load/start/stop/seek/pause/resume/update/reset/dispose/getMetadata`。未知媒体类型会自动编译为所属通道的 `start/stop` Cue，因此未来视频适配器可复用现有调度、seek、暂停和过滤机制。本版本未创建 VideoTexture 或视频 UI。
 
 ## 4. 坐标系统与对齐原理
 
@@ -397,10 +522,10 @@ ALIVE 强度：
 路径数量 N
 + 3 个核心
 + 1 个实例化粒子 Mesh
-+ tree.glb 的可见材质/primitive 数量
++ tree-and-animals.glb 的可见材质/primitive 数量
 ```
 
-当前 N 为 25。如果 GLB 只有一个可见 primitive，总数约为 30。新增路径会一条增加一个 draw call。
+当前 N 为 25，新 GLB 有 1 个树体 Mesh 和 15 个动物 Mesh，静态估算约为 45 个 draw calls。新增路径会一条增加一个 draw call。若移动端性能不足，后续应优先把鸟/蝴蝶合并为更少的 Mesh/材质，或减少路径数量。
 
 ## 11. path.json 数据结构
 
@@ -512,6 +637,67 @@ src/data/path.json
 4. 刷新普通 URL 进行实际识别测试。
 5. 发布前执行生产构建。
 
+### 12.3 可视化 Experience Timeline
+
+打开 `?debug=1` 后，页面上方会显示可拖动的 Timeline 面板，路径校准面板仍保持独立。
+
+Timeline 面板提供：
+
+- Shader、粒子、多个 GLB、声音和音量控制通道。
+- 通道头的圆点和轨道圆点控制正式 `enabled`，该状态会写入 JSON 并影响普通 AR URL。
+- 通道 `M` 为本次 Debug 会话静音，`S` 为独奏；它们以及预览筛选不会写入 JSON。
+- 通道和轨道的 `▶` 可单独预览当前通道或片段；整体预览会恢复全部非静音通道。
+- 单轨/单通道预览会临时绕过正式 `enabled`，因此已关闭的正式轨道仍可单独试听；不会修改导出的启用状态。
+- 拖动片段中间改变整体出场时间，同时保持原有片段时长。
+- 拖动片段两侧白色把手裁剪资源入点/退场点；GLB 和音频会同步更新资源内部入点、出点。
+- 点击片段后可精确修改出场、退场、时长、资源入点/出点、播放速度、音量、淡入淡出和循环。
+- 通道和轨道名称右侧的 `↑/↓` 调整顺序；同一秒 Cue 按通道顺序、轨道顺序执行。
+- “总时长”可以扩展或缩短整个 Experience Timeline，越界片段会自动裁切。
+- 点击时间标尺或输入精确秒数进行 seek。
+- “整体预览”循环播放完整时间轴。
+- “选区预览”只播放指定开始/结束区间。
+- 播放、暂停和停止。
+- 标尺固定在轨道滚动区顶部，名称列固定在左侧。
+- 缩放范围 `25%–800%`；可使用按钮或 `Ctrl/Cmd + 滚轮`，并以鼠标位置/播放头为锚点。
+- 标尺会按缩放级别自动选择 `0.1/0.25/0.5/1/2/5 s` 刻度。
+- 标题栏可拖动面板，并提供最大宽度、最大高度、全窗口/恢复。
+- 右边、下边和右下角可调整面板尺寸；布局和缩放会保存在 Debug 本地缓存。
+- 导入 JSON、下载 `timeline.json`、恢复源码默认值。
+
+“资源库”支持在运行时添加音频和 GLB：
+
+1. 填写唯一资源 ID、名称和 `assets/...` 相对路径。
+2. 添加后查看 `loading/ready/error` 状态；错误提示中会保留网络或 CORS 信息。
+3. 音频加载后显示真实时长；GLB 加载后列出 AnimationClip。
+4. 音频资源的“试听”以 100% 音量直接播放，用于区分素材/缓存问题与 Timeline 混音音量问题。
+5. 选择 GLB Clip 后点击“建轨”，轨道从当前播放头开始创建。
+6. 仍被轨道引用的资源不能删除；生命树主体特殊资源也不能在运行中删除。
+
+动态 GLB 尚未加载完成时，Timeline 会保存期望播放状态。加载完成后按当前 Timeline 时间补偿起播位置，不会错误地从第 0 秒开始。动态音频的“添加”按钮位于真实用户点击调用栈中，因此已解锁会话可同步完成 Safari 音频解锁。
+
+GLB 加载完成后，面板会自动读取真实 AnimationClip：
+
+- 显示 Clip 名称、总时长和轨道数量。
+- 根据 Bird/Butterfly 的 scale 动画分析实际可见区间。
+- 在 GLB 主轨下增加只读的 `Birds`、`Butterflies` 子轨。
+- 拖动播放头时 GLB 会跳到对应动画时间，而不是重新从 0 秒播放。
+- 修改资源入点或播放速度后，Bird/Butterfly 子轨会换算成时间轴上的实际出场区间。
+
+Debug 修改自动保存到：
+
+```text
+localStorage: life-tree-timeline-v3
+localStorage: life-tree-timeline-ui-v3
+```
+
+旧的 `life-tree-timeline-v1` 数据仍可迁移读取。普通 URL 不读取 Timeline 数据、布局、静音、独奏或预览筛选缓存。完成编辑后点击“下载 timeline.json”，然后替换：
+
+```text
+src/data/timeline.json
+```
+
+音频第一次播放必须来自用户手势；Timeline 的播放、整体预览或选区预览按钮会同步执行声音解锁。
+
 ## 13. 常用调参方案
 
 ### 13.1 光仍像附着在表面
@@ -595,4 +781,3 @@ https://example.ngrok.app/?v=4
 - PC 和手机均尽量正对 Target 检查二维对齐。
 - 斜视偏移应通过 Z/模型厚度处理，而不是整体拖动路径。
 - 发布前执行 `npm run build`。
-

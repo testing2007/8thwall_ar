@@ -4,8 +4,9 @@ import { CONFIG } from "../config";
 import { LifeTreeAr } from "../life-tree-ar";
 
 export class StandaloneCalibrationPreview {
-  constructor(canvas) {
+  constructor(canvas, audioController = null) {
     this.canvas = canvas;
+    document.body.classList.add("life-tree-standalone-debug");
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color(0x090b10);
     this.camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.01, 4);
@@ -36,6 +37,7 @@ export class StandaloneCalibrationPreview {
 
     this.experience = new LifeTreeAr(this.scene, this.camera, canvas, {
       standaloneDebug: true,
+      audioController,
     });
     this.clock = new THREE.Clock();
     this.disposed = false;
@@ -47,8 +49,9 @@ export class StandaloneCalibrationPreview {
   }
 
   resize() {
-    const width = Math.max(1, window.innerWidth);
-    const height = Math.max(1, window.innerHeight);
+    const rect = this.canvas.getBoundingClientRect();
+    const width = Math.max(1, Math.round(rect.width || window.innerWidth));
+    const height = Math.max(1, Math.round(rect.height || window.innerHeight));
     this.renderer.setSize(width, height, false);
     const aspect = width / height;
     const targetAspect = CONFIG.puzzle.width / CONFIG.puzzle.height;
@@ -90,6 +93,7 @@ export class StandaloneCalibrationPreview {
     this.targetMaterial.dispose();
     this.targetTexture.dispose();
     this.renderer.dispose();
+    document.body.classList.remove("life-tree-standalone-debug");
     this.scene = null;
     this.camera = null;
     this.canvas = null;

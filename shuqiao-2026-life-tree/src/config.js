@@ -1,3 +1,9 @@
+import timelineSource from "./data/timeline.json";
+import {
+  compileTimelineCues,
+  normalizeTimelineData,
+} from "./data/experience-timeline-data";
+
 const hasDebugQuery = () => {
   if (typeof window === "undefined") return false;
   return new URLSearchParams(window.location.search).get("debug") === "1";
@@ -6,6 +12,15 @@ const hasDebugQuery = () => {
 export const CONFIG = Object.freeze({
   targetName: "target",
   debug: hasDebugQuery(),
+
+  model: Object.freeze({
+    treeMeshNames: Object.freeze(["TreeMosaic_Extruded"]),
+  }),
+
+  experienceTimeline: Object.freeze({
+    data: normalizeTimelineData(timelineSource),
+    cues: compileTimelineCues(timelineSource),
+  }),
 
   puzzle: Object.freeze({
     width: 0.7,

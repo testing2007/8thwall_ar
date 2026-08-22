@@ -1,7 +1,9 @@
 import * as THREE from "three";
+import { AudioManager } from "./audio/audio-manager";
 import { CONFIG } from "./config";
 import { StandaloneCalibrationPreview } from "./debug/standalone-calibration-preview";
 import { LifeTreeAr } from "./life-tree-ar";
+import { resolveResourceUrl } from "./utils/resource-url";
 
 window.THREE = THREE;
 
@@ -12,6 +14,14 @@ let xrStarted = false;
 let arStarting = false;
 let debugPreview = null;
 const clock = new THREE.Clock(false);
+const audioManager = new AudioManager(
+  CONFIG.experienceTimeline.data.resources
+    .filter((resource) => resource.type === "audio")
+    .map((resource) => ({
+      ...resource,
+      url: resolveResourceUrl(resource.src),
+    })),
+);
 
 const getCameraCanvas = () => {
   let canvas = document.getElementById("camerafeed");
@@ -49,7 +59,9 @@ const lifeTreePipelineModule = () => ({
     debugPreview = null;
     const { scene, camera } = XR8.Threejs.xrScene();
     experience?.dispose();
-    experience = new LifeTreeAr(scene, camera, getCameraCanvas());
+    experience = new LifeTreeAr(scene, camera, getCameraCanvas(), {
+      audioController: audioManager,
+    });
     clock.start();
   },
 
@@ -159,6 +171,7 @@ const startArFromButton = () => {
   if (arStarting || xrStarted) return;
   arStarting = true;
   setStartButtonLoading(true);
+  audioManager.unlock();
   startEngine()
     .then(() => {
       arStarting = false;
@@ -179,7 +192,10 @@ const installStartButton = () => {
 const startStandaloneCalibration = () => {
   if (!CONFIG.debug || debugPreview) return;
   hideStartScreen();
-  debugPreview = new StandaloneCalibrationPreview(getCameraCanvas());
+  debugPreview = new StandaloneCalibrationPreview(
+    getCameraCanvas(),
+    audioManager,
+  );
 };
 
 const bootstrap = () => {
