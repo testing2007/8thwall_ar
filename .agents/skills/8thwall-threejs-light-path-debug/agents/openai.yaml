@@ -1,0 +1,4 @@
+interface:
+  display_name: "8th Wall Three.js Light & Path Debug"
+  short_description: "调试 Image Target 光效、路径坐标与内透光层级"
+  default_prompt: "Use $8thwall-threejs-light-path-debug to implement or diagnose Three.js light effects and editable path calibration for an 8th Wall Image Target."
